@@ -1,3 +1,4 @@
+// app/recoil/authAtoms.ts
 import { atom, selector } from 'recoil';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../../services/firebaseconfig';
@@ -12,7 +13,6 @@ export const userAuthState = selector({
   get: async ({ get }) => {
     const user = get(userState);
     if (user) return { user, loading: false };
-
     return new Promise((resolve) => {
       const unsubscribe = onAuthStateChanged(auth, (user) => {
         unsubscribe();

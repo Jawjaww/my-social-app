@@ -13,7 +13,11 @@
     "baseUrl": "./",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "@firebase/auth": ["./node_modules/@firebase/auth/dist/index.rn.d.ts"],
+      "*": ["node_modules/*"]
+    }
   },
   "exclude": [
     "node_modules",
@@ -24,9 +28,7 @@
   "include": [
     "app/**/*",
     "env.d.ts",
-    "firebase.d.ts"
-, "hooks"  ],
-  "paths": {
-    "*": ["node_modules/*"]
-  }
+    "firebase.d.ts",
+    "hooks"
+  ]
 }
