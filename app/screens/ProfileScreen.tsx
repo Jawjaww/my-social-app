@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
 import { getAuth, updateEmail, updatePassword, User } from 'firebase/auth';
-import { app } from '../../services/firebaseconfig';
+import { app, AsyncStorage } from '../../services/firebaseconfig';
 
 const ProfileScreen = () => {
   const [email, setEmail] = useState<string>('');
@@ -18,6 +18,7 @@ const ProfileScreen = () => {
         .then(() => {
           setSuccess('Email mis à jour avec succès.');
           setError('');
+          AsyncStorage.setItem('userEmail', email);
         })
         .catch((error) => {
           setError(error.message);
