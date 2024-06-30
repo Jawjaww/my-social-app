@@ -1,9 +1,10 @@
-// app/recoil/authAtoms.ts
 import { atom, selector } from 'recoil';
+import { User } from 'firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../../services/firebaseconfig';
 
-export const userState = atom({
+// Utiliser directement le type User de Firebase pour userState
+export const userState = atom<User | null>({
   key: 'userState',
   default: null,
 });
