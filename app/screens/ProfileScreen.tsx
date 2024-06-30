@@ -1,77 +1,41 @@
-import React, { useState } from 'react';
-import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
-import { getAuth, updateEmail, updatePassword, User } from 'firebase/auth';
-import { app, AsyncStorage } from '../../services/firebaseconfig';
+import React, { useCallback } from 'react';
+import { View, Button, StyleSheet, Image, TouchableOpacity, Text } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { useRecoilState } from 'recoil';
+import { getAuth, signOut, User } from 'firebase/auth';
+import { userState } from '../recoil/authAtoms';
 
 const ProfileScreen = () => {
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [confirmPassword, setConfirmPassword] = useState<string>('');
-  const [error, setError] = useState<string>('');
-  const [success, setSuccess] = useState<string>('');
-  const auth = getAuth(app);
-  const user: User | null = auth.currentUser;
+  const navigation = useNavigation();
+  const [user, setUser] = useRecoilState<User | null>(userState);
+  const auth = getAuth();
 
-  const handleUpdateEmail = () => {
-    if (user) {
-      updateEmail(user, email)
+  const handleSignOut = useCallback(() => {
+    console.log('Attempting to sign out...');
+
+    if (auth.currentUser) {
+      signOut(auth)
         .then(() => {
-          setSuccess('Email mis à jour avec succès.');
-          setError('');
-          AsyncStorage.setItem('userEmail', email);
+          console.log('Sign out successful');
+          setUser(null);
         })
         .catch((error) => {
-          setError(error.message);
-          setSuccess('');
+          console.error('Sign out error:', error.message);
         });
+    } else {
+      console.log('No user signed in.');
     }
-  };
-
-  const handleUpdatePassword = () => {
-    if (password !== confirmPassword) {
-      setError("Les mots de passe ne correspondent pas.");
-      return;
-    }
-    if (user) {
-      updatePassword(user, password)
-        .then(() => {
-          setSuccess('Mot de passe mis à jour avec succès.');
-          setError('');
-        })
-        .catch((error) => {
-          setError(error.message);
-          setSuccess('');
-        });
-    }
-  };
+  }, [auth, setUser]);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Modifier le profil</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Nouvel email"
-        value={email}
-        onChangeText={setEmail}
-      />
-      <Button title="Mettre à jour l'email" onPress={handleUpdateEmail} />
-      <TextInput
-        style={styles.input}
-        placeholder="Nouveau mot de passe"
-        value={password}
-        secureTextEntry
-        onChangeText={setPassword}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Confirmer le mot de passe"
-        value={confirmPassword}
-        secureTextEntry
-        onChangeText={setConfirmPassword}
-      />
-      <Button title="Mettre à jour le mot de passe" onPress={handleUpdatePassword} />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      {success ? <Text style={styles.success}>{success}</Text> : null}
+      <Text style={styles.header}>Profil</Text>
+      <TouchableOpacity onPress={() => navigation.navigate('EditProfile' as never)}>
+        <Image source={{ uri: user?.photoURL || 'https://via.placeholder.com/150' }} style={styles.profileImage} />
+      </TouchableOpacity>
+      <Button title="Modifier le profil" onPress={() => navigation.navigate('EditProfile' as never)} />
+      <Button title="Préférences de notification" onPress={() => navigation.navigate('NotificationSettings' as never)} />
+      <Button title="Se déconnecter" onPress={handleSignOut} color="red" />
     </View>
   );
 };
@@ -88,20 +52,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'center',
   },
-  input: {
-    marginBottom: 10,
-    borderWidth: 1,
-    padding: 10,
-  },
-  error: {
-    color: 'red',
-    textAlign: 'center',
-    marginTop: 10,
-  },
-  success: {
-    color: 'green',
-    textAlign: 'center',
-    marginTop: 10,
+  profileImage: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    alignSelf: 'center',
+    marginBottom: 20,
   },
 });
 
