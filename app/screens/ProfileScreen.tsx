@@ -1,38 +1,29 @@
-import React, { useCallback } from 'react';
-import { View, Button, StyleSheet, Image, TouchableOpacity, Text } from 'react-native';
+import React from 'react';
+import { View, Text, Button, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useRecoilState } from 'recoil';
-import { getAuth, signOut, User } from 'firebase/auth';
-import { userState } from '../recoil/authAtoms';
+import { getAuth, signOut } from 'firebase/auth';
+import { userState, AppUser } from '../recoil/authAtoms';
 
-const ProfileScreen = () => {
+const ProfileScreen: React.FC = () => {
   const navigation = useNavigation();
-  const [user, setUser] = useRecoilState<User | null>(userState);
+  const [user, setUser] = useRecoilState<AppUser | null>(userState);
   const auth = getAuth();
 
-  const handleSignOut = useCallback(() => {
-    console.log('Attempting to sign out...');
-
-    if (auth.currentUser) {
-      signOut(auth)
-        .then(() => {
-          console.log('Sign out successful');
-          setUser(null);
-        })
-        .catch((error) => {
-          console.error('Sign out error:', error.message);
-        });
-    } else {
-      console.log('No user signed in.');
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      setUser(null); // Update user state in Recoil store to null after sign out
+    } catch (error) {
+      console.error('Erreur de déconnexion :', error);
     }
-  }, [auth, setUser]);
+  };
 
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Profil</Text>
-      <TouchableOpacity onPress={() => navigation.navigate('EditProfile' as never)}>
-        <Image source={{ uri: user?.photoURL || 'https://via.placeholder.com/150' }} style={styles.profileImage} />
-      </TouchableOpacity>
+      <Text>{user?.displayName}</Text>
+      <Text>{user?.email}</Text>
       <Button title="Modifier le profil" onPress={() => navigation.navigate('EditProfile' as never)} />
       <Button title="Préférences de notification" onPress={() => navigation.navigate('NotificationSettings' as never)} />
       <Button title="Se déconnecter" onPress={handleSignOut} color="red" />
@@ -44,19 +35,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
     padding: 20,
   },
   header: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  profileImage: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    alignSelf: 'center',
     marginBottom: 20,
   },
 });
