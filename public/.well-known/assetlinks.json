@@ -1,0 +1,12 @@
+[
+    {
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.brainsmosaique.MySocialApp",
+        "sha256_cert_fingerprints": [
+          "54:e6:5b:db:07:15:be:1a:99:cf:69:13:07:9b:37:79:62:b9:fd:0f:43:19:1e:0e:e5:04:5a:59:3c:2a:3a:62"
+        ]
+      }
+    }
+  ]

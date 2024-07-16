@@ -15,20 +15,16 @@ const WelcomeScreen = () => {
 
       <View style={styles.buttonContainer}>
         <Button
-          title="Commencer à chatter"
-          onPress={() => navigation.navigate('Chat')}
+          title="Se connecter"
+          onPress={() => navigation.navigate('SignIn')}
         />
         <Button
-          title="Modifier le profil"
-          onPress={() => navigation.navigate('Profile')}
+          title="S'inscrire"
+          onPress={() => navigation.navigate('SignUp')}
         />
         <Button
-          title="Groupes"
-          onPress={() => navigation.navigate('Menu')}
-        />
-        <Button
-          title="Paramètres"
-          onPress={() => navigation.navigate('Settings')}
+          title="Se connecter avec Google"
+          onPress={() => navigation.navigate('GoogleSignIn')}
         />
       </View>
 
@@ -42,8 +38,8 @@ const WelcomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
     padding: 20,
   },
   header: {
@@ -62,7 +58,8 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 14,
-    color: '#666',
+    textAlign: 'center',
+    color: 'gray',
   },
 });
 

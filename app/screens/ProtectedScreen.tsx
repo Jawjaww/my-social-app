@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { useRecoilValue } from 'recoil';
-import { userState } from '../recoil/authAtoms';
+import { userState } from '../authentication/recoil/authAtoms';
 
 function ProtectedScreen() {
   const user = useRecoilValue(userState);

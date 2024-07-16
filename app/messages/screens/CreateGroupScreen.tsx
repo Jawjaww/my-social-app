@@ -3,9 +3,9 @@ import { View, TextInput, Button, Alert } from 'react-native';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { newGroupNameState, newGroupDescriptionState, newGroupImageState, groupsState } from '../recoil/groupAtoms';
 import { addDoc, collection } from 'firebase/firestore';
-import { db } from '../../services/firebaseconfig';
+import { db } from '../../../services/firebaseConfig';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigation/RootStack';
+import { RootStackParamList } from '../../navigation/RootStack';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateGroup'>;
 

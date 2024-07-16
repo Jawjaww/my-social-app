@@ -1,17 +1,23 @@
-import React, { useState } from 'react';
-import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
-import { getAuth, createUserWithEmailAndPassword, UserCredential, AuthError } from 'firebase/auth';
-import { app } from '../../services/firebaseconfig';
+import React, { useState } from "react";
+import { View, TextInput, Button, Text, StyleSheet } from "react-native";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  UserCredential,
+  AuthError,
+  sendEmailVerification,
+} from "firebase/auth";
+import { app } from "../../../services/firebaseConfig";
 
 interface SignUpScreenProps {
   navigation: any;
 }
 
 function SignUpScreen({ navigation }: SignUpScreenProps) {
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [confirmPassword, setConfirmPassword] = useState<string>('');
-  const [error, setError] = useState<string>('');
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [error, setError] = useState<string>("");
   const auth = getAuth(app);
 
   const handleSignUp = () => {
@@ -21,8 +27,19 @@ function SignUpScreen({ navigation }: SignUpScreenProps) {
     }
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredentials: UserCredential) => {
-        console.log('Compte créé :', userCredentials.user?.email);
-        navigation.navigate('SignIn');
+        console.log("Compte créé :", userCredentials.user?.email);
+        sendEmailVerification(userCredentials.user)
+          .then(() => {
+            console.log("Email de vérification envoyé.");
+            navigation.navigate("SignIn");
+          })
+          .catch((error: AuthError) => {
+            console.error(
+              "Erreur lors de l'envoi de l'email de vérification :",
+              error
+            );
+            setError(error.message);
+          });
       })
       .catch((error: AuthError) => {
         setError(error.message);
@@ -60,16 +77,20 @@ function SignUpScreen({ navigation }: SignUpScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
     padding: 20,
+    justifyContent: "center",
   },
   input: {
-    marginBottom: 10,
+    height: 40,
+    borderColor: "gray",
     borderWidth: 1,
-    padding: 10,
+    marginBottom: 20,
+    paddingHorizontal: 10,
   },
   error: {
-    color: 'red',
+    color: "red",
+    marginBottom: 20,
+    textAlign: "center",
   },
 });
 

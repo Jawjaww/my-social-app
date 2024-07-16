@@ -5,6 +5,9 @@ node_modules/
 .expo/
 .web-build/
 dist/
+@jawjaww__mysocialapp.jks
+credentials.json
+google-services.json
 
 # Platform-specific files
 *.orig.*

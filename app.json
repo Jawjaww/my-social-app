@@ -1,7 +1,8 @@
 {
   "expo": {
     "name": "my_social_app",
-    "slug": "my_social_app",
+    "slug": "mysocialapp",
+    "scheme": "my-social-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -12,16 +13,54 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.jawjaww.mysocialapp",
+      "infoPlist": {
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": ["my-social-app"]
+          }
+        ]
+      },
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.brainsmosaique.MySocialApp",
+      "googleServicesFile": "./google-services.json",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "my-social-app",
+              "host": "email-verified"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "ac182c59-77c0-4856-97f4-a5235b127f65"
+      }
+    },
+    "owner": "jawjaww",
+    "plugins": [
+      [
+        "@sentry/react-native/expo",
+        {
+          "organization": "brains-mosaic",
+          "project": "my-social-app"
+        }
+      ]
+    ]
   }
 }
