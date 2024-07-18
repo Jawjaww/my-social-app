@@ -35,7 +35,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.brainsmosaique.MySocialApp",
-      "googleServicesFile": "./google-services.json",
+      "googleServicesFile": "${GOOGLE_SERVICES_JSON}",
       "intentFilters": [
         {
           "action": "VIEW",
