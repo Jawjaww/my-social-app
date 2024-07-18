@@ -10,7 +10,8 @@
         "GOOGLE_SERVICES_JSON": "GOOGLE_SERVICES_JSON"
       },
       "android": {
-        "credentialsSource": "local"
+        "credentialsSource": "local",
+        "buildType": "apk"
       }
       //,
       // "ios": {

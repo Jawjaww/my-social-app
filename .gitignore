@@ -8,6 +8,7 @@ dist/
 @jawjaww__mysocialapp.jks
 credentials.json
 google-services.json
+GoogleService-Info.plist
 
 # Platform-specific files
 *.orig.*
