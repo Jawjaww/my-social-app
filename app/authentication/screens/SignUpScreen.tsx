@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, TextInput, Button, Text, StyleSheet } from "react-native";
+import { Text, Button } from "react-native";
 import {
   getAuth,
   createUserWithEmailAndPassword,
@@ -8,10 +8,31 @@ import {
   sendEmailVerification,
 } from "firebase/auth";
 import { app } from "../../../services/firebaseConfig";
+import styled from '@emotion/native';
 
 interface SignUpScreenProps {
   navigation: any;
 }
+
+const Container = styled.View`
+  flex: 1;
+  padding: 20px;
+  justify-content: center;
+`;
+
+const Input = styled.TextInput`
+  height: 40px;
+  border-color: gray;
+  border-width: 1px;
+  margin-bottom: 20px;
+  padding-horizontal: 10px;
+`;
+
+const ErrorText = styled.Text`
+  color: red;
+  margin-bottom: 20px;
+  text-align: center;
+`;
 
 function SignUpScreen({ navigation }: SignUpScreenProps) {
   const [email, setEmail] = useState<string>("");
@@ -47,51 +68,28 @@ function SignUpScreen({ navigation }: SignUpScreenProps) {
   };
 
   return (
-    <View style={styles.container}>
-      <TextInput
-        style={styles.input}
+    <Container>
+      <Input
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
       />
-      <TextInput
-        style={styles.input}
+      <Input
         placeholder="Mot de passe"
         value={password}
         secureTextEntry
         onChangeText={setPassword}
       />
-      <TextInput
-        style={styles.input}
+      <Input
         placeholder="Confirmer le mot de passe"
         value={confirmPassword}
         secureTextEntry
         onChangeText={setConfirmPassword}
       />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? <ErrorText>{error}</ErrorText> : null}
       <Button title="S'inscrire" onPress={handleSignUp} />
-    </View>
+    </Container>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    justifyContent: "center",
-  },
-  input: {
-    height: 40,
-    borderColor: "gray",
-    borderWidth: 1,
-    marginBottom: 20,
-    paddingHorizontal: 10,
-  },
-  error: {
-    color: "red",
-    marginBottom: 20,
-    textAlign: "center",
-  },
-});
 
 export default SignUpScreen;

@@ -1,8 +1,7 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import SignInScreen from "../screens/SignInScreen";
-import SignUpScreen from "../screens/SignUpScreen";
-import GoogleSignInScreen from "../screens/GoogleSignInScreen";
+import { SignInScreen, SignUpScreen, GoogleSignInScreen } from "../screens";
+
 
 const Stack = createNativeStackNavigator();
 

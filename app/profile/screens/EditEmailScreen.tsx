@@ -1,6 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button } from 'react-native';
 import { getAuth, sendEmailVerification, EmailAuthProvider, reauthenticateWithCredential, updateEmail, User } from 'firebase/auth';
+import styled from '@emotion/native';
+
+const Container = styled.View`
+  flex: 1;
+  padding: 20px;
+  justify-content: center;
+`;
+
+const Header = styled.Text`
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+`;
+
+const Input = styled.TextInput`
+  height: 40px;
+  border-color: gray;
+  border-width: 1px;
+  margin-bottom: 20px;
+  padding-horizontal: 10px;
+`;
+
+const ErrorText = styled.Text`
+  color: red;
+  margin-bottom: 20px;
+  text-align: center;
+`;
+
+const SuccessText = styled.Text`
+  color: green;
+  margin-bottom: 20px;
+  text-align: center;
+`;
 
 const EditEmailScreen: React.FC = () => {
   const [newEmail, setNewEmail] = useState('');
@@ -12,7 +45,7 @@ const EditEmailScreen: React.FC = () => {
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user && user.emailVerified) {
+      if (user && user.emailVerified && newEmail) {
         // Check if the email is verified and update the email in Firebase
         updateEmailInFirebase(user);
       }
@@ -21,7 +54,7 @@ const EditEmailScreen: React.FC = () => {
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [newEmail]);
 
   const handleSendVerificationEmail = async () => {
     if (newEmail !== confirmEmail) {
@@ -74,62 +107,29 @@ const EditEmailScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Modifier l'Email</Text>
-      <TextInput
-        style={styles.input}
+    <Container>
+      <Header>Modifier l'Email</Header>
+      <Input
         placeholder="Nouvel email"
         value={newEmail}
         onChangeText={setNewEmail}
       />
-      <TextInput
-        style={styles.input}
+      <Input
         placeholder="Confirmer nouvel email"
         value={confirmEmail}
         onChangeText={setConfirmEmail}
       />
-      <TextInput
-        style={styles.input}
+      <Input
         placeholder="Mot de passe actuel"
         secureTextEntry={true}
         value={password}
         onChangeText={setPassword}
       />
-      {error && <Text style={styles.error}>{error}</Text>}
-      {success && <Text style={styles.success}>{success}</Text>}
+      {error && <ErrorText>{error}</ErrorText>}
+      {success && <SuccessText>{success}</SuccessText>}
       <Button title="Envoyer l'email de vérification" onPress={handleSendVerificationEmail} />
-    </View>
+    </Container>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    justifyContent: 'center',
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 20,
-    paddingHorizontal: 10,
-  },
-  error: {
-    color: 'red',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  success: {
-    color: 'green',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-});
 
 export default EditEmailScreen;

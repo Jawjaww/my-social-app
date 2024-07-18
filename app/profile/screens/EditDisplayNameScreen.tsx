@@ -1,8 +1,28 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Button } from 'react-native';
 import { useRecoilState } from 'recoil';
 import { userState } from '../../authentication/recoil/authAtoms';
 import { updateUserProfile } from '../services/profileServices';
+import styled from '@emotion/native';
+
+const Container = styled.View`
+  flex: 1;
+  padding: 20px;
+`;
+
+const Header = styled.Text`
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+`;
+
+const Input = styled.TextInput`
+  height: 40px;
+  border-color: gray;
+  border-width: 1px;
+  margin-bottom: 20px;
+  padding-horizontal: 10px;
+`;
 
 const EditDisplayNameScreen: React.FC = () => {
   const [user, setUser] = useRecoilState(userState);
@@ -11,43 +31,25 @@ const EditDisplayNameScreen: React.FC = () => {
   const handleSave = async () => {
     try {
       await updateUserProfile(displayName, user?.photoURL || null);
-      setUser({ ...user, displayName });
+      if (user) {
+        setUser({ ...user, displayName: displayName });
+      }
     } catch (error) {
       console.error('Erreur de mise à jour du pseudo :', error);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Modifier le Pseudo</Text>
-      <TextInput
-        style={styles.input}
+    <Container>
+      <Header>Modifier le Pseudo</Header>
+      <Input
         placeholder="Nouveau pseudo"
         value={displayName}
         onChangeText={setDisplayName}
       />
       <Button title="Enregistrer" onPress={handleSave} />
-    </View>
+    </Container>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 20,
-    paddingHorizontal: 10,
-  },
-});
 
 export default EditDisplayNameScreen;

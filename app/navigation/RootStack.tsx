@@ -3,20 +3,20 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { NavigationContainer } from "@react-navigation/native";
 import { Linking, ActivityIndicator, View, Text } from "react-native";
 import WelcomeScreen from "../screens/WelcomeScreen";
-import SignUpScreen from "../authentication/screens/SignUpScreen";
-import SignInScreen from "../authentication/screens/SignInScreen";
-import GoogleSignIn from "../authentication/screens/GoogleSignInScreen";
-import VerifyEmailScreen from "../authentication/screens/VerifyEmailScreen";
-import MainStack from "./MainStack";
-import { getAuth, applyActionCode } from "firebase/auth";
-import { useRecoilValue, useSetRecoilState } from "recoil";
 import {
+  SignUpScreen,
+  SignInScreen,
+  GoogleSignInScreen,
+  VerifyEmailScreen,
   userState,
   loadingState,
   errorState,
-} from "../authentication/recoil/authAtoms";
-import { useReloadUser } from "../authentication/hooks/useReloadUser";
-import { useAuthState } from "../authentication/hooks/useAuthState";
+  useReloadUser,
+  useAuthState
+} from "../authentication";
+import MainStack from "./MainStack";
+import { getAuth, applyActionCode } from "firebase/auth";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 
 const Stack = createNativeStackNavigator();
 
@@ -59,7 +59,7 @@ const RootStack: React.FC = () => {
     },
     [reloadUser, setLoading, setError]
   );
-  
+
   useEffect(() => {
     Linking.getInitialURL().then((url) => {
       console.log("Initial URL:", url);
@@ -102,7 +102,7 @@ const RootStack: React.FC = () => {
             <Stack.Screen name="Welcome" component={WelcomeScreen} />
             <Stack.Screen name="SignIn" component={SignInScreen} />
             <Stack.Screen name="SignUp" component={SignUpScreen} />
-            <Stack.Screen name="GoogleSignIn" component={GoogleSignIn} />
+            <Stack.Screen name="GoogleSignIn" component={GoogleSignInScreen} />
           </>
         )}
         {navigationState === "verify" && (

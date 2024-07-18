@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from "react";
-import { getAuth, onAuthStateChanged, User } from "firebase/auth";
+import { onAuthStateChanged, User } from "firebase/auth";
 import { useSetRecoilState, useRecoilValue } from "recoil";
 import { userState, loadingState } from "../recoil/authAtoms";
 import { auth } from "../../../services/firebaseConfig";
@@ -11,7 +11,6 @@ export const useAuthState = () => {
 
   const updateUser = useCallback(
     (firebaseUser: User | null) => {
-      console.log("Firebase user:", firebaseUser);
       if (firebaseUser) {
         const appUser: AppUser = {
           uid: firebaseUser.uid,
@@ -20,9 +19,7 @@ export const useAuthState = () => {
           photoURL: firebaseUser.photoURL,
           emailVerified: firebaseUser.emailVerified,
         };
-        console.log("App user before setting state:", appUser);
         setUser(appUser);
-        console.log("App user state updated:", appUser);
       } else {
         setUser(null);
       }

@@ -4540,10 +4540,10 @@ dtrace-provider@~0.8:
   dependencies:
     nan "^2.14.0"
 
-eas-cli@^10.2.0:
-  version "10.2.0"
-  resolved "https://registry.yarnpkg.com/eas-cli/-/eas-cli-10.2.0.tgz#d510f442f751a70f9389723ae7709ace3e8aef91"
-  integrity sha512-z2+ddJj8687kbHBteUZdQY9WLER4l3CeDAm2kCpIVPP6nhAMuisW8usHTOnRCjnfErGBorGIPqxhJ5dzt6LP3g==
+eas-cli@^10.2.1:
+  version "10.2.1"
+  resolved "https://registry.yarnpkg.com/eas-cli/-/eas-cli-10.2.1.tgz#990be407c0e126d632fb320b2c2845fa57af2dcb"
+  integrity sha512-ayiCnxv58RYFPgYtgDhzcTIsJuN4CWFIl0IR1zMLlau/tNQxR6AnXTyF+XNUYEIHMaLwc1TDsZ5DlZu9e/2sXg==
   dependencies:
     "@expo/apple-utils" "1.7.1"
     "@expo/code-signing-certificates" "0.0.5"
@@ -7783,6 +7783,11 @@ react-native-dotenv@^3.4.11:
   dependencies:
     dotenv "^16.4.5"
 
+react-native-fast-image@^8.6.3:
+  version "8.6.3"
+  resolved "https://registry.yarnpkg.com/react-native-fast-image/-/react-native-fast-image-8.6.3.tgz#6edc3f9190092a909d636d93eecbcc54a8822255"
+  integrity sha512-Sdw4ESidXCXOmQ9EcYguNY2swyoWmx53kym2zRsvi+VeFCHEdkO+WG1DK+6W81juot40bbfLNhkc63QnWtesNg==
+
 react-native-gesture-handler@~2.16.1:
   version "2.16.2"
   resolved "https://registry.yarnpkg.com/react-native-gesture-handler/-/react-native-gesture-handler-2.16.2.tgz#032bd2a07334292d7f6cff1dc9d1ec928f72e26d"
@@ -7809,6 +7814,11 @@ react-native-gifted-chat@^2.4.0:
     react-native-typing-animation "0.1.7"
     use-memo-one "1.1.3"
     uuid "3.4.0"
+
+react-native-image-picker@^7.1.2:
+  version "7.1.2"
+  resolved "https://registry.yarnpkg.com/react-native-image-picker/-/react-native-image-picker-7.1.2.tgz#383849d1953caf4578874a1f5e5dd11c737bd5cd"
+  integrity sha512-b5y5nP60RIPxlAXlptn2QwlIuZWCUDWa/YPUVjgHc0Ih60mRiOg1PSzf0IjHSLeOZShCpirpvSPGnDExIpTRUg==
 
 react-native-iphone-x-helper@1.3.1:
   version "1.3.1"

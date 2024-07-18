@@ -1,10 +1,22 @@
 import React from "react";
-import { View, Text, Button, StyleSheet } from "react-native";
+import { View, Text, Button } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useRecoilState } from "recoil";
 import { getAuth, signOut } from "firebase/auth";
 import { userState } from "../../authentication/recoil/authAtoms";
 import { AppUser } from "../../authentication/authTypes";
+import styled from '@emotion/native';
+
+const Container = styled.View`
+  flex: 1;
+  padding: 20px;
+`;
+
+const Header = styled.Text`
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+`;
 
 const ProfileScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -21,8 +33,8 @@ const ProfileScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Profil</Text>
+    <Container>
+      <Header>Profil</Header>
       <Text>{user?.displayName}</Text>
       <Text>{user?.email}</Text>
       <Button
@@ -42,22 +54,8 @@ const ProfileScreen: React.FC = () => {
         onPress={() => navigation.navigate("NotificationSettings" as never)}
       />
       <Button title="Se déconnecter" onPress={handleSignOut} color="red" />
-    </View>
+    </Container>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-});
 
 export default ProfileScreen;

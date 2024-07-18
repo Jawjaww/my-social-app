@@ -5,8 +5,9 @@ import {
   useNavigation,
   useRoute,
 } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons"; 
 import HomeScreen from "../screens/HomeScreen";
-import ProfileScreen from "../profile/screens/ProfileScreen";
+import { ProfileScreen } from "../profile";
 import MessagesScreen from "../messages/screens/MessagesScreen";
 import { MainTabParamList } from "./navigationTypes";
 
@@ -30,7 +31,25 @@ function MainTabNavigator() {
   }, [navigation, route]);
 
   return (
-    <Tab.Navigator>
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ color, size }) => {
+          let iconName: keyof typeof Ionicons.glyphMap;
+
+          if (route.name === "Home") {
+            iconName = "home";
+          } else if (route.name === "Profile") {
+            iconName = "person";
+          } else if (route.name === "Message") {
+            iconName = "chatbubbles";
+          } else {
+            iconName = "home"; // Default icon
+          }
+
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+      })}
+    >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
       <Tab.Screen name="Message" component={MessagesScreen} />

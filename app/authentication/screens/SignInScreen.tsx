@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, TextInput, Button, Text, StyleSheet } from "react-native";
+import { View, TextInput, Button, Text } from "react-native";
 import {
   getAuth,
   signInWithEmailAndPassword,
@@ -11,10 +11,37 @@ import { NavigationProp } from "@react-navigation/native";
 import { useRecoilState } from "recoil";
 import { userState } from "../../authentication/recoil/authAtoms";
 import { AppUser } from "../authTypes";
+import styled from '@emotion/native';
 
 interface SignInScreenProps {
   navigation: NavigationProp<any>;
 }
+
+const Container = styled.View`
+  flex: 1;
+  padding: 20px;
+  justify-content: center;
+`;
+
+const Input = styled.TextInput`
+  height: 40px;
+  border-color: gray;
+  border-width: 1px;
+  margin-bottom: 20px;
+  padding-horizontal: 10px;
+`;
+
+const ErrorText = styled.Text`
+  color: red;
+  margin-bottom: 20px;
+  text-align: center;
+`;
+
+const LinkText = styled.Text`
+  color: blue;
+  margin-top: 20px;
+  text-align: center;
+`;
 
 function SignInScreen({ navigation }: SignInScreenProps) {
   const [email, setEmail] = useState<string>("");
@@ -47,52 +74,25 @@ function SignInScreen({ navigation }: SignInScreenProps) {
   };
 
   return (
-    <View style={styles.container}>
-      <TextInput
-        style={styles.input}
+    <Container>
+      <Input
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
       />
-      <TextInput
-        style={styles.input}
+      <Input
         placeholder="Mot de passe"
         value={password}
         secureTextEntry
         onChangeText={setPassword}
       />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? <ErrorText>{error}</ErrorText> : null}
       <Button title="Se connecter" onPress={handleSignIn} />
-      <Text style={styles.link} onPress={() => navigation.navigate("SignUp")}>
+      <LinkText onPress={() => navigation.navigate("SignUp")}>
         Pas de compte ? S'inscrire
-      </Text>
-    </View>
+      </LinkText>
+    </Container>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    justifyContent: "center",
-  },
-  input: {
-    height: 40,
-    borderColor: "gray",
-    borderWidth: 1,
-    marginBottom: 20,
-    paddingHorizontal: 10,
-  },
-  error: {
-    color: "red",
-    marginBottom: 20,
-    textAlign: "center",
-  },
-  link: {
-    color: "blue",
-    marginTop: 20,
-    textAlign: "center",
-  },
-});
 
 export default SignInScreen;

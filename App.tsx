@@ -2,11 +2,11 @@ import React from "react";
 import { View, ActivityIndicator } from "react-native";
 import { RecoilRoot } from "recoil";
 import Sentry from "./sentrySetup";
-import { useAuthState } from "./app/authentication/hooks/useAuthState";
+import { useAuthState } from "./app/authentication";
 import RootStack from "./app/navigation/RootStack";
 
 const App: React.FC = () => {
-  const { loading } = useAuthState();
+  const { loading } = useAuthState(); // Use the useAuthState hook to check if the user is loading
 
   if (loading) {
     return (

@@ -1,50 +1,101 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
-import { updateUserPassword } from '../services/profileServices';
+import { Text, Button } from 'react-native';
+import { getAuth, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth';
+import styled from '@emotion/native';
+
+const Container = styled.View`
+  flex: 1;
+  padding: 20px;
+`;
+
+const Header = styled.Text`
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+`;
+
+const Input = styled.TextInput`
+  height: 40px;
+  border-color: gray;
+  border-width: 1px;
+  margin-bottom: 20px;
+  padding-horizontal: 10px;
+`;
+
+const ErrorText = styled.Text`
+  color: red;
+  margin-bottom: 20px;
+  text-align: center;
+`;
+
+const SuccessText = styled.Text`
+  color: green;
+  margin-bottom: 20px;
+  text-align: center;
+`;
 
 const EditPasswordScreen: React.FC = () => {
-  const [password, setPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const handleSave = async () => {
-    try {
-      await updateUserPassword(password);
-    } catch (error) {
-      console.error('Erreur de mise à jour du mot de passe :', error);
+    if (newPassword !== confirmPassword) {
+      setError("Les nouveaux mots de passe ne correspondent pas.");
+      return;
+    }
+
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (user && user.email) {
+      try {
+        const credential = EmailAuthProvider.credential(user.email, currentPassword);
+        await reauthenticateWithCredential(user, credential);
+        await updatePassword(user, newPassword);
+        setSuccess("Votre mot de passe a été mis à jour avec succès.");
+        setError(null);
+      } catch (error) {
+        console.error('Erreur de mise à jour du mot de passe :', error);
+        if (error instanceof Error) {
+          setError(error.message);
+        } else {
+          setError('Une erreur inconnue s\'est produite.');
+        }
+      }
+    } else {
+      setError("Utilisateur non authentifié.");
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Modifier le Mot de Passe</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Nouveau mot de passe"
-        value={password}
-        onChangeText={setPassword}
+    <Container>
+      <Header>Modifier le Mot de Passe</Header>
+      <Input
+        placeholder="Mot de passe actuel"
+        value={currentPassword}
+        onChangeText={setCurrentPassword}
         secureTextEntry
       />
+      <Input
+        placeholder="Nouveau mot de passe"
+        value={newPassword}
+        onChangeText={setNewPassword}
+        secureTextEntry
+      />
+      <Input
+        placeholder="Confirmer le nouveau mot de passe"
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+        secureTextEntry
+      />
+      {error && <ErrorText>{error}</ErrorText>}
+      {success && <SuccessText>{success}</SuccessText>}
       <Button title="Enregistrer" onPress={handleSave} />
-    </View>
+    </Container>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 20,
-    paddingHorizontal: 10,
-  },
-});
 
 export default EditPasswordScreen;

@@ -1,3 +1,4 @@
 export { default as SignInScreen } from './SignInScreen';
 export { default as SignUpScreen } from './SignUpScreen';
-export { default as GoogleSignIn } from './GoogleSignInScreen';
+export { default as GoogleSignInScreen } from './GoogleSignInScreen';
+export { default as VerifyEmailScreen } from './VerifyEmailScreen';
