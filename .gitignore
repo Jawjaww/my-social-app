@@ -7,7 +7,11 @@ node_modules/
 dist/
 @jawjaww__mysocialapp.jks
 credentials.json
+
+# Firebase configuration files
 google-services.json
+google-services.json.base64
+test-google-services.json
 GoogleService-Info.plist
 
 # Platform-specific files
