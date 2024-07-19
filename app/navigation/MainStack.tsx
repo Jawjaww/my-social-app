@@ -1,11 +1,8 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import MainTabNavigator from "./MainTabNavigator";
-import EditDisplayNameScreen from "../profile/screens/EditDisplayNameScreen";
-import EditEmailScreen from "../profile/screens/EditEmailScreen";
-import EditPasswordScreen from "../profile/screens/EditPasswordScreen";
+import { EditDisplayNameScreen, EditEmailScreen, EditPasswordScreen, ProfileScreen } from "../profile";
 import { MainTabParamList } from "./navigationTypes";
-import ProfileScreen from "../profile/screens/ProfileScreen";
 const Stack = createNativeStackNavigator<MainTabParamList>();
 
 function MainStack() {
