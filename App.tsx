@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { View, ActivityIndicator, Alert } from "react-native";
 import { RecoilRoot } from "recoil";
 import * as Updates from 'expo-updates';
@@ -8,22 +8,13 @@ import RootStack from "./app/navigation/RootStack";
 
 const App: React.FC = () => {
   const { loading } = useAuthState();
+  const [isUpdateAvailable, setIsUpdateAvailable] = useState(false);
 
   useEffect(() => {
     const checkForUpdates = async () => {
       try {
         const update = await Updates.checkForUpdateAsync();
-        if (update.isAvailable) {
-          await Updates.fetchUpdateAsync();
-          Alert.alert(
-            "Mise à jour disponible",
-            "Une nouvelle version de l'application a été téléchargée. Voulez-vous redémarrer l'application pour l'appliquer ?",
-            [
-              { text: "Annuler", style: "cancel" },
-              { text: "Redémarrer", onPress: () => Updates.reloadAsync() }
-            ]
-          );
-        }
+        setIsUpdateAvailable(update.isAvailable);
       } catch (error) {
         console.error("Erreur lors de la vérification des mises à jour :", error);
       }
@@ -31,6 +22,33 @@ const App: React.FC = () => {
 
     checkForUpdates();
   }, []);
+
+  const handleUpdate = async () => {
+    try {
+      await Updates.fetchUpdateAsync();
+      Alert.alert(
+        "Mise à jour disponible",
+        "Une nouvelle version de l'application a été téléchargée. L'application va redémarrer pour appliquer les changements.",
+        [{ text: "OK", onPress: () => Updates.reloadAsync() }]
+      );
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour :", error);
+      Alert.alert("Erreur", "Impossible de mettre à jour l'application. Veuillez réessayer plus tard.");
+    }
+  };
+
+  useEffect(() => {
+    if (isUpdateAvailable) {
+      Alert.alert(
+        "Mise à jour disponible",
+        "Une nouvelle version de l'application est disponible. Voulez-vous la télécharger maintenant ?",
+        [
+          { text: "Plus tard", style: "cancel" },
+          { text: "Mettre à jour", onPress: handleUpdate }
+        ]
+      );
+    }
+  }, [isUpdateAvailable]);
 
   if (loading) {
     return (
