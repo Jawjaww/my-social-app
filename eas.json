@@ -9,7 +9,8 @@
       "android": {
         "credentialsSource": "local",
         "buildType": "apk"
-      }
+      },
+      "channel": "development"
       //,
       // "ios": {
       //   "credentialsSource": "local"
@@ -19,7 +20,8 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
-      }
+      },
+      "channel": "preview"
       //,
       // "ios": {
       //   "enterpriseProvisioning": "universal"
@@ -28,7 +30,8 @@
     "production": {
       "android": {
         "buildType": "app-bundle"
-      }
+      },
+      "channel": "production"
       // ,
       // "ios": {
       //   "buildConfiguration": "Release"
@@ -37,5 +40,8 @@
   },
   "submit": {
     "production": {}
+  },
+  "update": {
+    "url": "https://exp.host/@jawjaww/mysocialapp"
   }
 }

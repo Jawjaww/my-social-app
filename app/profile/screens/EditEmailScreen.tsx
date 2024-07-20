@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button } from 'react-native';
-import { getAuth, sendEmailVerification, EmailAuthProvider, reauthenticateWithCredential, updateEmail, User } from 'firebase/auth';
+import { getAuth, verifyBeforeUpdateEmail, EmailAuthProvider, reauthenticateWithCredential, User } from 'firebase/auth';
 import styled from '@emotion/native';
 
 const Container = styled.View`
@@ -77,7 +77,7 @@ const EditEmailScreen: React.FC = () => {
       console.log('User reauthenticated successfully.');
 
       console.log('Sending email verification to new email address...');
-      await sendEmailVerification(user);
+      await verifyBeforeUpdateEmail(user, newEmail);
       console.log('Email verification sent successfully.');
       setSuccess('Un email de vérification a été envoyé à votre nouvelle adresse. Veuillez vérifier votre email.');
       setError(null);
@@ -95,10 +95,14 @@ const EditEmailScreen: React.FC = () => {
     if (user && user.emailVerified) {
       try {
         console.log('Mise à jour de l\'email dans Firebase...');
-        await updateEmail(user, newEmail);
-        console.log('Email mise à jour dans Firebase:', newEmail);
-        setSuccess('Votre email a été mise à jour avec succès.');
-        setError(null);
+        await user.reload(); // Reload user to get the latest emailVerified status
+        if (user.emailVerified) {
+          console.log('Email mise à jour dans Firebase:', newEmail);
+          setSuccess('Votre email a été mise à jour avec succès.');
+          setError(null);
+        } else {
+          setError('Veuillez vérifier votre nouvelle adresse email.');
+        }
       } catch (error) {
         console.error('Failed to update email in backend:', error);
         setError('Failed to update email in backend.');

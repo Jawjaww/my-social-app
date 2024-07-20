@@ -10,7 +10,8 @@
     "updates": {
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
-      "fallbackToCacheTimeout": 0
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/ac182c59-77c0-4856-97f4-a5235b127f65"
     },
     "splash": {
       "image": "./assets/splash.png",
@@ -23,7 +24,9 @@
       "infoPlist": {
         "CFBundleURLTypes": [
           {
-            "CFBundleURLSchemes": ["my-social-app"]
+            "CFBundleURLSchemes": [
+              "my-social-app"
+            ]
           }
         ]
       },
@@ -45,7 +48,10 @@
               "host": "email-verified"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -66,6 +72,9 @@
           "project": "my-social-app"
         }
       ]
-    ]
+    ],
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
   }
 }
