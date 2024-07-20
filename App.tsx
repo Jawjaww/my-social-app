@@ -12,6 +12,10 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const checkForUpdates = async () => {
+      if (__DEV__) {
+        console.log("Vérification des mises à jour désactivée en mode développement");
+        return;
+      }
       try {
         const update = await Updates.checkForUpdateAsync();
         setIsUpdateAvailable(update.isAvailable);
@@ -19,7 +23,7 @@ const App: React.FC = () => {
         console.error("Erreur lors de la vérification des mises à jour :", error);
       }
     };
-
+  
     checkForUpdates();
   }, []);
 

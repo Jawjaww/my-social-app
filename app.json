@@ -21,16 +21,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.jawjaww.mysocialapp",
-      "infoPlist": {
-        "CFBundleURLTypes": [
-          {
-            "CFBundleURLSchemes": [
-              "my-social-app"
-            ]
-          }
-        ]
-      },
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "associatedDomains": ["applinks:mysocialapp.expo.dev"]
     },
     "android": {
       "adaptiveIcon": {
@@ -38,14 +29,15 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.brainsmosaique.MySocialApp",
-      "googleServicesFile": "./google-services.json",
       "intentFilters": [
         {
           "action": "VIEW",
+          "autoVerify": true,
           "data": [
             {
-              "scheme": "my-social-app",
-              "host": "email-verified"
+              "scheme": "https",
+              "host": "mysocialapp.expo.dev",
+              "pathPrefix": "/email-verified"
             }
           ],
           "category": [
