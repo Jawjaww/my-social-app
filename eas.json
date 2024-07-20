@@ -40,8 +40,5 @@
   },
   "submit": {
     "production": {}
-  },
-  "update": {
-    "url": "https://exp.host/@jawjaww/mysocialapp"
   }
 }
