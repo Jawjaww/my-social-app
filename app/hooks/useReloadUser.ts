@@ -1,10 +1,9 @@
-// src/features/email-verification/hooks/useReloadUser.ts
 import { useState } from "react";
 import { getAuth } from "firebase/auth";
 import { useRecoilState } from "recoil";
-import { userState } from "../recoil/authAtoms";
+import { userState } from "../authentication/recoil/authAtoms";
 
-export const useReloadUser = () => {
+const useReloadUser = () => {
   const [reloading, setReloading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [, setUser] = useRecoilState(userState);
@@ -36,3 +35,5 @@ export const useReloadUser = () => {
 
   return [reloadUser, reloading, error] as const;
 };
+
+export default useReloadUser;

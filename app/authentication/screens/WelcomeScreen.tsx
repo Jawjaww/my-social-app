@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Button } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { RootStackParamList } from '../navigation/RootStack';
+import { RootStackParamList } from '../../navigation/navigationTypes';
 import styled from '@emotion/native';
 
 const Container = styled.View`

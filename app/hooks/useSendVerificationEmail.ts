@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { getAuth, sendEmailVerification } from "firebase/auth";
 
-export const useSendVerificationEmail = () => {
+const useSendVerificationEmail = () => {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -23,3 +23,5 @@ export const useSendVerificationEmail = () => {
 
   return [sendVerificationEmail, sending, error] as const;
 };
+
+export default useSendVerificationEmail;

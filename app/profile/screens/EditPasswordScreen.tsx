@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Text, Button } from 'react-native';
 import { getAuth, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth';
 import styled from '@emotion/native';
+import Toast from '../../components/Toast';
+import { useUpdatePassword } from '../../hooks';
 
 const Container = styled.View`
   flex: 1;
@@ -38,35 +40,25 @@ const EditPasswordScreen: React.FC = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [localError, setLocalError] = useState('');
+  const { updatePasswordInFirebase, error, success } = useUpdatePassword();
 
-  const handleSave = async () => {
+  const handleUpdatePassword = async () => {
+    setLocalError('');
     if (newPassword !== confirmPassword) {
-      setError("Les nouveaux mots de passe ne correspondent pas.");
+      setLocalError("Les mots de passe ne correspondent pas.");
+      return;
+    }
+    if (newPassword.length < 6) {
+      setLocalError("Le nouveau mot de passe doit contenir au moins 6 caractères.");
       return;
     }
 
-    const auth = getAuth();
-    const user = auth.currentUser;
-
-    if (user && user.email) {
-      try {
-        const credential = EmailAuthProvider.credential(user.email, currentPassword);
-        await reauthenticateWithCredential(user, credential);
-        await updatePassword(user, newPassword);
-        setSuccess("Votre mot de passe a été mis à jour avec succès.");
-        setError(null);
-      } catch (error) {
-        console.error('Erreur de mise à jour du mot de passe :', error);
-        if (error instanceof Error) {
-          setError(error.message);
-        } else {
-          setError('Une erreur inconnue s\'est produite.');
-        }
-      }
+    const result = await updatePasswordInFirebase(currentPassword, newPassword);
+    if (result) {
+      Toast({ message: "Mot de passe mis à jour avec succès", type: "success" });
     } else {
-      setError("Utilisateur non authentifié.");
+      Toast({ message: error || "Échec de la mise à jour du mot de passe", type: "error" });
     }
   };
 
@@ -91,9 +83,8 @@ const EditPasswordScreen: React.FC = () => {
         onChangeText={setConfirmPassword}
         secureTextEntry
       />
-      {error && <ErrorText>{error}</ErrorText>}
-      {success && <SuccessText>{success}</SuccessText>}
-      <Button title="Enregistrer" onPress={handleSave} />
+      {localError && <ErrorText>{localError}</ErrorText>}
+      <Button title="Mettre à jour" onPress={handleUpdatePassword} />
     </Container>
   );
 };

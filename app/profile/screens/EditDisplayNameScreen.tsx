@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Button } from 'react-native';
 import { useRecoilState } from 'recoil';
 import { userState } from '../../authentication/recoil/authAtoms';
-import { updateUserProfile } from '../services/profileServices';
+import { updateUserProfile } from '../../../services/profileServices';
 import styled from '@emotion/native';
 
 const Container = styled.View`

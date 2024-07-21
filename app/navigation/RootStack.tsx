@@ -1,8 +1,8 @@
-import React, { useEffect, useCallback, useMemo } from "react";
+import React, { useEffect, useCallback, useMemo, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { NavigationContainer } from "@react-navigation/native";
 import { Linking, ActivityIndicator, View, Text } from "react-native";
-import WelcomeScreen from "../screens/WelcomeScreen";
+import WelcomeScreen from "../authentication/screens/WelcomeScreen";
 import {
   SignUpScreen,
   SignInScreen,
@@ -11,53 +11,50 @@ import {
   userState,
   loadingState,
   errorState,
-  useReloadUser,
-  useAuthState
 } from "../authentication";
+import { useReloadUser, useAuth, useSendVerificationEmail } from "../hooks";
 import MainStack from "./MainStack";
 import { getAuth, applyActionCode } from "firebase/auth";
 import { useRecoilValue, useSetRecoilState } from "recoil";
+import { useNavigation } from "@react-navigation/native";
 
+// Create a native stack navigator
 const Stack = createNativeStackNavigator();
 
 const RootStack: React.FC = () => {
-  useAuthState(); // Initialize authentication state
+  useAuth(); // Initialize authentication state
+  const navigation = useNavigation();
 
   const user = useRecoilValue(userState);
   const setLoading = useSetRecoilState(loadingState);
   const setError = useSetRecoilState(errorState);
   const [reloadUser, isReloading, reloadError] = useReloadUser();
   const auth = getAuth();
+  const [success, setSuccess] = useState<string | null>(null);
 
   const handleDeepLink = useCallback(
     async (url: string | null) => {
       if (url) {
-        console.log("Handling deep link:", url);
         const parsedUrl = new URL(url);
         const mode = parsedUrl.searchParams.get("mode");
         const oobCode = parsedUrl.searchParams.get("oobCode");
-        console.log("Parsed URL:", parsedUrl);
-        console.log("Mode:", mode);
-        console.log("OOB Code:", oobCode);
+
         if (mode === "verifyEmail" && oobCode) {
           try {
-            setLoading(true); // Set loading to true while applying action code
+            setLoading(true);
             await applyActionCode(auth, oobCode);
             await reloadUser();
-            if (reloadError) {
-              throw reloadError;
-            }
+            setSuccess('Your email address has been successfully verified.');
+            navigation.navigate('PasswordConfirmation' as never);
           } catch (error) {
-            setError(
-              "Erreur lors de la vérification de l'email. Veuillez réessayer."
-            );
+            setError("Error verifying email. Please try again.");
           } finally {
             setLoading(false);
           }
         }
       }
     },
-    [reloadUser, setLoading, setError]
+    [reloadUser, setLoading, setError, navigation]
   );
 
   useEffect(() => {
@@ -96,6 +93,11 @@ const RootStack: React.FC = () => {
 
   return (
     <NavigationContainer>
+      {success && (
+        <View style={{ padding: 10, backgroundColor: 'lightgreen' }}>
+          <Text>{success}</Text>
+        </View>
+      )}
       <Stack.Navigator>
         {navigationState === "auth" && (
           <>

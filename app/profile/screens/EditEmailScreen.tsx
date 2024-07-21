@@ -1,8 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button } from 'react-native';
-import { getAuth, verifyBeforeUpdateEmail, EmailAuthProvider, reauthenticateWithCredential, User } from 'firebase/auth';
+import React, { useState } from 'react';
+import { Button } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import styled from '@emotion/native';
+import useUpdateEmail from '../../hooks/useUpdateEmail';
+import Toast from '../../components/Toast';
+import { MainTabParamList } from '../../navigation/navigationTypes';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
+// Styled components for screen layout
 const Container = styled.View`
   flex: 1;
   padding: 20px;
@@ -25,115 +30,83 @@ const Input = styled.TextInput`
 
 const ErrorText = styled.Text`
   color: red;
-  margin-bottom: 20px;
-  text-align: center;
+  margin-bottom: 10px;
 `;
 
-const SuccessText = styled.Text`
-  color: green;
-  margin-bottom: 20px;
-  text-align: center;
-`;
+// Type for screen props using native stack
+type Props = NativeStackScreenProps<MainTabParamList, 'EditEmail'>;
 
-const EditEmailScreen: React.FC = () => {
+/**
+ * EditEmailScreen component
+ * Allows users to update their email address
+ */
+const EditEmailScreen: React.FC<Props> = ({ navigation }) => {
   const [newEmail, setNewEmail] = useState('');
   const [confirmEmail, setConfirmEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [localError, setLocalError] = useState('');
+  const { updateEmailInFirebase, error, success } = useUpdateEmail();
 
-  useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user && user.emailVerified && newEmail) {
-        // Check if the email is verified and update the email in Firebase
-        updateEmailInFirebase(user);
-      }
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, [newEmail]);
-
-  const handleSendVerificationEmail = async () => {
-    if (newEmail !== confirmEmail) {
-      setError("Les emails ne correspondent pas");
-      return;
-    }
-
-    const auth = getAuth();
-    const user = auth.currentUser;
-
-    if (!user || !user.email) {
-      setError("Utilisateur non authentifié ou email absent.");
-      return;
-    }
-
-    try {
-      console.log('Reauthenticating user...');
-      const credential = EmailAuthProvider.credential(user.email, password);
-      await reauthenticateWithCredential(user, credential);
-      console.log('User reauthenticated successfully.');
-
-      console.log('Sending email verification to new email address...');
-      await verifyBeforeUpdateEmail(user, newEmail);
-      console.log('Email verification sent successfully.');
-      setSuccess('Un email de vérification a été envoyé à votre nouvelle adresse. Veuillez vérifier votre email.');
-      setError(null);
-    } catch (error) {
-      console.error('Error sending verification email:', error);
-      if (error instanceof Error) {
-        setError(error.message);
-      } else {
-        setError('Une erreur inconnue s\'est produite.');
-      }
-    }
+  // Validate email format
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   };
 
-  const updateEmailInFirebase = async (user: User) => {
-    if (user && user.emailVerified) {
-      try {
-        console.log('Mise à jour de l\'email dans Firebase...');
-        await user.reload(); // Reload user to get the latest emailVerified status
-        if (user.emailVerified) {
-          console.log('Email mise à jour dans Firebase:', newEmail);
-          setSuccess('Votre email a été mise à jour avec succès.');
-          setError(null);
-        } else {
-          setError('Veuillez vérifier votre nouvelle adresse email.');
-        }
-      } catch (error) {
-        console.error('Failed to update email in backend:', error);
-        setError('Failed to update email in backend.');
-      }
+  const handleUpdateEmail = async () => {
+    // Reset local error
+    setLocalError('');
+
+    // Validate inputs
+    if (newEmail !== confirmEmail) {
+      setLocalError("Emails do not match.");
+      return;
+    }
+    if (!isValidEmail(newEmail)) {
+      setLocalError("Invalid email format.");
+      return;
+    }
+    if (!password) {
+      setLocalError("Password is required.");
+      return;
+    }
+
+    const result = await updateEmailInFirebase(newEmail, password);
+    if (result) {
+      navigation.navigate('VerifyNewEmail', { email: newEmail });
+    } else {
+      // Display error from useUpdateEmail hook
+      Toast({ message: error || "Failed to update email", type: "error" });
     }
   };
 
   return (
     <Container>
-      <Header>Modifier l'Email</Header>
+      <Header>Edit Email</Header>
       <Input
-        placeholder="Nouvel email"
+        placeholder="New email"
         value={newEmail}
         onChangeText={setNewEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
       />
       <Input
-        placeholder="Confirmer nouvel email"
+        placeholder="Confirm new email"
         value={confirmEmail}
         onChangeText={setConfirmEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
       />
       <Input
-        placeholder="Mot de passe actuel"
-        secureTextEntry={true}
+        placeholder="Current password"
         value={password}
         onChangeText={setPassword}
+        secureTextEntry
       />
-      {error && <ErrorText>{error}</ErrorText>}
-      {success && <SuccessText>{success}</SuccessText>}
-      <Button title="Envoyer l'email de vérification" onPress={handleSendVerificationEmail} />
+      {localError && <ErrorText>{localError}</ErrorText>}
+      <Button title="Update Email" onPress={handleUpdateEmail} />
     </Container>
   );
-}
+};
 
 export default EditEmailScreen;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text, Button } from 'react-native';
-import { useSendVerificationEmail } from '../hooks/useSendVerificationEmail';
-import { useReloadUser } from '../hooks/useReloadUser';
+import { useSendVerificationEmail } from '../../hooks';
+import { useReloadUser } from '../../hooks';
 import { useRecoilState } from 'recoil';
 import { userState } from '../recoil/authAtoms';
 import styled from '@emotion/native';

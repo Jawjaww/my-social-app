@@ -4,7 +4,7 @@ import * as ImagePicker from 'react-native-image-picker';
 import FastImage from 'react-native-fast-image';
 import { useRecoilState } from 'recoil';
 import { userState } from '../../authentication/recoil/authAtoms';
-import { uploadProfilePicture } from '../services/profileServices';
+import { uploadProfilePicture } from '../../../services/profileServices';
 import styled from '@emotion/native';
 
 const Container = styled.View`

@@ -2,28 +2,31 @@ import React, { useEffect, useState } from "react";
 import { View, ActivityIndicator, Alert } from "react-native";
 import { RecoilRoot } from "recoil";
 import * as Updates from 'expo-updates';
-import Sentry from "./sentrySetup";
-import { useAuthState } from "./app/authentication";
+import * as Sentry from "@sentry/react-native";
+import { useAuth } from "./app/hooks";
 import RootStack from "./app/navigation/RootStack";
+import { enableScreens } from 'react-native-screens';
+
+// Enable native screens for performance optimization
+enableScreens();
 
 const App: React.FC = () => {
-  const { loading } = useAuthState();
+  const { loading } = useAuth();
   const [isUpdateAvailable, setIsUpdateAvailable] = useState(false);
 
   useEffect(() => {
     const checkForUpdates = async () => {
       if (__DEV__) {
-        console.log("Vérification des mises à jour désactivée en mode développement");
+        console.log("Update check disabled in development mode");
         return;
       }
       try {
         const update = await Updates.checkForUpdateAsync();
         setIsUpdateAvailable(update.isAvailable);
       } catch (error) {
-        console.error("Erreur lors de la vérification des mises à jour :", error);
+        console.error("Error checking for updates:", error);
       }
     };
-  
     checkForUpdates();
   }, []);
 
@@ -31,24 +34,24 @@ const App: React.FC = () => {
     try {
       await Updates.fetchUpdateAsync();
       Alert.alert(
-        "Mise à jour disponible",
-        "Une nouvelle version de l'application a été téléchargée. L'application va redémarrer pour appliquer les changements.",
+        "Update available",
+        "A new version of the app has been downloaded. The app will restart to apply the changes.",
         [{ text: "OK", onPress: () => Updates.reloadAsync() }]
       );
     } catch (error) {
-      console.error("Erreur lors de la mise à jour :", error);
-      Alert.alert("Erreur", "Impossible de mettre à jour l'application. Veuillez réessayer plus tard.");
+      console.error("Error updating app:", error);
+      Alert.alert("Error", "Unable to update the app. Please try again later.");
     }
   };
 
   useEffect(() => {
     if (isUpdateAvailable) {
       Alert.alert(
-        "Mise à jour disponible",
-        "Une nouvelle version de l'application est disponible. Voulez-vous la télécharger maintenant ?",
+        "Update available",
+        "A new version of the app is available. Would you like to download it now?",
         [
-          { text: "Plus tard", style: "cancel" },
-          { text: "Mettre à jour", onPress: handleUpdate }
+          { text: "Later", style: "cancel" },
+          { text: "Update", onPress: handleUpdate }
         ]
       );
     }

@@ -1,11 +1,11 @@
 import { useEffect, useCallback } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { useSetRecoilState, useRecoilValue } from "recoil";
-import { userState, loadingState } from "../recoil/authAtoms";
-import { auth } from "../../../services/firebaseConfig";
-import { AppUser } from "../authTypes";
+import { userState, loadingState } from "../authentication/recoil/authAtoms";
+import { auth } from "../../services/firebaseConfig";
+import { AppUser } from "../authentication/authTypes";
 
-export const useAuthState = () => {
+const useAuthState = () => {
   const setUser = useSetRecoilState(userState);
   const setLoading = useSetRecoilState(loadingState);
 
@@ -38,3 +38,5 @@ export const useAuthState = () => {
 
   return { user, loading };
 };
+
+export default useAuthState;
