@@ -1,4 +1,5 @@
-/// <reference path="./env.d.ts" />
+
+import "./env.d.ts"
 import * as Sentry from "@sentry/react-native";
 import { SENTRY_DSN } from "@env";
 

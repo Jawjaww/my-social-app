@@ -1,73 +1,38 @@
-import React, { useEffect, useCallback, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { NavigationContainer } from "@react-navigation/native";
-import { Linking, ActivityIndicator, View, Text } from "react-native";
+import { ActivityIndicator, View, Text } from "react-native";
 import WelcomeScreen from "../authentication/screens/WelcomeScreen";
 import {
   SignUpScreen,
   SignInScreen,
+  ForgotPasswordScreen,
   GoogleSignInScreen,
   VerifyEmailScreen,
-  userState,
-  loadingState,
-  errorState,
+  ResetPasswordScreen,
 } from "../authentication";
-import { useReloadUser, useAuth, useSendVerificationEmail } from "../hooks";
+import { useAuthManagement } from "../hooks"; 
 import MainStack from "./MainStack";
-import { getAuth, applyActionCode } from "firebase/auth";
 import { useRecoilValue, useSetRecoilState } from "recoil";
-import { useNavigation } from "@react-navigation/native";
+import { loadingState, errorState } from "../authentication/recoil/authAtoms";
+import { useTranslation } from 'react-i18next'; 
+import useDeepLinking from '../hooks/useDeepLinking';
 
-// Create a native stack navigator
 const Stack = createNativeStackNavigator();
 
 const RootStack: React.FC = () => {
-  useAuth(); // Initialize authentication state
-  const navigation = useNavigation();
-
-  const user = useRecoilValue(userState);
+  const { user, setError, reloadUser } = useAuthManagement(); 
   const setLoading = useSetRecoilState(loadingState);
-  const setError = useSetRecoilState(errorState);
-  const [reloadUser, isReloading, reloadError] = useReloadUser();
-  const auth = getAuth();
   const [success, setSuccess] = useState<string | null>(null);
+  const { t } = useTranslation(); 
 
-  const handleDeepLink = useCallback(
-    async (url: string | null) => {
-      if (url) {
-        const parsedUrl = new URL(url);
-        const mode = parsedUrl.searchParams.get("mode");
-        const oobCode = parsedUrl.searchParams.get("oobCode");
-
-        if (mode === "verifyEmail" && oobCode) {
-          try {
-            setLoading(true);
-            await applyActionCode(auth, oobCode);
-            await reloadUser();
-            setSuccess('Your email address has been successfully verified.');
-            navigation.navigate('PasswordConfirmation' as never);
-          } catch (error) {
-            setError("Error verifying email. Please try again.");
-          } finally {
-            setLoading(false);
-          }
-        }
-      }
+  useDeepLinking(
+    (message) => {
+      setSuccess(message);
     },
-    [reloadUser, setLoading, setError, navigation]
+    (error) => {
+      setError(error);
+    }
   );
-
-  useEffect(() => {
-    Linking.getInitialURL().then((url) => {
-      console.log("Initial URL:", url);
-      handleDeepLink(url);
-    });
-    const listener = Linking.addEventListener("url", (event: { url: string }) => {
-      console.log("Received URL:", event.url);
-      handleDeepLink(event.url);
-    });
-    return () => listener.remove();
-  }, [handleDeepLink]);
 
   const navigationState = useMemo(() => {
     if (!user) return "auth";
@@ -75,7 +40,7 @@ const RootStack: React.FC = () => {
     return "main";
   }, [user]);
 
-  if (useRecoilValue(loadingState) || isReloading) {
+  if (useRecoilValue(loadingState)) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />
@@ -92,7 +57,7 @@ const RootStack: React.FC = () => {
   }
 
   return (
-    <NavigationContainer>
+    <>
       {success && (
         <View style={{ padding: 10, backgroundColor: 'lightgreen' }}>
           <Text>{success}</Text>
@@ -105,6 +70,8 @@ const RootStack: React.FC = () => {
             <Stack.Screen name="SignIn" component={SignInScreen} />
             <Stack.Screen name="SignUp" component={SignUpScreen} />
             <Stack.Screen name="GoogleSignIn" component={GoogleSignInScreen} />
+            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+            <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
           </>
         )}
         {navigationState === "verify" && (
@@ -118,7 +85,7 @@ const RootStack: React.FC = () => {
           />
         )}
       </Stack.Navigator>
-    </NavigationContainer>
+    </>
   );
 };
 

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button } from 'react-native';
+import { Button } from 'react-native';
 import { useRecoilState } from 'recoil';
 import { userState } from '../../authentication/recoil/authAtoms';
-import { updateUserProfile } from '../../../services/profileServices';
+import { updateUserProfile } from '../services/profileServices';
 import styled from '@emotion/native';
+import { handleError } from '../../../services/errorService';
+import { useTranslation } from 'react-i18next';
 
 const Container = styled.View`
   flex: 1;
@@ -12,7 +14,6 @@ const Container = styled.View`
 
 const Header = styled.Text`
   font-size: 24px;
-  font-weight: bold;
   margin-bottom: 20px;
 `;
 
@@ -24,30 +25,44 @@ const Input = styled.TextInput`
   padding-horizontal: 10px;
 `;
 
+const ErrorText = styled.Text`
+  color: red;
+  margin-bottom: 10px;
+`;
+
 const EditDisplayNameScreen: React.FC = () => {
-  const [user, setUser] = useRecoilState(userState);
   const [displayName, setDisplayName] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [user] = useRecoilState(userState);
+  const { t } = useTranslation(); // Initialize useTranslation
 
   const handleSave = async () => {
+    if (!displayName) {
+      setError(t("editDisplayName.error.empty")); 
+      return;
+    }
+  
     try {
-      await updateUserProfile(displayName, user?.photoURL || null);
       if (user) {
-        setUser({ ...user, displayName: displayName });
+        await updateUserProfile(displayName, user.photoURL); 
+      } else {
+        setError(t("editDisplayName.error.notAuthenticated"));  
       }
     } catch (error) {
-      console.error('Erreur de mise à jour du pseudo :', error);
+      setError(t(handleError(error))); 
     }
   };
 
   return (
     <Container>
-      <Header>Modifier le Pseudo</Header>
+      <Header>{t('editDisplayName.title')}</Header>
       <Input
-        placeholder="Nouveau pseudo"
+        placeholder={t('editDisplayName.placeholder')}
         value={displayName}
         onChangeText={setDisplayName}
       />
-      <Button title="Enregistrer" onPress={handleSave} />
+      {error && <ErrorText>{error}</ErrorText>}
+      <Button title={t('editDisplayName.saveButton')} onPress={handleSave} />
     </Container>
   );
 };

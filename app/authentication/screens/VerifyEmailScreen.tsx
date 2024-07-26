@@ -1,10 +1,11 @@
 import React from 'react';
-import { Text, Button } from 'react-native';
-import { useSendVerificationEmail } from '../../hooks';
-import { useReloadUser } from '../../hooks';
+import { Button } from 'react-native';
+import { useAuthManagement } from '../../hooks';
 import { useRecoilState } from 'recoil';
 import { userState } from '../recoil/authAtoms';
 import styled from '@emotion/native';
+import { useTranslation } from 'react-i18next';
+import { AppUser } from '../authTypes';
 
 const Container = styled.View`
   flex: 1;
@@ -29,21 +30,26 @@ const ErrorText = styled.Text`
 `;
 
 const VerifyEmailScreen: React.FC = () => {
-  const [user, setUser] = useRecoilState(userState);
-  const [sendVerificationEmail, sending, sendError] = useSendVerificationEmail();
-  const [reloadUser, reloading, reloadError] = useReloadUser();
+  const { t } = useTranslation();
+  const [user, setUser] = useRecoilState<AppUser | null>(userState);
+  const { sendVerificationEmail, reloadUser, error: reloadError } = useAuthManagement();
+
+  const handleSendVerificationEmail = () => {
+    if (user) {
+      sendVerificationEmail(user as any); // Cast to any to bypass type checking
+    }
+  };
 
   return (
     <Container>
-      <Heading>Verify your email address</Heading>
+      <Heading>{t('verifyEmail.title')}</Heading>
       <Instructions>
-        We have sent a verification email to {user?.email}. Please check your email and click on the verification link.
+        {t('verifyEmail.instructions', { email: user?.email })}
       </Instructions>
-      {sendError && <ErrorText>Error sending verification email: {sendError.message}</ErrorText>}
-      {reloadError && <ErrorText>Error reloading user: {reloadError.message}</ErrorText>}
-      <Button title="Resend Verification Email" onPress={sendVerificationEmail} disabled={sending} />
-      <Button title="I've Verified My Email" onPress={reloadUser} disabled={reloading} />
-      <Button title="Cancel" onPress={() => setUser(null)} />
+      {reloadError && <ErrorText>{t('auth.error.emailNotVerified')}</ErrorText>}
+      <Button title={t('verifyEmail.resendButton')} onPress={handleSendVerificationEmail} />
+      <Button title={t('verifyEmail.verifiedButton')} onPress={reloadUser} />
+      <Button title={t('common.cancel')} onPress={() => setUser(null)} />
     </Container>
   );
 };

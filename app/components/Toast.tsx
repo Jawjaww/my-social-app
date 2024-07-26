@@ -1,5 +1,4 @@
 import React from 'react';
-import { View, Text } from 'react-native';
 import styled from '@emotion/native';
 
 const ToastContainer = styled.View<{ type: 'success' | 'error' }>`

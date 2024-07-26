@@ -1,0 +1,17 @@
+{
+    "editEmail": {
+      "title": "Edit Email",
+      "newEmail": "New email",
+      "confirmEmail": "Confirm new email",
+      "currentPassword": "Current password",
+      "updateButton": "Update Email",
+      "success": "Email updated successfully. Please check your new email address.",
+      "error": {
+        "required": "All fields are required.",
+        "mismatch": "Emails do not match.",
+        "invalid": "The email address is invalid.",
+        "update": "Failed to update email. Please try again."
+      }
+    }
+  }
+  

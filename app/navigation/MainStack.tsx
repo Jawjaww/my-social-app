@@ -1,7 +1,7 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import MainTabNavigator from "./MainTabNavigator";
-import { EditDisplayNameScreen, EditEmailScreen, EditPasswordScreen, ProfileScreen } from "../profile";
+import { EditDisplayNameScreen, EditEmailScreen, EditPasswordScreen, ProfileScreen, VerifyNewEmailScreen } from "../profile";
 import { MainTabParamList } from "./navigationTypes";
 
 // Create a native stack navigator for main screens
@@ -19,6 +19,7 @@ function MainStack() {
       <Stack.Screen name="EditDisplayName" component={EditDisplayNameScreen} />
       <Stack.Screen name="EditEmail" component={EditEmailScreen} />
       <Stack.Screen name="EditPassword" component={EditPasswordScreen} />
+      <Stack.Screen name="VerifyNewEmail" component={VerifyNewEmailScreen} />
     </Stack.Navigator>
   );
 }

@@ -1,0 +1,115 @@
+{
+  "loading": "Chargement...",
+  "error": {
+    "generic": "Une erreur s'est produite."
+  },
+  "common": {
+    "cancel": "Annuler"
+  },
+  "welcome": {
+    "title": "Bienvenue sur ChatApp!",
+    "intro": "Découvrez les meilleures façons de rester connecté avec vos amis et votre famille.",
+    "signIn": "Se connecter",
+    "signUp": "S'inscrire",
+    "googleSignIn": "Se connecter avec Google",
+    "footer": "Besoin d'aide? Visitez notre section support."
+  },
+  "googleSignIn": {
+    "button": "Se connecter avec Google",
+    "loggedInAs": "Connecté en tant que :"
+  },
+  "signIn": {
+    "emailPlaceholder": "Email",
+    "passwordPlaceholder": "Mot de passe",
+    "button": "Se connecter",
+    "forgotPassword": "Mot de passe oublié ?"
+  },
+  "resetPassword": {
+    "title": "Réinitialiser le mot de passe",
+    "emailPlaceholder": "Entrez votre adresse e-mail",
+    "button": "Envoyer le lien de réinitialisation",
+    "success": "Un e-mail de réinitialisation a été envoyé.",
+    "error": {
+      "emailRequired": "L'adresse email est requise.",
+      "notAuthenticated": "Veuillez entrer une adresse e-mail valide."
+    }
+  },
+  "editEmail": {
+    "title": "Modifier l'Email",
+    "newEmail": "Nouvel email",
+    "confirmEmail": "Confirmer le nouvel email",
+    "currentPassword": "Mot de passe actuel",
+    "updateButton": "Mettre à jour l'email",
+    "success": "Email mis à jour avec succès. Veuillez vérifier votre nouvelle adresse email.",
+    "error": {
+      "required": "Tous les champs sont obligatoires.",
+      "mismatch": "Les emails ne correspondent pas.",
+      "invalid": "L'adresse email n'est pas valide.",
+      "update": "Échec de la mise à jour de l'email. Veuillez réessayer."
+    }
+  },
+  "profile": {
+    "title": "Profil",
+    "editDisplayName": "Modifier le Pseudo",
+    "editEmail": "Modifier l'Email",
+    "editPassword": "Modifier le Mot de Passe",
+    "notificationSettings": "Préférences de Notification",
+    "signOut": "Se déconnecter",
+    "errors": {
+      "notAuthenticated": "Utilisateur non authentifié.",
+      "emailRequired": "L'email est requis pour la réauthentification."
+    },
+    "success": {
+      "emailUpdated": "Email mis à jour avec succès.",
+      "passwordUpdated": "Mot de passe mis à jour avec succès."
+    }
+  },
+  "notification": {
+    "title": "Préférences de Notification",
+    "success": {
+      "saved": "Paramètres de notification enregistrés."
+    },
+    "error": {
+      "saveFailed": "Échec de l'enregistrement des paramètres."
+    },
+    "pushNotifications": "Notifications Push",
+    "emailNotifications": "Notifications par Email",
+    "saveButton": "Enregistrer les paramètres"
+  },
+  "verifyEmail": {
+    "title": "Vérifiez votre adresse email",
+    "instructions": "Nous avons envoyé un email de vérification à {{email}}. Veuillez vérifier votre email et cliquer sur le lien de vérification.",
+    "resendButton": "Renvoyer l'email de vérification",
+    "verifiedButton": "J'ai vérifié mon email"
+  },
+  "verifyNewEmail": {
+    "message": "Un email de vérification a été envoyé à {{email}}. Veuillez vérifier votre boîte de réception et cliquer sur le lien de vérification pour compléter le changement d'email.",
+    "backButton": "Retour au Profil"
+  },
+  "auth": {
+    "error": {
+      "signIn": "Erreur lors de la connexion.",
+      "signOut": "Erreur lors de la déconnexion.",
+      "signUp": "Erreur lors de la création du compte.",
+      "resetPassword": "Erreur lors de la réinitialisation du mot de passe.",
+      "emailRequired": "L'email est requis.",
+      "passwordRequired": "Le mot de passe est requis.",
+      "passwordMismatch": "Les mots de passe ne correspondent pas.",
+      "emailNotVerified": "Veuillez vérifier votre email avant de vous connecter."
+    },
+    "success": {
+      "signIn": "Connexion réussie.",
+      "signOut": "Déconnexion réussie.",
+      "signUp": "Compte créé avec succès. Un email de vérification a été envoyé.",
+      "resetPassword": "Email de réinitialisation envoyé.",
+      "verificationEmailSent": "Un email de vérification a été envoyé à votre adresse.",
+      "emailVerified": "Email vérifié avec succès."
+    }
+  },
+  "signUp": {
+    "title": "S'inscrire",
+    "error": {
+      "passwordMismatch": "Les mots de passe ne correspondent pas."
+    }
+  }
+}

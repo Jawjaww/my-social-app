@@ -8,14 +8,16 @@ import { GOOGLE_CLIENT_ID } from '@env';
 import * as WebBrowser from 'expo-web-browser';
 import { useRecoilState } from 'recoil';
 import { userState } from '../recoil/authAtoms';
+import { useTranslation } from 'react-i18next';
 
 WebBrowser.maybeCompleteAuthSession();
 
 const GoogleSignIn: React.FC = () => {
   const [user, setUser] = useRecoilState(userState);
+  const { t } = useTranslation();
 
   const redirectUri = makeRedirectUri({
-    native: Platform.OS === 'ios' ? 'mysocialapp://redirect' : 'http://localhost:8081',
+    native: 'https://mysocialapp.expo.dev', // Use the Expo URL for redirection
   });
 
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
@@ -43,10 +45,8 @@ const GoogleSignIn: React.FC = () => {
   }, [setUser]);
 
   useEffect(() => {
-    console.log('Response:', response);
     if (response?.type === 'success') {
       const { id_token } = response.params;
-      console.log('ID Token:', id_token);
       loginToFirebase(id_token);
     } else if (response?.type === 'error') {
       console.error('Error during Google Sign-In:', response.error);
@@ -56,17 +56,16 @@ const GoogleSignIn: React.FC = () => {
   return (
     <View style={styles.container}>
       <Button
-        title="Sign in with Google"
+        title={t('googleSignIn.button')}
         disabled={!request}
         onPress={() => {
-          console.log('Prompting Google Sign-In');
           promptAsync();
         }}
       />
       {user ? (
         <>
           <Button title="Logout" onPress={() => auth.signOut().then(() => setUser(null))} />
-          <Text>Logged in as:</Text>
+          <Text>{t('googleSignIn.loggedInAs')}</Text>
           <Text>{user.displayName}</Text>
           <Text>{user.email}</Text>
         </>

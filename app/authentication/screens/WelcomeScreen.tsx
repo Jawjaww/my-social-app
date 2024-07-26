@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, Button } from 'react-native';
+import { Button } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation/navigationTypes';
 import styled from '@emotion/native';
+import { useTranslation } from 'react-i18next';
 
 const Container = styled.View`
   flex: 1;
@@ -36,32 +37,29 @@ const FooterText = styled.Text`
 
 const WelcomeScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { t } = useTranslation();
 
   return (
     <Container>
-      <Header>Bienvenue sur ChatApp!</Header>
-      <IntroText>
-        Découvrez les meilleures façons de rester connecté avec vos amis et votre famille.
-      </IntroText>
+      <Header>{t('welcome.title')}</Header>
+      <IntroText>{t('welcome.intro')}</IntroText>
 
       <ButtonContainer>
         <Button
-          title="Se connecter"
+          title={t('welcome.signIn')}
           onPress={() => navigation.navigate('SignIn')}
         />
         <Button
-          title="S'inscrire"
+          title={t('welcome.signUp')}
           onPress={() => navigation.navigate('SignUp')}
         />
         <Button
-          title="Se connecter avec Google"
+          title={t('welcome.googleSignIn')}
           onPress={() => navigation.navigate('GoogleSignIn')}
         />
       </ButtonContainer>
 
-      <FooterText>
-        Besoin d'aide? Visitez notre section support.
-      </FooterText>
+      <FooterText>{t('welcome.footer')}</FooterText>
     </Container>
   );
 };

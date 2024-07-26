@@ -1,17 +1,14 @@
 import React, { useState } from 'react';
-import { Button } from 'react-native';
+import { Button, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import styled from '@emotion/native';
-import useUpdateEmail from '../../hooks/useUpdateEmail';
+import useProfileManagement from '../../hooks/useProfileManagement';
 import Toast from '../../components/Toast';
-import { MainTabParamList } from '../../navigation/navigationTypes';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-// Styled components for screen layout
 const Container = styled.View`
   flex: 1;
   padding: 20px;
-  justify-content: center;
 `;
 
 const Header = styled.Text`
@@ -33,78 +30,78 @@ const ErrorText = styled.Text`
   margin-bottom: 10px;
 `;
 
-// Type for screen props using native stack
-type Props = NativeStackScreenProps<MainTabParamList, 'EditEmail'>;
-
-/**
- * EditEmailScreen component
- * Allows users to update their email address
- */
-const EditEmailScreen: React.FC<Props> = ({ navigation }) => {
+const EditEmailScreen: React.FC = () => {
   const [newEmail, setNewEmail] = useState('');
   const [confirmEmail, setConfirmEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [localError, setLocalError] = useState('');
-  const { updateEmailInFirebase, error, success } = useUpdateEmail();
+  const [isLoading, setIsLoading] = useState(false);
+  const navigation = useNavigation();
+  const { updateEmailInProfile, error } = useProfileManagement();
+  const { t } = useTranslation();
 
-  // Validate email format
-  const isValidEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+  const validateInputs = () => {
+    if (!newEmail || !confirmEmail || !password) {
+      return t('editEmail.error.required');
+    }
+    if (newEmail !== confirmEmail) {
+      return t('editEmail.error.mismatch');
+    }
+    if (!/\S+@\S+\.\S+/.test(newEmail)) {
+      return t('editEmail.error.invalid');
+    }
+    return null;
   };
 
   const handleUpdateEmail = async () => {
-    // Reset local error
-    setLocalError('');
-
-    // Validate inputs
-    if (newEmail !== confirmEmail) {
-      setLocalError("Emails do not match.");
-      return;
-    }
-    if (!isValidEmail(newEmail)) {
-      setLocalError("Invalid email format.");
-      return;
-    }
-    if (!password) {
-      setLocalError("Password is required.");
+    const validationError = validateInputs();
+    if (validationError) {
+      Toast({ message: validationError, type: 'error' });
       return;
     }
 
-    const result = await updateEmailInFirebase(newEmail, password);
+    setIsLoading(true);
+    const result = await updateEmailInProfile(newEmail, password);
+    setIsLoading(false);
+
     if (result) {
-      navigation.navigate('VerifyNewEmail', { email: newEmail });
+      Toast({ message: t('editEmail.success'), type: 'success' });
+      navigation.goBack();
     } else {
-      // Display error from useUpdateEmail hook
-      Toast({ message: error || "Failed to update email", type: "error" });
+      Toast({ message: error || t('editEmail.error.update'), type: 'error' });
     }
   };
 
   return (
     <Container>
-      <Header>Edit Email</Header>
+      <Header>{t('editEmail.title')}</Header>
       <Input
-        placeholder="New email"
+        placeholder={t('editEmail.newEmail')}
         value={newEmail}
         onChangeText={setNewEmail}
         keyboardType="email-address"
         autoCapitalize="none"
       />
       <Input
-        placeholder="Confirm new email"
+        placeholder={t('editEmail.confirmEmail')}
         value={confirmEmail}
         onChangeText={setConfirmEmail}
         keyboardType="email-address"
         autoCapitalize="none"
       />
       <Input
-        placeholder="Current password"
+        placeholder={t('editEmail.currentPassword')}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
-      {localError && <ErrorText>{localError}</ErrorText>}
-      <Button title="Update Email" onPress={handleUpdateEmail} />
+      {isLoading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (
+        <Button 
+          title={t('editEmail.updateButton')} 
+          onPress={handleUpdateEmail} 
+        />
+      )}
     </Container>
   );
 };

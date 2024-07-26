@@ -1,4 +1,5 @@
+
 declare module 'firebase/auth/react-native' {
-    import { Persistence } from 'firebase/auth';
-    export function getReactNativePersistence(storage: any): Persistence;
+    import AsyncStorage from '@react-native-async-storage/async-storage';
+    export function getReactNativePersistence(storage: typeof AsyncStorage): any;
 }

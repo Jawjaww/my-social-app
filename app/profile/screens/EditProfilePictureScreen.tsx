@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, Button } from 'react-native';
+import { Button } from 'react-native';
 import * as ImagePicker from 'react-native-image-picker';
 import FastImage from 'react-native-fast-image';
 import { useRecoilState } from 'recoil';
 import { userState } from '../../authentication/recoil/authAtoms';
-import { uploadProfilePicture } from '../../../services/profileServices';
+import { uploadProfilePicture } from '../services/profileServices';
 import styled from '@emotion/native';
+import { useTranslation } from 'react-i18next';
 
 const Container = styled.View`
   flex: 1;
@@ -28,6 +29,7 @@ const StyledImage = styled(FastImage)`
 const EditProfilePictureScreen: React.FC = () => {
   const [user, setUser] = useRecoilState(userState);
   const [image, setImage] = useState<string | null>(null);
+  const { t } = useTranslation(); 
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibrary({
@@ -53,14 +55,14 @@ const EditProfilePictureScreen: React.FC = () => {
         }
       }
     } catch (error) {
-      console.error('Erreur de mise à jour de la photo de profil :', error);
+      console.error(t("editProfilePicture.error.upload"), error); 
     }
   };
 
   return (
     <Container>
-      <Header>Modifier la Photo de Profil</Header>
-      <Button title="Choisir une image" onPress={pickImage} />
+      <Header>{t('editProfilePicture.title')}</Header>
+      <Button title={t('editProfilePicture.chooseImage')} onPress={pickImage} />
       {image && (
         <StyledImage
           source={{
@@ -70,7 +72,7 @@ const EditProfilePictureScreen: React.FC = () => {
           resizeMode={FastImage.resizeMode.cover}
         />
       )}
-      <Button title="Enregistrer" onPress={handleSave} />
+      <Button title={t('editProfilePicture.saveButton')} onPress={handleSave} />
     </Container>
   );
 };

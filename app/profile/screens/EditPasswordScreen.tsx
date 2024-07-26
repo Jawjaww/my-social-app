@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { Text, Button } from 'react-native';
-import { getAuth, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth';
+import { Button } from 'react-native';
+import { useRecoilState } from 'recoil';
+import { userState } from '../../authentication/recoil/authAtoms';
+import { getAuth } from 'firebase/auth';
+import { handleError } from '../../../services/errorService';
 import styled from '@emotion/native';
+import useProfileManagement from '../../hooks/useProfileManagement';
 import Toast from '../../components/Toast';
-import { useUpdatePassword } from '../../hooks';
+import { useTranslation } from 'react-i18next';
 
 const Container = styled.View`
   flex: 1;
@@ -26,65 +30,74 @@ const Input = styled.TextInput`
 
 const ErrorText = styled.Text`
   color: red;
-  margin-bottom: 20px;
-  text-align: center;
-`;
-
-const SuccessText = styled.Text`
-  color: green;
-  margin-bottom: 20px;
-  text-align: center;
+  margin-bottom: 10px;
 `;
 
 const EditPasswordScreen: React.FC = () => {
+  const { t } = useTranslation();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [localError, setLocalError] = useState('');
-  const { updatePasswordInFirebase, error, success } = useUpdatePassword();
+  const [error, setError] = useState<string | null>(null);
+  const [user] = useRecoilState(userState);
+  const { updatePasswordInProfile } = useProfileManagement();
 
   const handleUpdatePassword = async () => {
-    setLocalError('');
+    setError(null);
     if (newPassword !== confirmPassword) {
-      setLocalError("Les mots de passe ne correspondent pas.");
+      setError(t("editPassword.error.mismatch"));
       return;
     }
     if (newPassword.length < 6) {
-      setLocalError("Le nouveau mot de passe doit contenir au moins 6 caractères.");
+      setError(t("editPassword.error.short"));
       return;
     }
 
-    const result = await updatePasswordInFirebase(currentPassword, newPassword);
-    if (result) {
-      Toast({ message: "Mot de passe mis à jour avec succès", type: "success" });
-    } else {
-      Toast({ message: error || "Échec de la mise à jour du mot de passe", type: "error" });
+    const auth = getAuth();
+    if (!user) {
+      setError(t("editPassword.error.notAuthenticated"));
+      return;
+    }
+
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      setError(t("editPassword.error.notAuthenticated"));
+      return;
+    }
+
+    try {
+      const result = await updatePasswordInProfile(currentPassword, newPassword);
+      if (result) {
+        Toast({ message: t("editPassword.success"), type: 'success' });
+      }
+    } catch (error) {
+      setError(t(handleError(error)));
     }
   };
 
   return (
     <Container>
-      <Header>Modifier le Mot de Passe</Header>
+      <Header>{t('editPassword.title')}</Header>
       <Input
-        placeholder="Mot de passe actuel"
+        placeholder={t('editPassword.currentPassword')}
         value={currentPassword}
         onChangeText={setCurrentPassword}
         secureTextEntry
       />
       <Input
-        placeholder="Nouveau mot de passe"
+        placeholder={t('editPassword.newPassword')}
         value={newPassword}
         onChangeText={setNewPassword}
         secureTextEntry
       />
       <Input
-        placeholder="Confirmer le nouveau mot de passe"
+        placeholder={t('editPassword.confirmPassword')}
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         secureTextEntry
       />
-      {localError && <ErrorText>{localError}</ErrorText>}
-      <Button title="Mettre à jour" onPress={handleUpdatePassword} />
+      {error && <ErrorText>{error}</ErrorText>}
+      <Button title={t('editPassword.updateButton')} onPress={handleUpdatePassword} />
     </Container>
   );
 };

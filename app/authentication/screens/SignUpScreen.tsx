@@ -1,23 +1,15 @@
-import React, { useState } from "react";
-import { Text, Button } from "react-native";
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  UserCredential,
-  AuthError,
-  sendEmailVerification,
-} from "firebase/auth";
-import { app } from "../../../services/firebaseConfig";
+import React, { useState } from 'react';
+import { Button } from 'react-native';
+import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
+import { handleError } from '../../../services/errorService';
 import styled from '@emotion/native';
-
-interface SignUpScreenProps {
-  navigation: any;
-}
+import { app } from '../../../services/firebaseConfig';
+import { SignUpScreenProps } from '../../navigation/navigationTypes';
+import { useTranslation } from 'react-i18next';
 
 const Container = styled.View`
   flex: 1;
   padding: 20px;
-  justify-content: center;
 `;
 
 const Input = styled.TextInput`
@@ -30,64 +22,38 @@ const Input = styled.TextInput`
 
 const ErrorText = styled.Text`
   color: red;
-  margin-bottom: 20px;
-  text-align: center;
+  margin-bottom: 10px;
 `;
 
 function SignUpScreen({ navigation }: SignUpScreenProps) {
+  const { t } = useTranslation();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
   const auth = getAuth(app);
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     if (password !== confirmPassword) {
-      setError("Les mots de passe ne correspondent pas.");
+      setError(t("auth.error.passwordMismatch"));
       return;
     }
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredentials: UserCredential) => {
-        console.log("Compte créé :", userCredentials.user?.email);
-        sendEmailVerification(userCredentials.user)
-          .then(() => {
-            console.log("Email de vérification envoyé.");
-            navigation.navigate("SignIn");
-          })
-          .catch((error: AuthError) => {
-            console.error(
-              "Erreur lors de l'envoi de l'email de vérification :",
-              error
-            );
-            setError(error.message);
-          });
-      })
-      .catch((error: AuthError) => {
-        setError(error.message);
-      });
+    try {
+      const userCredentials = await createUserWithEmailAndPassword(auth, email, password);
+      await sendEmailVerification(userCredentials.user);
+      navigation.navigate("SignIn");
+    } catch (error) {
+      setError(handleError(error));
+    }
   };
 
   return (
     <Container>
-      <Input
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-      />
-      <Input
-        placeholder="Mot de passe"
-        value={password}
-        secureTextEntry
-        onChangeText={setPassword}
-      />
-      <Input
-        placeholder="Confirmer le mot de passe"
-        value={confirmPassword}
-        secureTextEntry
-        onChangeText={setConfirmPassword}
-      />
+      <Input placeholder={t("editEmail.newEmail")} value={email} onChangeText={setEmail} />
+      <Input placeholder={t("editEmail.currentPassword")} value={password} secureTextEntry onChangeText={setPassword} />
+      <Input placeholder={t("editEmail.confirmEmail")} value={confirmPassword} secureTextEntry onChangeText={setConfirmPassword} />
       {error ? <ErrorText>{error}</ErrorText> : null}
-      <Button title="S'inscrire" onPress={handleSignUp} />
+      <Button title={t("signUp.title")} onPress={handleSignUp} />
     </Container>
   );
 }

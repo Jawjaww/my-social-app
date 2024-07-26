@@ -5,6 +5,9 @@ export type RootStackParamList = {
   GoogleSignIn: undefined;
   VerifyEmail: undefined;
   Main: undefined;
+  VerifyNewEmail: { email: string }; 
+  ResetPassword: { token: string };
+  ForgotPassword: undefined;
 };
 
 export type MainTabParamList = {
@@ -24,4 +27,20 @@ export type MainTabParamList = {
   VerifyNewEmail: { email: string }; 
   NotificationSettings: undefined;
 
+};
+
+export type MainStackParamList = {
+  Main: undefined;
+  Profile: undefined;
+  EditDisplayName: undefined;
+  EditEmail: undefined;
+  EditPassword: undefined;
+};
+
+export type SignInScreenProps = {
+  navigation: any; 
+};
+
+export type SignUpScreenProps = {
+  navigation: any; 
 };
