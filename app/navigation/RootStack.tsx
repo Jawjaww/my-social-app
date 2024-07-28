@@ -1,44 +1,24 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { ActivityIndicator, View, Text } from "react-native";
-import WelcomeScreen from "../authentication/screens/WelcomeScreen";
-import {
-  SignUpScreen,
-  SignInScreen,
-  ForgotPasswordScreen,
-  GoogleSignInScreen,
-  VerifyEmailScreen,
-  ResetPasswordScreen,
-} from "../authentication";
-import { useAuthManagement } from "../hooks"; 
-import MainStack from "./MainStack";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { loadingState, errorState } from "../authentication/recoil/authAtoms";
-import { useTranslation } from 'react-i18next'; 
-import useDeepLinking from '../hooks/useDeepLinking';
+import { useTranslation } from "react-i18next";
+import useDeepLinking from "../hooks/useDeepLinking";
+import { useAuthState } from "../hooks";
+import { RootStackParamList } from "./navigationTypes";
+import RootStackNavigator from "./RootStackNavigator";
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const RootStack: React.FC = () => {
-  const { user, setError, reloadUser } = useAuthManagement(); 
+  const { user } = useAuthState();
   const setLoading = useSetRecoilState(loadingState);
   const [success, setSuccess] = useState<string | null>(null);
-  const { t } = useTranslation(); 
+  const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
-  useDeepLinking(
-    (message) => {
-      setSuccess(message);
-    },
-    (error) => {
-      setError(error);
-    }
-  );
-
-  const navigationState = useMemo(() => {
-    if (!user) return "auth";
-    if (!user.emailVerified) return "verify";
-    return "main";
-  }, [user]);
+  useDeepLinking();
 
   if (useRecoilValue(loadingState)) {
     return (
@@ -59,31 +39,12 @@ const RootStack: React.FC = () => {
   return (
     <>
       {success && (
-        <View style={{ padding: 10, backgroundColor: 'lightgreen' }}>
+        <View style={{ padding: 10, backgroundColor: "lightgreen" }}>
           <Text>{success}</Text>
         </View>
       )}
-      <Stack.Navigator>
-        {navigationState === "auth" && (
-          <>
-            <Stack.Screen name="Welcome" component={WelcomeScreen} />
-            <Stack.Screen name="SignIn" component={SignInScreen} />
-            <Stack.Screen name="SignUp" component={SignUpScreen} />
-            <Stack.Screen name="GoogleSignIn" component={GoogleSignInScreen} />
-            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-            <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
-          </>
-        )}
-        {navigationState === "verify" && (
-          <Stack.Screen name="VerifyEmail" component={VerifyEmailScreen} />
-        )}
-        {navigationState === "main" && (
-          <Stack.Screen
-            name="Main"
-            component={MainStack}
-            options={{ headerShown: false }}
-          />
-        )}
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Root" component={RootStackNavigator} />
       </Stack.Navigator>
     </>
   );

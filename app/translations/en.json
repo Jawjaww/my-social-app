@@ -1,17 +1,132 @@
 {
-    "editEmail": {
-      "title": "Edit Email",
-      "newEmail": "New email",
-      "confirmEmail": "Confirm new email",
-      "currentPassword": "Current password",
-      "updateButton": "Update Email",
-      "success": "Email updated successfully. Please check your new email address.",
-      "error": {
-        "required": "All fields are required.",
-        "mismatch": "Emails do not match.",
-        "invalid": "The email address is invalid.",
-        "update": "Failed to update email. Please try again."
-      }
+  "loading": "Loading...",
+  "error": {
+    "generic": "An error occurred."
+  },
+  "common": {
+    "cancel": "Cancel",
+    "back": "Back",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit"
+  },
+  "welcome": {
+    "title": "Welcome to ChatApp!",
+    "intro": "Discover the best ways to stay connected with your friends and family.",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "googleSignIn": "Sign in with Google",
+    "footer": "Need help? Visit our support section."
+  },
+  "googleSignIn": {
+    "button": "Sign in with Google",
+    "loggedInAs": "Logged in as:"
+  },
+  "signIn": {
+    "title": "Sign In",
+    "emailPlaceholder": "Email address",
+    "passwordPlaceholder": "Password",
+    "button": "Sign In",
+    "forgotPassword": "Forgot Password?",
+    "noAccount": "Don't have an account?",
+    "createAccount": "Create an account"
+  },
+  "signUp": {
+    "title": "Sign Up",
+    "emailPlaceholder": "Email address",
+    "passwordPlaceholder": "Password",
+    "confirmPasswordPlaceholder": "Confirm password",
+    "button": "Sign Up",
+    "alreadyHaveAccount": "Already have an account?",
+    "signIn": "Sign In",
+    "error": {
+      "passwordMismatch": "Passwords do not match."
     }
+  },
+  "forgotPassword": {
+    "title": "Forgot Password",
+    "emailPlaceholder": "Email address",
+    "button": "Reset Password",
+    "backToSignIn": "Back to Sign In"
+  },
+  "resetPassword": {
+    "title": "Reset Password",
+    "newPasswordTitle": "New Password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "submitButton": "Reset Password",
+    "successUpdate": "Password updated successfully",
+    "error": {
+      "shortPassword": "Password must be at least 6 characters long",
+      "mismatch": "Passwords do not match"
+    }
+  },
+  "verifyEmail": {
+    "title": "Verify Your Email",
+    "instructions": "A verification email has been sent to {email}. Please check your inbox and click on the link to verify your email address.",
+    "resendButton": "Resend Verification Email",
+    "verifiedButton": "I've Verified My Email",
+    "success": "Email verified successfully",
+    "error": {
+      "noCode": "No verification code provided",
+      "noUser": "No user logged in"
+    },
+    "resendSuccess": "Verification email resent successfully",
+    "resendError": "Error resending verification email",
+    "linkExpired": "Verification link has expired"
+  },
+  "editEmail": {
+    "title": "Edit Email",
+    "newEmail": "New email",
+    "confirmEmail": "Confirm new email",
+    "currentPassword": "Current password",
+    "updateButton": "Update Email",
+    "success": "Email updated successfully. Please check your new email address.",
+    "error": {
+      "required": "All fields are required.",
+      "mismatch": "Emails do not match.",
+      "invalid": "The email address is invalid.",
+      "update": "Failed to update email. Please try again."
+    }
+  },
+  "auth": {
+    "error": {
+      "emailRequired": "Email is required.",
+      "passwordRequired": "Password is required.",
+      "passwordMismatch": "Passwords do not match.",
+      "emailNotVerified": "Please verify your email before signing in."
+    },
+    "success": {
+      "signIn": "Sign in successful.",
+      "signOut": "Sign out successful.",
+      "signUp": "Account created successfully. A verification email has been sent.",
+      "resetPassword": "Password reset email sent.",
+      "verificationEmailSent": "A verification email has been sent to your address.",
+      "emailVerified": "Email verified successfully."
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "editProfile": "Edit Profile",
+    "changePassword": "Change Password",
+    "changeEmail": "Change Email",
+    "logout": "Logout"
+  },
+  "editProfile": {
+    "title": "Edit Profile",
+    "name": "Name",
+    "bio": "Bio",
+    "saveButton": "Save Changes"
+  },
+  "changePassword": {
+    "title": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmNewPassword": "Confirm New Password",
+    "updateButton": "Update Password",
+    "success": "Password updated successfully"
+  },
+  "notification": {
+    "title": "Notification Preferences"
   }
-  
+}

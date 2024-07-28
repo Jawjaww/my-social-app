@@ -4,3 +4,4 @@ export { default as GoogleSignInScreen } from './GoogleSignInScreen';
 export { default as VerifyEmailScreen } from './VerifyEmailScreen';
 export { default as ResetPasswordScreen } from './ResetPasswordScreen';
 export { default as ForgotPasswordScreen } from './ForgotPasswordScreen';
+export { default as WelcomeScreen } from './WelcomeScreen';

@@ -2,9 +2,12 @@ import React from 'react';
 import { View, Text, FlatList } from 'react-native';
 import { useRecoilValue } from 'recoil';
 import { groupsSelector } from '../recoil/groupAtoms';
+import { RootStackParamList } from '../../navigation/navigationTypes';
+import { useNavigation } from '@react-navigation/native';
 
 function GroupsScreen() {
   const groups = useRecoilValue(groupsSelector);
+  const navigation = useNavigation<RootStackParamList>();
 
   return (
     <View style={{ flex: 1 }}>

@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, Button, ActivityIndicator } from 'react-native';
-import useResetPassword from '../../hooks/useResetPassword';
-import styled from '@emotion/native';
 import { useTranslation } from 'react-i18next';
+import styled from '@emotion/native';
+import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
+import { handleError } from '../../../services/errorService';
+import Toast from 'react-native-toast-message';
+import { useNavigation } from '@react-navigation/native';
 
 const Container = styled(View)`
   flex: 1;
@@ -20,15 +23,42 @@ const ErrorText = styled(Text)`
   margin-bottom: 10px;
 `;
 
-const RequestResetPasswordScreen: React.FC = () => {
+const ForgotPasswordScreen: React.FC = () => {
   const { t } = useTranslation();
-  const { email, setEmail, error, isLoading, handleResetPassword } = useResetPassword();
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const navigation = useNavigation();
+
+  const handleResetPassword = async () => {
+    if (!email) {
+      setError(t('forgotPassword.error.emailRequired'));
+      return;
+    }
+
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      const auth = getAuth();
+      await sendPasswordResetEmail(auth, email);
+      Toast.show({
+        text1: t('forgotPassword.success'),
+        type: 'success',
+      });
+      navigation.goBack();
+    } catch (error) {
+      setError(t(handleError(error)));
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Container>
-      <Header>{t('resetPassword.title')}</Header>
+      <Header>{t('forgotPassword.title')}</Header>
       <TextInput
-        placeholder={t('resetPassword.emailPlaceholder')}
+        placeholder={t('forgotPassword.emailPlaceholder')}
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -43,7 +73,7 @@ const RequestResetPasswordScreen: React.FC = () => {
       />
       {error && <ErrorText>{error}</ErrorText>}
       <Button
-        title={t('resetPassword.button')}
+        title={t('forgotPassword.button')}
         onPress={handleResetPassword}
         disabled={isLoading}
       />
@@ -52,4 +82,4 @@ const RequestResetPasswordScreen: React.FC = () => {
   );
 };
 
-export default RequestResetPasswordScreen;
+export default ForgotPasswordScreen;

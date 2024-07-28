@@ -1,10 +1,11 @@
 import React from 'react';
 import { Button } from 'react-native';
-import { useAuthManagement } from '../../hooks';
 import { useRecoilState } from 'recoil';
 import { userState } from '../../authentication/recoil/authAtoms';
 import styled from '@emotion/native';
 import { useTranslation } from 'react-i18next';
+import useAuthActions from '../../hooks/useAuthActions';
+import useReloadUser from '../../hooks/useReloadUser';
 
 const Container = styled.View`
   flex: 1;
@@ -31,7 +32,8 @@ const ErrorText = styled.Text`
 const VerifyNewEmailScreen: React.FC = () => {
   const { t } = useTranslation();
   const [user, setUser] = useRecoilState(userState);
-  const { sendVerificationEmail, reloadUser, error: reloadError } = useAuthManagement();
+  const { sendVerificationEmail } = useAuthActions();
+  const { reloadUser } = useReloadUser();
 
   const handleSendVerificationEmail = () => {
     if (user) {
@@ -45,7 +47,6 @@ const VerifyNewEmailScreen: React.FC = () => {
       <Instructions>
         {t('verifyEmail.instructions', { email: user?.email })}
       </Instructions>
-      {reloadError && <ErrorText>{t('auth.error.emailNotVerified')}</ErrorText>}
       <Button title={t('verifyEmail.resendButton')} onPress={handleSendVerificationEmail} />
       <Button title={t('verifyEmail.verifiedButton')} onPress={reloadUser} />
       <Button title={t('common.cancel')} onPress={() => setUser(null)} />

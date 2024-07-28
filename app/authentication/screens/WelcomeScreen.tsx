@@ -1,9 +1,9 @@
-import React from 'react';
-import { Button } from 'react-native';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { RootStackParamList } from '../../navigation/navigationTypes';
-import styled from '@emotion/native';
-import { useTranslation } from 'react-i18next';
+import React from "react";
+import { Button } from "react-native";
+import { useNavigation, NavigationProp } from "@react-navigation/native";
+import { RootStackParamList } from "../../navigation/navigationTypes";
+import styled from "@emotion/native";
+import { useTranslation } from "react-i18next";
 
 const Container = styled.View`
   flex: 1;
@@ -36,30 +36,29 @@ const FooterText = styled.Text`
 `;
 
 const WelcomeScreen = () => {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { t } = useTranslation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();  const { t } = useTranslation();
 
   return (
     <Container>
-      <Header>{t('welcome.title')}</Header>
-      <IntroText>{t('welcome.intro')}</IntroText>
+      <Header>{t("welcome.title")}</Header>
+      <IntroText>{t("welcome.intro")}</IntroText>
 
       <ButtonContainer>
         <Button
-          title={t('welcome.signIn')}
+          title={t("welcome.signIn")}
           onPress={() => navigation.navigate('SignIn')}
         />
         <Button
-          title={t('welcome.signUp')}
+          title={t("welcome.signUp")}
           onPress={() => navigation.navigate('SignUp')}
         />
         <Button
-          title={t('welcome.googleSignIn')}
+          title={t("welcome.googleSignIn")}
           onPress={() => navigation.navigate('GoogleSignIn')}
         />
       </ButtonContainer>
 
-      <FooterText>{t('welcome.footer')}</FooterText>
+      <FooterText>{t("welcome.footer")}</FooterText>
     </Container>
   );
 };

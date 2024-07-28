@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
 import { Button } from 'react-native';
-import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
-import { handleError } from '../../../services/errorService';
 import styled from '@emotion/native';
-import { app } from '../../../services/firebaseConfig';
-import { SignUpScreenProps } from '../../navigation/navigationTypes';
 import { useTranslation } from 'react-i18next';
+import useAuthActions from '../../hooks/useAuthActions';
 
 const Container = styled.View`
   flex: 1;
@@ -25,26 +22,21 @@ const ErrorText = styled.Text`
   margin-bottom: 10px;
 `;
 
-function SignUpScreen({ navigation }: SignUpScreenProps) {
+const SignUpScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { t } = useTranslation();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
-  const auth = getAuth(app);
+  const { createUser } = useAuthActions();
 
   const handleSignUp = async () => {
     if (password !== confirmPassword) {
       setError(t("auth.error.passwordMismatch"));
       return;
     }
-    try {
-      const userCredentials = await createUserWithEmailAndPassword(auth, email, password);
-      await sendEmailVerification(userCredentials.user);
-      navigation.navigate("SignIn");
-    } catch (error) {
-      setError(handleError(error));
-    }
+    await createUser(email, password);
+    navigation.navigate('Auth', { screen: 'VerifyEmail' });
   };
 
   return (
@@ -56,6 +48,6 @@ function SignUpScreen({ navigation }: SignUpScreenProps) {
       <Button title={t("signUp.title")} onPress={handleSignUp} />
     </Container>
   );
-}
+};
 
 export default SignUpScreen;

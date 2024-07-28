@@ -4,28 +4,34 @@ import {
   getFocusedRouteNameFromRoute,
   useNavigation,
   useRoute,
+  NavigationProp,
 } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import HomeScreen from "../screens/HomeScreen";
 import { ProfileScreen } from "../profile";
 import MessagesScreen from "../messages/screens/MessagesScreen";
-import { MainTabParamList } from "./navigationTypes";
+import { MainTabParamList, RootStackParamList } from "./navigationTypes";
 import { useRecoilValue } from "recoil";
 import { userState } from "../authentication/recoil/authAtoms";
 import VerifyEmailScreen from "../authentication/screens/VerifyEmailScreen";
+import Toast from "react-native-toast-message";
+import { useTranslation } from "react-i18next";
 
-// create the bottom tab navigator 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 function MainTabNavigator() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute();
   const user = useRecoilValue(userState);
+  const { t } = useTranslation();
 
-  // if the user is not verified, navigate to the verify email screen
+  // if the user is not verified, toast a message for the user to verify their email
   useEffect(() => {
     if (user && !user.emailVerified) {
-      navigation.navigate("VerifyEmail" as never);
+      Toast.show({
+        type: 'info',
+        text1: t("verifyEmail.instructions"),
+      });
     }
   }, [user, navigation]);
 
@@ -45,7 +51,6 @@ function MainTabNavigator() {
 
   return (
     <Tab.Navigator
-
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap;

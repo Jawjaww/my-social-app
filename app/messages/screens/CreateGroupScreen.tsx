@@ -5,7 +5,7 @@ import { newGroupNameState, newGroupDescriptionState, newGroupImageState, groups
 import { addDoc, collection } from 'firebase/firestore';
 import { db } from '../../../services/firebaseConfig';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../navigation/RootStack';
+import { RootStackParamList } from '../../navigation/navigationTypes';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CreateGroup'>;
 

@@ -1,4 +1,10 @@
 export { default as useAuth } from './useAuthState';
 export { default as useNotification } from './useNotifications';
-export { default as useAuthManagement } from './useAuthManagement';
 export { default as useProfileManagement } from './useProfileManagement';
+export { default as useAuthActions } from './useAuthActions';
+export { default as useReloadUser } from './useReloadUser';
+export { default as useVerifyEmail } from './useVerifyEmail';
+export { default as useAuthState } from './useAuthState';
+export { default as useAuthService } from './useAuthServices';
+export { default as useDeepLinking } from './useDeepLinking';
+export { default as useResetPassword } from './useResetPassword';

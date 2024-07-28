@@ -1,45 +1,53 @@
 import { useEffect } from 'react';
 import { Linking } from 'react-native';
-import { applyActionCode, sendPasswordResetEmail } from 'firebase/auth';
-import { auth } from '../../services/firebaseConfig';
-import useAuthManagement from './useAuthManagement';
+import { useNavigation } from '@react-navigation/native';
+import { RootStackParamList } from '../navigation/navigationTypes';
+import { NavigationProp } from '@react-navigation/native';
 
-const useDeepLinking = (onSuccess: (message: string) => void, onError: (message: string) => void) => {
-  const { reloadUser } = useAuthManagement();
+const useDeepLinking = () => {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   useEffect(() => {
-    const handleDeepLink = async (url: string) => {
+    const handleDeepLink = (event: { url: string }) => {
+      const { url } = event;
+      console.log('Deep link handled:', url);
+    
       const parsedUrl = new URL(url);
-      const mode = parsedUrl.searchParams.get("mode");
-      const oobCode = parsedUrl.searchParams.get("oobCode");
-
-      if (mode === "verifyEmail" && oobCode) {
-        try {
-          await applyActionCode(auth, oobCode);
-          await reloadUser(); // Reload user after email verification
-          onSuccess('Email verified successfully');
-        } catch (error) {
-          onError('Error verifying email');
+      const routeName = parsedUrl.pathname.split('/')[1];
+      const oobCode = parsedUrl.searchParams.get('oobCode');
+      const mode = parsedUrl.searchParams.get('mode');
+    
+      console.log('Parsed URL:', { routeName, oobCode, mode });
+    
+      if (oobCode) {
+        switch (mode) {
+          case 'resetPassword':
+            navigation.navigate('ResetPassword', { oobCode });
+            break;
+          case 'verifyEmail':
+            navigation.navigate('VerifyEmail', { oobCode });
+            break;
+          default:
+            console.log('Unknown mode:', mode);
         }
-      }
-      if (mode === "resetPassword" && oobCode) {
-        try {
-          // Logique pour réinitialiser le mot de passe
-          await sendPasswordResetEmail(auth, oobCode);
-          await reloadUser(); // Reload user after email verification
-          onSuccess('Password reset successfully');
-        } catch (error) {
-          onError('Error resetting password');
-        }
+      } else {
+        console.log('No oobCode found in the URL');
       }
     };
 
-    const unsubscribe = Linking.addEventListener('url', ({ url }) => handleDeepLink(url));
+    const subscription = Linking.addEventListener('url', handleDeepLink);
+
+    // Verify if there is an initial link
+    Linking.getInitialURL().then((url) => {
+      if (url) {
+        handleDeepLink({ url });
+      }
+    });
 
     return () => {
-      unsubscribe.remove();
+      subscription.remove();
     };
-  }, [onSuccess, onError]);
+  }, [navigation]);
 };
 
 export default useDeepLinking;

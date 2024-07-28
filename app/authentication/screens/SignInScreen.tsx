@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { Button, Text } from 'react-native';
-import { useTranslation } from 'react-i18next';
-import styled from '@emotion/native';
-import useAuthManagement from '../../hooks/useAuthManagement';
-import { useNavigation } from '@react-navigation/native';
-import { NavigationProp } from '@react-navigation/native';
-import { RootStackParamList } from '../../navigation/navigationTypes';
+import React, { useState } from "react";
+import { Button, Text } from "react-native";
+import { useTranslation } from "react-i18next";
+import styled from "@emotion/native";
+import useAuthActions from "../../hooks/useAuthActions";
+import { useNavigation } from "@react-navigation/native";
+import { NavigationProp } from "@react-navigation/native";
+import { RootStackParamList } from "../../navigation/navigationTypes";
 
 const Container = styled.View`
   flex: 1;
@@ -26,7 +26,7 @@ const ErrorText = styled.Text`
 `;
 
 function SignInScreen() {
-  const { signIn, error } = useAuthManagement();
+  const { signIn, error } = useAuthActions();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const { t } = useTranslation();
@@ -39,21 +39,21 @@ function SignInScreen() {
   return (
     <Container>
       <Input
-        placeholder={t('signIn.emailPlaceholder')}
+        placeholder={t("signIn.emailPlaceholder")}
         value={email}
         onChangeText={setEmail}
       />
       <Input
-        placeholder={t('signIn.passwordPlaceholder')}
+        placeholder={t("signIn.passwordPlaceholder")}
         value={password}
         secureTextEntry
         onChangeText={setPassword}
       />
       {error && <ErrorText>{error}</ErrorText>}
-      <Button title={t('signIn.button')} onPress={handleSignIn} />
+      <Button title={t("signIn.button")} onPress={handleSignIn} />
       <Button
-        title={t('signIn.forgotPassword')}
-        onPress={() => navigation.navigate('ForgotPassword')}
+        title={t("signIn.forgotPassword")}
+        onPress={() => navigation.navigate('Auth', { screen: 'ForgotPassword' } as never)}
       />
     </Container>
   );

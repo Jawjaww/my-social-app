@@ -1,39 +1,57 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, ActivityIndicator } from 'react-native';
-import { getAuth, confirmPasswordReset } from 'firebase/auth';
-import styled from '@emotion/native';
+import { Button, ActivityIndicator } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { getAuth, confirmPasswordReset } from 'firebase/auth';
 import Toast from 'react-native-toast-message';
-import { handleError } from '../../../services/errorService';
+import styled from '@emotion/native';
+import { handleError } from '../../../services/errorService'; 
+import useAuthService from '../useAuthServices'; 
+import { NavigationProp, useNavigation } from '@react-navigation/native'; 
+import { RootStackParamList } from '../../navigation/navigationTypes'; 
 
-const Container = styled(View)`
+const Container = styled.View`
   flex: 1;
   padding: 20px;
-  justify-content: center;
 `;
 
-const Header = styled(Text)`
+const Header = styled.Text`
   font-size: 24px;
   margin-bottom: 20px;
-  text-align: center;
 `;
 
-const ErrorText = styled(Text)`
+const TextInput = styled.TextInput`
+  height: 40px;
+  border-color: gray;
+  border-width: 1px;
+  margin-bottom: 20px;
+  padding-horizontal: 10px;
+`;
+
+const ErrorText = styled.Text`
   color: red;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
 `;
 
 const ResetPasswordScreen: React.FC<{ route: any }> = ({ route }) => {
   const { t } = useTranslation();
-  const { oobCode } = route.params; // Get the code from the URL
+  const { oobCode } = route.params;
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>(); 
+  const authService = useAuthService();
+  
 
   const handleResetPassword = async () => {
     setError(null);
     setIsLoading(true);
+
+    if (newPassword.length < 6) {
+      setError(t("resetPassword.error.shortPassword"));
+      setIsLoading(false);
+      return;
+    }
 
     if (newPassword !== confirmPassword) {
       setError(t("resetPassword.error.mismatch"));
@@ -48,6 +66,7 @@ const ResetPasswordScreen: React.FC<{ route: any }> = ({ route }) => {
         text1: t('resetPassword.successUpdate'), 
         type: 'success',
       });
+      navigation.navigate('SignIn'); 
     } catch (error) {
       setError(t(handleError(error)));
     } finally {
@@ -63,26 +82,12 @@ const ResetPasswordScreen: React.FC<{ route: any }> = ({ route }) => {
         value={newPassword}
         onChangeText={setNewPassword}
         secureTextEntry
-        style={{
-          height: 40,
-          borderColor: 'gray',
-          borderWidth: 1,
-          marginBottom: 20,
-          paddingHorizontal: 10,
-        }}
       />
       <TextInput
         placeholder={t('resetPassword.confirmPassword')}
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         secureTextEntry
-        style={{
-          height: 40,
-          borderColor: 'gray',
-          borderWidth: 1,
-          marginBottom: 20,
-          paddingHorizontal: 10,
-        }}
       />
       {error && <ErrorText>{error}</ErrorText>}
       <Button

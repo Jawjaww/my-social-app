@@ -4,7 +4,11 @@
     "generic": "Une erreur s'est produite."
   },
   "common": {
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "back": "Retour",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier"
   },
   "welcome": {
     "title": "Bienvenue sur ChatApp!",
@@ -19,97 +23,122 @@
     "loggedInAs": "Connecté en tant que :"
   },
   "signIn": {
-    "emailPlaceholder": "Email",
+    "title": "Connexion",
+    "emailPlaceholder": "Adresse e-mail",
     "passwordPlaceholder": "Mot de passe",
     "button": "Se connecter",
-    "forgotPassword": "Mot de passe oublié ?"
+    "forgotPassword": "Mot de passe oublié ?",
+    "noAccount": "Pas encore de compte ?",
+    "createAccount": "Créer un compte"
+  },
+  "signUp": {
+    "title": "S'inscrire",
+    "emailPlaceholder": "Adresse e-mail",
+    "passwordPlaceholder": "Mot de passe",
+    "confirmPasswordPlaceholder": "Confirmer le mot de passe",
+    "button": "S'inscrire",
+    "alreadyHaveAccount": "Vous avez déjà un compte ?",
+    "signIn": "Se connecter",
+    "error": {
+      "passwordMismatch": "Les mots de passe ne correspondent pas."
+    }
+  },
+  "forgotPassword": {
+    "title": "Mot de passe oublié",
+    "emailPlaceholder": "Adresse e-mail",
+    "button": "Réinitialiser le mot de passe",
+    "success": "Un e-mail de réinitialisation a été envoyé à votre adresse",
+    "error": {
+      "emailRequired": "L'adresse e-mail est requise"
+    }
   },
   "resetPassword": {
     "title": "Réinitialiser le mot de passe",
-    "emailPlaceholder": "Entrez votre adresse e-mail",
-    "button": "Envoyer le lien de réinitialisation",
-    "success": "Un e-mail de réinitialisation a été envoyé.",
+    "newPasswordTitle": "Nouveau mot de passe",
+    "newPassword": "Nouveau mot de passe",
+    "confirmPassword": "Confirmer le nouveau mot de passe",
+    "submitButton": "Réinitialiser le mot de passe",
+    "successUpdate": "Mot de passe mis à jour avec succès",
     "error": {
-      "emailRequired": "L'adresse email est requise.",
-      "notAuthenticated": "Veuillez entrer une adresse e-mail valide."
+      "shortPassword": "Le mot de passe doit contenir au moins 6 caractères",
+      "mismatch": "Les mots de passe ne correspondent pas"
     }
-  },
-  "editEmail": {
-    "title": "Modifier l'Email",
-    "newEmail": "Nouvel email",
-    "confirmEmail": "Confirmer le nouvel email",
-    "currentPassword": "Mot de passe actuel",
-    "updateButton": "Mettre à jour l'email",
-    "success": "Email mis à jour avec succès. Veuillez vérifier votre nouvelle adresse email.",
-    "error": {
-      "required": "Tous les champs sont obligatoires.",
-      "mismatch": "Les emails ne correspondent pas.",
-      "invalid": "L'adresse email n'est pas valide.",
-      "update": "Échec de la mise à jour de l'email. Veuillez réessayer."
-    }
-  },
-  "profile": {
-    "title": "Profil",
-    "editDisplayName": "Modifier le Pseudo",
-    "editEmail": "Modifier l'Email",
-    "editPassword": "Modifier le Mot de Passe",
-    "notificationSettings": "Préférences de Notification",
-    "signOut": "Se déconnecter",
-    "errors": {
-      "notAuthenticated": "Utilisateur non authentifié.",
-      "emailRequired": "L'email est requis pour la réauthentification."
-    },
-    "success": {
-      "emailUpdated": "Email mis à jour avec succès.",
-      "passwordUpdated": "Mot de passe mis à jour avec succès."
-    }
-  },
-  "notification": {
-    "title": "Préférences de Notification",
-    "success": {
-      "saved": "Paramètres de notification enregistrés."
-    },
-    "error": {
-      "saveFailed": "Échec de l'enregistrement des paramètres."
-    },
-    "pushNotifications": "Notifications Push",
-    "emailNotifications": "Notifications par Email",
-    "saveButton": "Enregistrer les paramètres"
   },
   "verifyEmail": {
-    "title": "Vérifiez votre adresse email",
-    "instructions": "Nous avons envoyé un email de vérification à {{email}}. Veuillez vérifier votre email et cliquer sur le lien de vérification.",
-    "resendButton": "Renvoyer l'email de vérification",
-    "verifiedButton": "J'ai vérifié mon email"
+    "title": "Vérification de l'email",
+    "error": {
+      "noCode": "Veuillez vérifier votre e-mail pour obtenir le lien de vérification.",
+      "linkExpired": "Le lien de vérification a expiré.",
+      "resendError": "Erreur lors de l'envoi de l'e-mail de vérification. Veuillez réessayer.",
+      "noUser": "Utilisateur non trouvé."
+    },
+    "resendSuccess": "Un nouvel e-mail de vérification a été envoyé.",
+    "resendButton": "Renvoyer l'e-mail de vérification",
+    "success": "Votre e-mail a été vérifié avec succès."
   },
-  "verifyNewEmail": {
-    "message": "Un email de vérification a été envoyé à {{email}}. Veuillez vérifier votre boîte de réception et cliquer sur le lien de vérification pour compléter le changement d'email.",
-    "backButton": "Retour au Profil"
+  "errors": {
+    "auth/invalid-action-code": "Le code de vérification est invalide ou expiré.",
+    "auth/user-not-found": "Utilisateur non trouvé.",
+    "auth/network-request-failed": "Échec de la requête réseau. Veuillez réessayer."
+  },
+  "editEmail": {
+    "title": "Modifier l'adresse e-mail",
+    "newEmail": "Nouvelle adresse e-mail",
+    "confirmEmail": "Confirmer la nouvelle adresse e-mail",
+    "currentPassword": "Mot de passe actuel",
+    "updateButton": "Mettre à jour l'adresse e-mail",
+    "success": "Adresse e-mail mise à jour avec succès. Veuillez vérifier votre nouvelle adresse e-mail.",
+    "error": {
+      "required": "Tous les champs sont obligatoires.",
+      "mismatch": "Les adresses e-mail ne correspondent pas.",
+      "invalid": "L'adresse e-mail n'est pas valide.",
+      "update": "Échec de la mise à jour de l'adresse e-mail. Veuillez réessayer."
+    }
   },
   "auth": {
     "error": {
-      "signIn": "Erreur lors de la connexion.",
-      "signOut": "Erreur lors de la déconnexion.",
-      "signUp": "Erreur lors de la création du compte.",
-      "resetPassword": "Erreur lors de la réinitialisation du mot de passe.",
-      "emailRequired": "L'email est requis.",
+      "emailRequired": "L'adresse e-mail est requise.",
       "passwordRequired": "Le mot de passe est requis.",
       "passwordMismatch": "Les mots de passe ne correspondent pas.",
-      "emailNotVerified": "Veuillez vérifier votre email avant de vous connecter."
+      "emailNotVerified": "Veuillez vérifier votre adresse e-mail avant de vous connecter.",
+      "invalidEmail": "L'adresse e-mail est invalide.",
+      "userDisabled": "Ce compte utilisateur a été désactivé.",
+      "userNotFound": "Aucun utilisateur trouvé avec cette adresse e-mail.",
+      "wrongPassword": "Le mot de passe est incorrect.",
+      "invalidCredential": "Les informations d'identification fournies sont invalides.",
+      "tooManyRequests": "Trop de tentatives de connexion. Veuillez réessayer plus tard."
     },
     "success": {
       "signIn": "Connexion réussie.",
       "signOut": "Déconnexion réussie.",
-      "signUp": "Compte créé avec succès. Un email de vérification a été envoyé.",
-      "resetPassword": "Email de réinitialisation envoyé.",
-      "verificationEmailSent": "Un email de vérification a été envoyé à votre adresse.",
-      "emailVerified": "Email vérifié avec succès."
+      "signUp": "Compte créé avec succès. Un e-mail de vérification a été envoyé.",
+      "resetPassword": "E-mail de réinitialisation envoyé.",
+      "verificationEmailSent": "Un e-mail de vérification a été envoyé à votre adresse.",
+      "emailVerified": "Adresse e-mail vérifiée avec succès."
     }
   },
-  "signUp": {
-    "title": "S'inscrire",
-    "error": {
-      "passwordMismatch": "Les mots de passe ne correspondent pas."
-    }
+  "profile": {
+    "title": "Profil",
+    "editProfile": "Modifier le profil",
+    "changePassword": "Changer le mot de passe",
+    "changeEmail": "Changer l'adresse e-mail",
+    "logout": "Déconnexion"
+  },
+  "editProfile": {
+    "title": "Modifier le profil",
+    "name": "Nom",
+    "bio": "Biographie",
+    "saveButton": "Enregistrer les modifications"
+  },
+  "changePassword": {
+    "title": "Changer le mot de passe",
+    "currentPassword": "Mot de passe actuel",
+    "newPassword": "Nouveau mot de passe",
+    "confirmNewPassword": "Confirmer le nouveau mot de passe",
+    "updateButton": "Mettre à jour le mot de passe",
+    "success": "Mot de passe mis à jour avec succès"
+  },
+  "notification": {
+    "title": "Préférences de notification"
   }
 }
