@@ -1,53 +1,36 @@
-import React, { useState } from "react";
+import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { ActivityIndicator, View, Text } from "react-native";
-import { useRecoilValue, useSetRecoilState } from "recoil";
-import { loadingState, errorState } from "../authentication/recoil/authAtoms";
-import { useTranslation } from "react-i18next";
-import useDeepLinking from "../hooks/useDeepLinking";
-import { useAuthState } from "../hooks";
-import { RootStackParamList } from "./navigationTypes";
-import RootStackNavigator from "./RootStackNavigator";
+import { useSelector } from "react-redux";
+import AuthStack from "./rootstack/AuthStack";
+import VerifyEmailScreen from "../features/authentication/screens/VerifyEmailScreen";
+import MainStack from "./rootstack/MainStack";
+import { RootStackParamList, AuthStackParamList } from "./navigationTypes";
+import { NavigatorScreenParams } from "@react-navigation/native";
+import { RootState } from "../store";
+import { selectIsAuthenticated, selectIsEmailVerified } from '../features/authentication/authSelectors';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-const RootStack: React.FC = () => {
-  const { user } = useAuthState();
-  const setLoading = useSetRecoilState(loadingState);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const { t } = useTranslation();
-
-  useDeepLinking();
-
-  if (useRecoilValue(loadingState)) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
-  if (useRecoilValue(errorState)) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ color: "red" }}>{useRecoilValue(errorState)}</Text>
-      </View>
-    );
-  }
+export const RootNavigation = () => {
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const isEmailVerified = useSelector(selectIsEmailVerified);
 
   return (
-    <>
-      {success && (
-        <View style={{ padding: 10, backgroundColor: "lightgreen" }}>
-          <Text>{success}</Text>
-        </View>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {!isAuthenticated && (
+        <Stack.Screen 
+          name="Auth" 
+          component={AuthStack} 
+        />
       )}
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Root" component={RootStackNavigator} />
-      </Stack.Navigator>
-    </>
+      {isAuthenticated && !isEmailVerified && (
+        <Stack.Screen name="VerifyEmail" component={VerifyEmailScreen} />
+      )}
+      {isAuthenticated && isEmailVerified && (
+        <Stack.Screen name="Main" component={MainStack} />
+      )}
+    </Stack.Navigator>
   );
 };
 
-export default RootStack;
+export default RootNavigation;

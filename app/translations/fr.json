@@ -29,7 +29,10 @@
     "button": "Se connecter",
     "forgotPassword": "Mot de passe oublié ?",
     "noAccount": "Pas encore de compte ?",
-    "createAccount": "Créer un compte"
+    "createAccount": "Créer un compte",
+    "signUp": "S'inscrire",
+    "googleSignIn": "Se connecter avec Google",
+    "back": "Retour"
   },
   "signUp": {
     "title": "S'inscrire",
@@ -65,7 +68,6 @@
     }
   },
   "verifyEmail": {
-    "title": "Vérification de l'email",
     "error": {
       "noCode": "Veuillez vérifier votre e-mail pour obtenir le lien de vérification.",
       "linkExpired": "Le lien de vérification a expiré.",
@@ -74,7 +76,9 @@
     },
     "resendSuccess": "Un nouvel e-mail de vérification a été envoyé.",
     "resendButton": "Renvoyer l'e-mail de vérification",
-    "success": "Votre e-mail a été vérifié avec succès."
+    "success": "Votre e-mail a été vérifié avec succès.",
+    "title": "Vérifier l'adresse e-mail",
+    "instructions": "Un e-mail de vérification a été envoyé à {email}. Veuillez vérifier votre boîte de réception et cliquer sur le lien pour vérifier votre adresse e-mail."
   },
   "errors": {
     "auth/invalid-action-code": "Le code de vérification est invalide ou expiré.",
@@ -106,7 +110,8 @@
       "userNotFound": "Aucun utilisateur trouvé avec cette adresse e-mail.",
       "wrongPassword": "Le mot de passe est incorrect.",
       "invalidCredential": "Les informations d'identification fournies sont invalides.",
-      "tooManyRequests": "Trop de tentatives de connexion. Veuillez réessayer plus tard."
+      "tooManyRequests": "Trop de tentatives de connexion. Veuillez réessayer plus tard.",
+      "emailAlreadyInUse": "Cette adresse e-mail est déjà utilisée."
     },
     "success": {
       "signIn": "Connexion réussie.",
@@ -116,13 +121,6 @@
       "verificationEmailSent": "Un e-mail de vérification a été envoyé à votre adresse.",
       "emailVerified": "Adresse e-mail vérifiée avec succès."
     }
-  },
-  "profile": {
-    "title": "Profil",
-    "editProfile": "Modifier le profil",
-    "changePassword": "Changer le mot de passe",
-    "changeEmail": "Changer l'adresse e-mail",
-    "logout": "Déconnexion"
   },
   "editProfile": {
     "title": "Modifier le profil",
@@ -138,7 +136,62 @@
     "updateButton": "Mettre à jour le mot de passe",
     "success": "Mot de passe mis à jour avec succès"
   },
+  "editDisplayName": {
+    "title": "Modifier le nom d'affichage",
+    "placeholder": "Nouveau nom d'affichage",
+    "saveButton": "Enregistrer",
+    "error": {
+      "generic": "Une erreur s'est produite lors de la mise à jour du nom d'affichage"
+    }
+  },
+  "editPassword": {
+    "title": "Modifier le mot de passe",
+    "currentPassword": "Mot de passe actuel",
+    "newPassword": "Nouveau mot de passe",
+    "confirmPassword": "Confirmer le nouveau mot de passe",
+    "updateButton": "Mettre à jour le mot de passe",
+    "success": "Mot de passe mis à jour avec succès",
+    "error": {
+      "mismatch": "Les mots de passe ne correspondent pas",
+      "short": "Le mot de passe doit contenir au moins 6 caractères",
+      "generic": "Une erreur s'est produite lors de la mise à jour du mot de passe"
+    }
+  },
+  "editProfilePicture": {
+  "title": "Modifier la photo de profil",
+  "chooseFromLibrary": "Choisir depuis la galerie",
+  "takePhoto": "Prendre une photo",
+  "saveButton": "Enregistrer",
+  "success": "Photo de profil mise à jour avec succès",
+  "confirmTitle": "Confirmer la mise à jour",
+  "confirmMessage": "Êtes-vous sûr de vouloir utiliser cette photo comme photo de profil ?",
+  "error": {
+    "upload": "Erreur lors du téléchargement de l'image",
+    "generic": "Une erreur s'est produite lors de la mise à jour de la photo de profil"
+  }
+},
   "notification": {
-    "title": "Préférences de notification"
+    "title": "Paramètres de notification",
+    "pushNotifications": "Notifications push",
+    "emailNotifications": "Notifications par e-mail",
+    "saveButton": "Enregistrer les paramètres",
+    "success": {
+      "saved": "Paramètres de notification enregistrés avec succès"
+    },
+    "error": {
+      "saveFailed": "Échec de l'enregistrement des paramètres de notification"
+    }
+  },
+  "profile": {
+    "title": "Profil",
+    "editDisplayName": "Modifier le nom d'affichage",
+    "editEmail": "Modifier l'adresse e-mail",
+    "editPassword": "Modifier le mot de passe",
+    "editProfilePicture": "Modifier la photo de profil",
+    "notificationSettings": "Paramètres de notification",
+    "signOut": "Déconnexion",
+    "error": {
+      "signOut": "Erreur lors de la déconnexion"
+    }
   }
 }

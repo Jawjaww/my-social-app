@@ -1,6 +1,6 @@
 import { getAuth } from 'firebase/auth';
 import { getFirestore, doc, updateDoc } from 'firebase/firestore';
-import { NotificationSettings } from './notificationAtoms';
+import { NotificationSettings } from './notificationSlice';
 
 export const updateNotificationSettings = async (settings: NotificationSettings) => {
   const auth = getAuth();
