@@ -3,10 +3,14 @@ import { IMessage } from 'react-native-gifted-chat';
 
 interface MessagesState {
   conversations: { [userId: string]: IMessage[] };
+  onlineUsers: string[];
+  typingUsers: { [userId: string]: boolean };
 }
 
 const initialState: MessagesState = {
   conversations: {},
+  onlineUsers: [],
+  typingUsers: {},
 };
 
 const messagesSlice = createSlice({
@@ -24,8 +28,15 @@ const messagesSlice = createSlice({
       const { userId, messages } = action.payload;
       state.conversations[userId] = messages;
     },
+    setOnlineUsers: (state, action: PayloadAction<string[]>) => {
+      state.onlineUsers = action.payload;
+    },
+    setTypingStatus: (state, action: PayloadAction<{ userId: string; isTyping: boolean }>) => {
+      const { userId, isTyping } = action.payload;
+      state.typingUsers[userId] = isTyping;
+    },
   },
 });
 
-export const { addMessage, setConversation } = messagesSlice.actions;
+export const { addMessage, setConversation, setOnlineUsers, setTypingStatus } = messagesSlice.actions;
 export default messagesSlice.reducer;

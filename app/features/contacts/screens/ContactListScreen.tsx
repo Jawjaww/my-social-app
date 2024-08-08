@@ -1,29 +1,32 @@
 import React from 'react';
 import { View, FlatList, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { useGetFriendsQuery } from '../../../services/api';
-import { FriendListScreenProps, Friend } from '../friendsTypes';
+import { useGetContactsQuery } from '../../../services/api';
+import { ContactListScreenProps } from '../contactsTypes';
 
-const FriendListScreen: React.FC<FriendListScreenProps> = ({ navigation }) => {
-  const { data: friends, isLoading, error } = useGetFriendsQuery();
+const ContactListScreen: React.FC<ContactListScreenProps> = ({ navigation }) => {
+  const { data: contacts, isLoading, error } = useGetContactsQuery();
 
   if (isLoading) {
     return <View style={styles.centered}><Text>Loading...</Text></View>;
   }
 
   if (error) {
-    return <View style={styles.centered}><Text>Error loading friends</Text></View>;
+    return <View style={styles.centered}><Text>Error loading contacts</Text></View>;
   }
 
   return (
     <View style={styles.container}>
       <FlatList
-        data={friends}
+        data={contacts}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={styles.friendItem}
-            onPress={() => navigation.navigate('Messages', { friendId: item.id })}
+            style={styles.contactItem}
+            onPress={() => navigation.navigate('Main', {
+              screen: 'Messages',
+              params: { screen: 'Chat', params: { contactId: item.id } }
+            } as any)}
           >
             <Text>{item.name}</Text>
           </TouchableOpacity>
@@ -31,9 +34,9 @@ const FriendListScreen: React.FC<FriendListScreenProps> = ({ navigation }) => {
       />
       <TouchableOpacity
         style={styles.addButton}
-        onPress={() => navigation.navigate('AddFriend')}
+        onPress={() => navigation.navigate('AddContact')}
       >
-        <Text>Add Friend</Text>
+        <Text>Add Contact</Text>
       </TouchableOpacity>
     </View>
   );
@@ -49,7 +52,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  friendItem: {
+  contactItem: {
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
@@ -63,4 +66,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FriendListScreen;
+export default ContactListScreen;

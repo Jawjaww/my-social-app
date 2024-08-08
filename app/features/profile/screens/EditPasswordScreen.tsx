@@ -6,7 +6,7 @@ import styled from '@emotion/native';
 import { useUpdatePasswordMutation } from '../../../services/api';
 import Toast from '../../../components/Toast';
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { ProfileStackParamList } from "../../../navigation/navigationTypes";
+import { ProfileStackParamList } from "../../../navigation/AppNavigation";
 
 const Container = styled.View`
   flex: 1;

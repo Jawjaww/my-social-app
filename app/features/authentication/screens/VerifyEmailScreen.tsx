@@ -9,16 +9,16 @@ import {
 } from "@react-navigation/native";
 import { useSelector, useDispatch } from "react-redux";
 import { selectUser, selectIsEmailVerified } from "../authSelectors";
-import { setIsEmailVerified } from "../authSlice";
+import { setIsEmailVerified, setUser } from "../authSlice";
 import {
   useSendVerificationEmailMutation,
   useVerifyEmailMutation,
 } from "../../../services/api";
 import {
-  AuthStackParamList,
   RootStackParamList,
-} from "../../../navigation/navigationTypes";
+} from "../../../navigation/AppNavigation";
 import styled from "@emotion/native";
+
 
 const Container = styled.View`
   flex: 1;
@@ -54,38 +54,50 @@ const VerifyEmailScreen: React.FC = () => {
     useSendVerificationEmailMutation();
   const [verifyEmail] = useVerifyEmailMutation();
 
-  const handleVerification = useCallback(async () => {
+  console.log("VerifyEmailScreen mounted, route params:", route.params);
+
+  useEffect(() => {
     const oobCode = route.params?.oobCode;
-    if (!oobCode) {
-      setMessage(t("verifyEmail.error.noCode"));
+    if (oobCode && !isEmailVerified) {
+      handleVerification(oobCode);
+    } else {
+      setLoading(false);
+    }
+  }, [route.params?.oobCode, isEmailVerified]);
+  
+  const handleVerification = useCallback(async (oobCode: string) => {
+    if (!oobCode || isEmailVerified) {
       setLoading(false);
       return;
     }
-
+  
+    setLoading(true);
     try {
       const result = await verifyEmail(oobCode).unwrap();
-      setMessage(t("verifyEmail.success"));
-      dispatch(setIsEmailVerified(true));
-      setTimeout(() => {
-        navigation.reset({
-          index: 0,
-          routes: [{ name: "Main" }],
-        });
-      }, 2000);
+      if (result.success) {
+        setMessage(t("verifyEmail.success"));
+        if (result.user) {
+          dispatch(setUser(result.user));
+        }
+        dispatch(setIsEmailVerified(true));
+        setTimeout(() => {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "Main" }],
+          });
+        }, 2000);
+      } else {
+        throw new Error("Verification failed");
+      }
     } catch (error: any) {
       if (error.code === "auth/invalid-action-code") {
         setMessage(t("verifyEmail.linkExpired"));
       } else {
         setMessage(t("verifyEmail.error"));
       }
-    } finally {
-      setLoading(false);
     }
-  }, [route.params?.oobCode, verifyEmail, t, navigation, dispatch]);
-
-  useEffect(() => {
-    handleVerification();
-  }, [handleVerification]);
+    setLoading(false);
+  }, [verifyEmail, t, navigation, dispatch, isEmailVerified]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -96,14 +108,13 @@ const VerifyEmailScreen: React.FC = () => {
   }, [countdown]);
 
   const handleResendEmail = async () => {
-    if (user) {
-      try {
-        setMessage(t("verifyEmail.success"));
-        setCountdown(60);
-        setMessage(t("verifyEmail.resendSuccess"));
-      } catch (error) {
-        setMessage(t("verifyEmail.resendError"));
-      }
+    try {
+      await sendVerificationEmail().unwrap();
+      setMessage(t("verifyEmail.resendSuccess"));
+      setCountdown(60);
+    } catch (error) {
+      console.error("Error resending verification email:", error);
+      setMessage(t("verifyEmail.resendError"));
     }
   };
 
@@ -132,7 +143,7 @@ const VerifyEmailScreen: React.FC = () => {
       )}
       <Button
         title={t("common.cancel")}
-        onPress={() => navigation.navigate("Auth", { screen: "Welcome" })}
+        onPress={() => navigation.navigate("Auth", { screen: "SignIn" })}
       />
     </Container>
   );

@@ -10,14 +10,6 @@
     "delete": "Delete",
     "edit": "Edit"
   },
-  "welcome": {
-    "title": "Welcome to ChatApp!",
-    "intro": "Discover the best ways to stay connected with your friends and family.",
-    "signIn": "Sign In",
-    "signUp": "Sign Up",
-    "googleSignIn": "Sign in with Google",
-    "footer": "Need help? Visit our support section."
-  },
   "googleSignIn": {
     "button": "Sign in with Google",
     "loggedInAs": "Logged in as:"

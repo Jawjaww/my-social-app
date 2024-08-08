@@ -9,7 +9,7 @@ import styled from "@emotion/native";
 import { useTranslation } from "react-i18next";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { ProfileStackParamList } from "../../../navigation/navigationTypes";
+import { ProfileStackParamList } from "../../../navigation/AppNavigation";
 import Toast from "../../../components/Toast";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";

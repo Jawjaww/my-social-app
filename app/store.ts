@@ -4,13 +4,13 @@ import { api } from './services/api';
 import authReducer from './features/authentication/authSlice';
 import notificationReducer from './notifications/notificationSlice';
 import messagesReducer from './features/messages/messagesSlice';
-import friendsReducer from './features/messages/friendsSlice';
+import contactsReducer from './features/contacts/contactsSlice';
 
 const store = configureStore({
   reducer: {
     auth: authReducer,notifications: notificationReducer,
     messages: messagesReducer,
-    friends: friendsReducer,
+    contacts: contactsReducer,
     [api.reducerPath]: api.reducer,
   },
   middleware: (getDefaultMiddleware) =>

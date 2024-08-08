@@ -1,14 +1,15 @@
 import React from "react";
-import { Text, Button, View } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { Text, Button } from "react-native";
 import { useSelector } from "react-redux";
-import styled from '@emotion/native';
-import { useTranslation } from 'react-i18next';
+import styled from "@emotion/native";
+import { useTranslation } from "react-i18next";
 import { selectUser } from "../../authentication/authSelectors";
 import { useSignOutMutation } from "../../../services/api";
 import Toast from "../../../components/Toast";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { ProfileStackParamList } from "../../../navigation/navigationTypes";
+import { CompositeScreenProps } from '@react-navigation/native';
+import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { MainTabParamList, ProfileStackParamList, RootStackParamList } from '../../../navigation/AppNavigation';
 
 const Container = styled.View`
   flex: 1;
@@ -21,8 +22,15 @@ const Header = styled.Text`
   margin-bottom: 20px;
 `;
 
-const ProfileScreen: React.FC = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParamList>>();
+type ProfileScreenProps = CompositeScreenProps<
+  NativeStackScreenProps<ProfileStackParamList, 'ProfileHome'>,
+  CompositeScreenProps<
+    BottomTabScreenProps<MainTabParamList>,
+    NativeStackScreenProps<RootStackParamList>
+  >
+>;
+
+const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const user = useSelector(selectUser);
   const { t } = useTranslation();
   const [signOut, { isLoading }] = useSignOutMutation();
@@ -37,15 +45,35 @@ const ProfileScreen: React.FC = () => {
 
   return (
     <Container>
-      <Header>{t('profile.title')}</Header>
-      <Text>{user?.displayName}</Text>
-      <Text>{user?.email}</Text>
-      <Button title={t('profile.editDisplayName')} onPress={() => navigation.navigate("EditDisplayName")} />
-      <Button title={t('profile.editEmail')} onPress={() => navigation.navigate("EditEmail")} />
-      <Button title={t('profile.editPassword')} onPress={() => navigation.navigate("EditPassword")} />
-      <Button title={t('profile.editProfilePicture')} onPress={() => navigation.navigate("EditProfilePicture")} />
-      <Button title={t('profile.notificationSettings')} onPress={() => navigation.navigate("NotificationSettings")} />
-      <Button title={t('profile.signOut')} onPress={handleSignOut} color="red" disabled={isLoading} />
+      <Header>{t("profile.title")}</Header>
+      <Text>{t("profile.welcome", { name: user?.displayName })}</Text>
+      <Button
+  title={t("profile.editEmail")}
+  onPress={() => navigation.navigate("EditEmail")}
+/>
+<Button
+  title={t("profile.editPassword")}
+  onPress={() => navigation.navigate("EditPassword")}
+/>
+<Button
+  title={t("profile.editProfilePicture")}
+  onPress={() => navigation.navigate("EditProfilePicture")}
+/>
+<Button
+  title={t("profile.notificationSettings")}
+  onPress={() => navigation.navigate("NotificationSettings")}
+/>
+<Button
+  title={t("profile.deleteAccount")}
+  onPress={() => navigation.navigate("DeleteAccount")}
+  color="red"
+/>
+<Button
+  title={t("profile.signOut")}
+  onPress={handleSignOut}
+  color="red"
+  disabled={isLoading}
+/>
     </Container>
   );
 };

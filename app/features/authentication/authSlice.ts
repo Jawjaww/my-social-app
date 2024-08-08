@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AppUser } from './authTypes';
 
 interface AuthState {
-  user: AppUser | null;
+  user: Omit<AppUser, 'stsTokenManager'> | null;
   loading: boolean;
   error: string | null;
   isAuthenticated: boolean;
@@ -22,9 +22,15 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setUser: (state, action: PayloadAction<AppUser | null>) => {
-      state.user = action.payload;
-      state.isAuthenticated = !!action.payload;
-      state.isEmailVerified = action.payload?.emailVerified || false;
+      if (action.payload) {
+        state.user = action.payload;
+        state.isAuthenticated = true;
+        state.isEmailVerified = action.payload.emailVerified;
+      } else {
+        state.user = null;
+        state.isAuthenticated = false;
+        state.isEmailVerified = false;
+      }
     },
     setIsEmailVerified: (state, action: PayloadAction<boolean>) => {
       state.isEmailVerified = action.payload;

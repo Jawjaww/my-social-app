@@ -1,33 +1,37 @@
 import React, { useCallback } from 'react';
-import { View, ActivityIndicator, Text } from 'react-native';
+import { View, ActivityIndicator, Text, Alert } from 'react-native';
 import { GiftedChat, IMessage } from 'react-native-gifted-chat';
 import { useSelector } from 'react-redux';
-import { useGetMessagesQuery, useSendMessageMutation } from '../../../services/api';
+import { useGetMessagesQuery, useSendMessageMutation, useDeleteMessageMutation } from '../../../services/api';
 import { selectUser } from '../../authentication/authSelectors';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
-import { MainTabParamList } from '../../../navigation/navigationTypes';
+import { MessagesStackParamList } from '../../../navigation/AppNavigation';
+import { useTranslation } from 'react-i18next';
+import Toast from '../../../components/Toast';
 
 interface Props {
-  navigation: NativeStackNavigationProp<MainTabParamList, 'Message'>;
-  route: RouteProp<MainTabParamList, 'Message'>;
+  navigation: NativeStackNavigationProp<MessagesStackParamList, 'Chat'>;
+  route: RouteProp<MessagesStackParamList, 'Chat'>;
 }
 
 const MessagesScreen: React.FC<Props> = ({ navigation, route }) => {
-  const friendId = route.params?.friendId;
+  const contactId = route.params?.contactId;
   const user = useSelector(selectUser);
-  const { data: messages, isLoading } = useGetMessagesQuery(friendId ?? '');
+  const { data: messages, isLoading, error } = useGetMessagesQuery(contactId ?? '');
   const [sendMessage] = useSendMessageMutation();
+  const [deleteMessage] = useDeleteMessageMutation();
+  const { t } = useTranslation();
 
   const onSend = useCallback((newMessages: IMessage[] = []) => {
-    if (friendId) {
+    if (contactId) {
       newMessages.forEach((message) => {
-        sendMessage({ userId: friendId, message });
+        sendMessage({ userId: contactId, message });
       });
     }
-  }, [friendId, sendMessage]);
+  }, [contactId, sendMessage]);
 
-  if (!friendId) {
+  if (!contactId) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <Text>Aucun ami sélectionné</Text>
@@ -42,6 +46,38 @@ const MessagesScreen: React.FC<Props> = ({ navigation, route }) => {
       </View>
     );
   }
+
+  if (messages && messages.length === 0) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Aucun message. Commencez la conversation !</Text>
+      </View>
+    );
+  }
+
+  const handleDeleteMessage = async (messageId: string) => {
+    Alert.alert(
+      t('deleteMessage.confirmTitle'),
+      t('deleteMessage.confirmMessage'),
+      [
+        {
+          text: t('common.cancel'),
+          style: 'cancel',
+        },
+        {
+          text: t('common.confirm'),
+          onPress: async () => {
+            try {
+              await deleteMessage({ messageId }).unwrap(); 
+              Toast({ message: t('deleteMessage.success'), type: 'success' });
+            } catch (error) {
+              Toast({ message: t('deleteMessage.error'), type: 'error' });
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <GiftedChat

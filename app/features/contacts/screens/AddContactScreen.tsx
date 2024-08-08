@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, StyleSheet, Alert } from 'react-native';
-import { useAddFriendMutation } from '../../../services/api';
-import { AddFriendScreenProps } from '../friendsTypes';
+import { useAddContactMutation } from '../../../services/api';
+import { AddContactScreenProps } from '../contactsTypes';
 
-const AddFriendScreen: React.FC<AddFriendScreenProps> = ({ navigation }) => {
+const AddContactScreen: React.FC<AddContactScreenProps> = ({ navigation }) => {
   const [userId, setUserId] = useState('');
-  const [addFriend, { isLoading }] = useAddFriendMutation();
+  const [addContact, { isLoading }] = useAddContactMutation();
 
-  const handleAddFriend = async () => {
+  const handleAddContact = async () => {
     try {
-      await addFriend({ userId });
-      Alert.alert('Success', 'Friend added successfully');
+      await addContact({ userId });
+      Alert.alert('Success', 'Contact added successfully');
       setUserId('');
-      navigation.navigate('FriendList');
+      navigation.navigate('ContactList');
     } catch (error) {
-      Alert.alert('Error', 'Failed to add friend');
+      Alert.alert('Error', 'Failed to add contact');
     }
   };
 
@@ -24,11 +24,11 @@ const AddFriendScreen: React.FC<AddFriendScreenProps> = ({ navigation }) => {
         style={styles.input}
         value={userId}
         onChangeText={setUserId}
-        placeholder="Enter friend's user ID"
+        placeholder="Enter contact's user ID"
       />
       <Button
-        title="Add Friend"
-        onPress={handleAddFriend}
+        title="Add Contact"
+        onPress={handleAddContact}
         disabled={isLoading || !userId.trim()}
       />
     </View>
@@ -49,4 +49,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddFriendScreen;
+export default AddContactScreen;

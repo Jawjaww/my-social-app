@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, TextInput, Button, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { RouteProp } from '@react-navigation/native';
-import { AuthStackParamList } from '../../../navigation/navigationTypes';
+import { AuthStackParamList } from '../../../navigation/AppNavigation';
 import { useResetPasswordMutation } from '../../../services/api';
 
 type ResetPasswordScreenRouteProp = RouteProp<AuthStackParamList, 'ResetPassword'>;

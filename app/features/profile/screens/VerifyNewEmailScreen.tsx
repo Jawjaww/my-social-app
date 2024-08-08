@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { useSendVerificationEmailMutation } from "../../../services/api";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { ProfileStackParamList } from "../../../navigation/navigationTypes";
+import { ProfileStackParamList } from "../../../navigation/AppNavigation";
 
 const Container = styled.View`
   flex: 1;
@@ -73,7 +73,7 @@ const VerifyNewEmailScreen: React.FC = () => {
       />
       <Button
         title={t("common.cancel")}
-        onPress={() => navigation.navigate("Profile")}
+        onPress={() => navigation.navigate("ProfileHome")}
       />
     </Container>
   );

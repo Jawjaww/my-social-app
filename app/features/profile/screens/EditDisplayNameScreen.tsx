@@ -5,7 +5,7 @@ import styled from '@emotion/native';
 import { useTranslation } from 'react-i18next';
 import { useUpdateDisplayNameMutation } from '../../../services/api';
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { ProfileStackParamList } from "../../../navigation/navigationTypes";
+import { ProfileStackParamList } from "../../../navigation/AppNavigation";
 
 const Container = styled.View`
   flex: 1;

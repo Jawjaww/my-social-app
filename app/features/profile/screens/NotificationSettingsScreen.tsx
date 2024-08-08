@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import styled from '@emotion/native';
 import Toast from '../../../components/Toast';
 import { updateNotificationSettings } from '../../../notifications/notificationServices';
-import { handleAndLogError, AuthError } from '../../../services/errorService';
+import { handleAndLogError, AppError } from '../../../services/errorService';
 import { useTranslation } from 'react-i18next';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectNotificationSettings, setNotificationSettings, NotificationSettings } from '../../../notifications/notificationSlice';
@@ -68,7 +68,7 @@ const NotificationSettingsScreen: React.FC = () => {
       Toast({ message: t("notification.success.saved"), type: "success" });
       navigation.goBack();
     } catch (error) {
-      const errorMessage = handleAndLogError(error as AuthError, t);
+      const errorMessage = handleAndLogError(error as AppError, t);
       setError(errorMessage);
       Toast({ message: t("notification.error.saveFailed"), type: "error" });
     }
