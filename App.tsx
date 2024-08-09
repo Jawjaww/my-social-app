@@ -1,4 +1,5 @@
 import React from 'react';
+import ErrorBoundary from './app/components/ErrorBoundary';
 import './env.d.ts';
 import { Provider } from 'react-redux';
 import * as Sentry from '@sentry/react-native';
@@ -19,11 +20,13 @@ Sentry.init({
 
 const App: React.FC = () => {
   return (
-    <Provider store={store}>
-      <I18nextProvider i18n={i18n}>
-        <AppNavigation />
-      </I18nextProvider>
-    </Provider>
+    <ErrorBoundary>
+      <Provider store={store}>
+        <I18nextProvider i18n={i18n}>
+          <AppNavigation />
+        </I18nextProvider>
+      </Provider>
+    </ErrorBoundary>
   );
 };
 

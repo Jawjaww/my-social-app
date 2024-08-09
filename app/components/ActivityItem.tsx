@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { Activity } from '../types/sharedTypes';
+import { SharedActivity } from '../types/sharedTypes';
 
 interface ActivityItemProps {
-  activity: Activity;
+  activity: SharedActivity;
 }
 
 const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {

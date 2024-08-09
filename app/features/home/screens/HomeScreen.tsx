@@ -6,26 +6,16 @@ import { selectUser } from '../../authentication/authSelectors';
 import { useGetContactActivitiesQuery, useGetUnreadMessagesCountQuery, useGetContactSuggestionsQuery } from '../../../services/api';
 import ActivityItem from '../../../components/ActivityItem';
 import ContactSuggestion from '../../../components/ContactSuggestion';
-import { Activity as SharedActivity } from '../../../types/sharedTypes';
+import { SharedActivity, Contact } from '../../../types/sharedTypes';
 
-type Activity = SharedActivity & {
-  timestamp: number;
-};
-
-type RenderItemData = Activity | null;
-
-type ContactSuggestion = {
-  id: string;
-  name: string;
-  avatar: string;
-};
+type RenderItemData = SharedActivity | null;
 
 const HomeScreen: React.FC = () => {
   const { t } = useTranslation();
   const user = useSelector(selectUser);
-  const { data: activities } = useGetContactActivitiesQuery();
+  const { data: activities = [] } = useGetContactActivitiesQuery();
   const { data: unreadCount } = useGetUnreadMessagesCountQuery();
-  const { data: contactSuggestions } = useGetContactSuggestionsQuery();
+  const { data: contactSuggestions = [] } = useGetContactSuggestionsQuery();
   const scrollY = React.useRef(new Animated.Value(0)).current;
 
   const headerHeight = scrollY.interpolate({
@@ -41,7 +31,7 @@ const HomeScreen: React.FC = () => {
           <Text style={styles.welcomeText}>
             {user ? t('home.welcomeUser', { name: user.displayName || user.email }) : t('home.welcome')}
           </Text>
-          {activities && activities.length > 0 && (
+          {activities.length > 0 && (
             <TouchableOpacity style={styles.newActivitiesContainer}>
               <Text style={styles.newActivitiesText}>
                 {t('home.newActivities', { count: activities.length })}
@@ -50,13 +40,13 @@ const HomeScreen: React.FC = () => {
           )}
         </View>
       );
-    } else if (activities && activities.length > 0 && index === 1) {
+    } else if (activities.length > 0 && index === 1) {
       return (
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>{t('home.recentActivity')}</Text>
         </View>
       );
-    } else if ((!activities || activities.length === 0) && index === 1) {
+    } else if (activities.length === 0 && index === 1) {
       return (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>{t('home.noRecentActivity')}</Text>
@@ -68,7 +58,7 @@ const HomeScreen: React.FC = () => {
     return null;
   };
 
-  const data: RenderItemData[] = [null, null, ...(activities || []), null];
+  const data: RenderItemData[] = [null, ...activities, null];
 
   return (
     <View style={styles.container}>
@@ -87,6 +77,13 @@ const HomeScreen: React.FC = () => {
         )}
         scrollEventThrottle={16}
       />
+      {contactSuggestions.length > 0 && (
+        <View style={styles.contactSuggestionsContainer}>
+          {contactSuggestions.map((contact: Contact) => (
+            <ContactSuggestion key={contact.id} contact={contact} />
+          ))}
+        </View>
+      )}
     </View>
   );
 };

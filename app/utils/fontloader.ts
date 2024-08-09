@@ -8,18 +8,19 @@ export const loadCustomFont = async () => {
   const fontPath = `${FileSystem.cacheDirectory}${FONT_NAME}.ttf`;
 
   try {
+    console.log('Checking if font exists...');
     const fontInfo = await FileSystem.getInfoAsync(fontPath);
     if (!fontInfo.exists) {
+      console.log('Font not found, downloading...');
       await FileSystem.downloadAsync(FONT_URL, fontPath);
+      console.log('Font downloaded successfully');
+    } else {
+      console.log('Font already exists');
     }
 
-    await Font.loadAsync({
-      [FONT_NAME]: fontPath,
-    });
-
-    return true;
+    return fontPath;
   } catch (error) {
     console.error('Error loading custom font:', error);
-    return false;
+    return null;
   }
 };
