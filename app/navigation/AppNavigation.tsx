@@ -9,13 +9,21 @@ import { Ionicons } from '@expo/vector-icons';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../services/firebaseConfig';
 import { setUser, setLoading } from '../features/authentication/authSlice';
-import { AppUser } from '../features/authentication/authTypes';
 import { RootState } from '../store';
 import { selectIsAuthenticated, selectIsEmailVerified } from '../features/authentication/authSelectors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { CompositeScreenProps } from '@react-navigation/native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import {
+  RootStackParamList,
+  AuthStackParamList,
+  MainTabParamList,
+  ProfileStackParamList,
+  ContactsStackParamList,
+  MessagesStackParamList,
+  AppUser
+} from '../types/sharedTypes';
 // Screens
 import HomeScreen from '../features/home/screens/HomeScreen';
 // Lazy load screens
@@ -39,59 +47,6 @@ const AddContactScreen = lazy(() => import('../features/contacts/screens/AddCont
 const MessageListScreen = lazy(() => import('../features/messages/screens/MessageListScreen'));
 const ChatScreen = lazy(() => import('../features/messages/screens/ChatScreen'));
 const NewChatScreen = lazy(() => import('../features/messages/screens/NewChatScreen'));
-
-// Define all navigation types
-export type RootStackParamList = {
-  Boot: undefined;
-  Auth: NavigatorScreenParams<AuthStackParamList>;
-  Main: NavigatorScreenParams<MainTabParamList>;
-  VerifyEmail: { oobCode?: string };
-};
-
-export type AuthStackParamList = {
-  SignIn: undefined;
-  SignUp: undefined;
-  GoogleSignIn: undefined;
-  ForgotPassword: undefined;
-  ResetPassword: { oobCode: string };
-};
-
-export type ProfileStackParamList = {
-  ProfileHome: undefined;
-  EditEmail: undefined;
-  EditPassword: undefined;
-  EditDisplayName: undefined;
-  EditProfilePicture: undefined;
-  VerifyNewEmail: undefined;
-  NotificationSettings: undefined;
-  Pseudo: undefined;
-  DeleteAccount: undefined;
-};
-
-export type ContactsStackParamList = {
-  ContactList: undefined;
-  AddContact: undefined;
-};
-
-export type MessagesStackParamList = {
-  MessageList: undefined;
-  Chat: { contactId: string };
-  NewChat: undefined;
-};
-
-export type MainTabParamList = {
-  Home: undefined;
-  Discover: undefined;
-  Profile: NavigatorScreenParams<ProfileStackParamList>;
-  Contacts: NavigatorScreenParams<ContactsStackParamList>;
-  Messages: NavigatorScreenParams<MessagesStackParamList>;
-};
-
-// Define types for ProfileScreenProps
-type ProfileScreenProps = CompositeScreenProps<
-  NativeStackScreenProps<ProfileStackParamList, 'ProfileHome'>,
-  BottomTabScreenProps<MainTabParamList>
->;
 
 // Create navigators
 const RootStack = createNativeStackNavigator<RootStackParamList>();
