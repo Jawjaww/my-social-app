@@ -1,80 +1,154 @@
 import React from "react";
-import { Text, Button } from "react-native";
-import { useSelector } from "react-redux";
-import styled from "@emotion/native";
+import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
+import styled from "@emotion/native";
 import { selectUser } from "../../authentication/authSelectors";
 import { useSignOutMutation } from "../../../services/api";
-import Toast from "../../../components/Toast";
-import { CompositeScreenProps } from '@react-navigation/native';
-import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { MainTabParamList, ProfileStackParamList, RootStackParamList } from '../../../navigation/AppNavigation';
+import { addToast } from "../../toast/toastSlice";
+import { ProfileScreenProps } from "../../../types/sharedTypes";
+import {
+  Container,
+  Header,
+  Button,
+  ButtonText,
+} from "../../../components/StyledComponents";
 
-const Container = styled.View`
+const ProfileContainer = styled(Container)`
+  justify-content: space-between;
+`;
+
+const UserInfo = styled.View`
+  align-items: center;
+  justify-content: center;
+  margin-bottom: ${(props) => props.theme.spacing.xl}px;
   flex: 1;
-  padding: 20px;
 `;
 
-const Header = styled.Text`
-  font-size: 24px;
+const UserName = styled.Text`
+  font-size: ${(props) => props.theme.fontSizes.large}px;
   font-weight: bold;
-  margin-bottom: 20px;
+  color: ${(props) => props.theme.colors.text};
+  margin-top: ${(props) => props.theme.spacing.sm}px;
 `;
 
-type ProfileScreenProps = CompositeScreenProps<
-  NativeStackScreenProps<ProfileStackParamList, 'ProfileHome'>,
-  CompositeScreenProps<
-    BottomTabScreenProps<MainTabParamList>,
-    NativeStackScreenProps<RootStackParamList>
-  >
->;
+const ButtonContainer = styled.View`
+  padding-vertical: ${(props) => props.theme.spacing.xl}px;
+  width: 100%;
+  align-items: center;
+`;
+
+const ProfileButton = styled(Button)`
+  margin-bottom: 24px;
+  padding: 10px 32px;
+  background-color: ${(props) =>
+    props.variant === "secondary" ? "#5856D6" : "#007AFF"};
+  border-radius: 3px;
+  elevation: 5;
+  shadow-color: #000;
+  shadow-offset: 0px 2px;
+  shadow-opacity: 0.25;
+  shadow-radius: 3.84px;
+  align-items: center;
+  justify-content: center;
+`;
+
+const ProfileButtonText = styled(ButtonText)`
+  font-size: ${(props) => props.theme.fontSizes.large}px;
+  color: white;
+  font-weight: bold;
+  text-transform: uppercase;
+`;
+
+const MainButtonsContainer = styled.View`
+  margin-bottom: ${(props) => props.theme.spacing.xl * 8}px;
+`;
+
+const SecondaryButtonsContainer = styled.View`
+  margin-top: ${(props) => props.theme.spacing.xl * 2}px;
+`;
+
+const AvatarContainer = styled.View`
+  width: 100px;
+  height: 100px;
+  border-radius: 50px;
+  background-color: ${(props) => props.theme.colors.secondary};
+  justify-content: center;
+  align-items: center;
+  margin-bottom: ${(props) => props.theme.spacing.md}px;
+`;
+
+const AvatarText = styled.Text`
+  font-size: ${(props) => props.theme.fontSizes.xlarge}px;
+  color: white;
+  font-weight: bold;
+`;
 
 const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const user = useSelector(selectUser);
+  const dispatch = useDispatch();
   const { t } = useTranslation();
   const [signOut, { isLoading }] = useSignOutMutation();
 
+  const username = user?.username || t("profile.anonymous");
+  console.log("username", username);
   const handleSignOut = async () => {
     try {
-      await signOut({}).unwrap();   // Redirection will be handled by the auth listener that is in the App.tsx file
+      await signOut({}).unwrap();
     } catch (error) {
-      Toast({ message: t("profile.error.signOut"), type: "error" });
+      dispatch(
+        addToast({ message: t("profile.error.signOut"), type: "error" })
+      );
     }
   };
 
   return (
-    <Container>
-      <Header>{t("profile.title")}</Header>
-      <Text>{t("profile.welcome", { name: user?.displayName })}</Text>
-      <Button
-  title={t("profile.editEmail")}
-  onPress={() => navigation.navigate("EditEmail")}
-/>
-<Button
-  title={t("profile.editPassword")}
-  onPress={() => navigation.navigate("EditPassword")}
-/>
-<Button
-  title={t("profile.editProfilePicture")}
-  onPress={() => navigation.navigate("EditProfilePicture")}
-/>
-<Button
-  title={t("profile.notificationSettings")}
-  onPress={() => navigation.navigate("NotificationSettings")}
-/>
-<Button
-  title={t("profile.deleteAccount")}
-  onPress={() => navigation.navigate("DeleteAccount")}
-  color="red"
-/>
-<Button
-  title={t("profile.signOut")}
-  onPress={handleSignOut}
-  color="red"
-  disabled={isLoading}
-/>
-    </Container>
+    <ProfileContainer>
+      <UserInfo>
+        <AvatarContainer>
+          <AvatarText>{username[0].toUpperCase() || "?"}</AvatarText>
+        </AvatarContainer>
+        <UserName>{username}</UserName>
+      </UserInfo>
+      <ButtonContainer>
+        <MainButtonsContainer>
+          <ProfileButton
+            onPress={() => navigation.navigate("EditProfilePicture")}
+          >
+            <ProfileButtonText>
+              {t("profile.editProfilePicture")}
+            </ProfileButtonText>
+          </ProfileButton>
+          <ProfileButton onPress={() => navigation.navigate("EditEmail")}>
+            <ProfileButtonText>{t("profile.editEmail")}</ProfileButtonText>
+          </ProfileButton>
+          <ProfileButton onPress={() => navigation.navigate("EditPassword")}>
+            <ProfileButtonText>{t("profile.editPassword")}</ProfileButtonText>
+          </ProfileButton>
+          <ProfileButton
+            onPress={() => navigation.navigate("NotificationSettings")}
+          >
+            <ProfileButtonText>
+              {t("profile.notificationSettings")}
+            </ProfileButtonText>
+          </ProfileButton>
+        </MainButtonsContainer>
+        <SecondaryButtonsContainer>
+          <ProfileButton
+            variant="secondary"
+            onPress={() => navigation.navigate("DeleteAccount")}
+          >
+            <ProfileButtonText>{t("profile.deleteAccount")}</ProfileButtonText>
+          </ProfileButton>
+          <ProfileButton
+            variant="secondary"
+            onPress={handleSignOut}
+            disabled={isLoading}
+          >
+            <ProfileButtonText>{t("profile.signOut")}</ProfileButtonText>
+          </ProfileButton>
+        </SecondaryButtonsContainer>
+      </ButtonContainer>
+    </ProfileContainer>
   );
 };
 

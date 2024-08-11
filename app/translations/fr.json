@@ -1,36 +1,74 @@
-{
-  "auth": {
-  "error": {
-    "emailRequired": "L'adresse e-mail est requise.",
-    "passwordRequired": "Le mot de passe est requis.",
-    "passwordMismatch": "Les mots de passe ne correspondent pas.",
-    "emailNotVerified": "Veuillez vérifier votre adresse e-mail avant de vous connecter.",
-    "invalidEmail": "L'adresse e-mail est invalide.",
-    "userDisabled": "Ce compte utilisateur a été désactivé.",
-    "userNotFound": "Aucun utilisateur trouvé avec cette adresse e-mail.",
-    "wrongPassword": "Le mot de passe est incorrect.",
-    "invalidCredential": "Les informations d'identification fournies sont invalides.",
-    "tooManyRequests": "Trop de tentatives de connexion. Veuillez réessayer plus tard.",
-    "emailAlreadyInUse": "Cette adresse e-mail est déjà utilisée.",
-    "networkRequestFailed": "Problème de connexion. Veuillez vérifier votre connexion internet.",
-    "weakPassword": "Le mot de passe est trop faible. Veuillez utiliser un mot de passe plus fort.",
-    "operationNotAllowed": "Cette opération n'est pas autorisée.",
-    "accountExistsWithDifferentCredential": "Un compte existe déjà avec la même adresse e-mail mais des informations d'identification différentes.",
-    "invalidVerificationCode": "Le code de vérification est invalide.",
-    "invalidVerificationId": "L'identifiant de vérification est invalide.",
-    "expiredActionCode": "Le code d'action a expiré.",
-    "invalidActionCode": "Le code d'action est invalide.",
-    "generic": "Une erreur s'est produite. Veuillez réessayer.",
-    "emptyFields": "Veuillez remplir tous les champs."
-  },
+{ "common": {
+    "buttons": {
+      "submit": "Soumettre",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "delete": "Supprimer",
+      "edit": "Modifier",
+      "back": "Retour"
+    },
+    "labels": {
+      "email": "Adresse e-mail",
+      "password": "Mot de passe",
+      "username": "Nom d'utilisateur"
+    },
+    "placeholders": {
+      "email": "Entrez votre adresse e-mail",
+      "password": "Entrez votre mot de passe",
+      "username": "Entrez votre nom d'utilisateur"
+    },
+    "errors": {
+      "required": "Ce champ est requis",
+      "invalidEmail": "Adresse e-mail invalide",
+      "passwordMismatch": "Les mots de passe ne correspondent pas",
+      "generic": "Une erreur s'est produite. Veuillez réessayer."
+    },
     "success": {
-      "signIn": "Connexion réussie.",
-      "signOut": "Déconnexion réussie.",
-      "signUp": "Compte créé avec succès. Un e-mail de vérification a été envoyé.",
-      "resetPassword": "E-mail de réinitialisation envoyé.",
-      "verificationEmailSent": "Un e-mail de vérification a été envoyé à votre adresse.",
-      "emailVerified": "Adresse e-mail vérifiée avec succès."
+      "generic": "Opération réussie"
     }
+  },
+  "auth": {
+    "signIn": {
+      "title": "Connexion",
+      "button": "Se connecter",
+      "forgotPassword": "Mot de passe oublié ?",
+      "noAccount": "Pas encore de compte ?",
+      "createAccount": "Créer un compte",
+      "errors": {
+        "invalidCredentials": "Identifiants invalides. Veuillez vérifier votre email et mot de passe."
+      }
+    },
+    "signUp": {
+      "title": "Inscription",
+      "button": "S'inscrire",
+      "alreadyHaveAccount": "Vous avez déjà un compte ?"
+    },
+    "forgotPassword": {
+      "title": "Mot de passe oublié",
+      "button": "Réinitialiser le mot de passe",
+      "success": "Un e-mail de réinitialisation a été envoyé à votre adresse"
+    },
+    "resetPassword": {
+      "title": "Réinitialiser le mot de passe",
+      "button": "Définir le nouveau mot de passe",
+      "success": "Votre mot de passe a été réinitialisé avec succès"
+    },
+    "verifyEmail": {
+      "title": "Vérifier votre e-mail",
+      "instructions": "Un e-mail de vérification a été envoyé à {email}. Veuillez vérifier votre boîte de réception et cliquer sur le lien pour vérifier votre adresse e-mail.",
+      "resendButton": "Renvoyer l'e-mail de vérification",
+      "success": "Votre e-mail a été vérifié avec succès"
+    }
+  },
+  "errors": {
+    "auth/invalid-email": "L'adresse e-mail est invalide.",
+    "auth/user-disabled": "Ce compte utilisateur a été désactivé.",
+    "auth/user-not-found": "Aucun utilisateur trouvé avec cette adresse e-mail.",
+    "auth/wrong-password": "Le mot de passe est incorrect.",
+    "auth/invalid-credential": "Les informations d'identification fournies sont invalides.",
+    "auth/email-already-in-use": "Cette adresse e-mail est déjà utilisée.",
+    "auth/weak-password": "Le mot de passe est trop faible. Veuillez utiliser un mot de passe plus fort.",
+    "auth/network-request-failed": "Problème de connexion. Veuillez vérifier votre connexion internet."
   },
   "changePassword": {
     "confirmNewPassword": "Confirmer le nouveau mot de passe",
@@ -40,14 +78,6 @@
     "title": "Changer le mot de passe",
     "updateButton": "Mettre à jour le mot de passe"
   },
-  "common": {
-    "back": "Retour",
-    "cancel": "Annuler",
-    "confirm": "Confirmer",
-    "delete": "Supprimer",
-    "edit": "Modifier",
-    "save": "Enregistrer"
-  },
   "deleteAccount": {
     "button": "Confirmer",
     "confirmMessage": "Êtes-vous sûr de vouloir supprimer définitivement votre compte ? Cette action est irréversible.",
@@ -56,7 +86,7 @@
     "success": "Votre compte a été supprimé avec succès.",
     "title": "Supprimer le compte"
   },
-  "editDisplayName": {
+  "editusername": {
     "error": {
       "generic": "Une erreur s'est produite lors de la mise à jour du nom d'affichage"
     },
@@ -113,11 +143,7 @@
   "error": {
     "generic": "Une erreur s'est produite."
   },
-  "errors": {
-    "auth/invalid-action-code": "Le code de vérification est invalide ou expiré.",
-    "auth/network-request-failed": "Échec de la requête réseau. Veuillez réessayer.",
-    "auth/user-not-found": "Utilisateur non trouvé."
-  },
+ 
   "forgotPassword": {
     "button": "Réinitialiser le mot de passe",
     "emailPlaceholder": "Adresse e-mail",
@@ -154,7 +180,7 @@
     "title": "Paramètres de notification"
   },
   "profile": {
-    "editDisplayName": "Modifier le nom d'affichage",
+    "editusername": "Modifier le nom d'affichage",
     "editEmail": "Modifier l'adresse e-mail",
     "editPassword": "Modifier le mot de passe",
     "editProfilePicture": "Modifier la photo de profil",

@@ -52,7 +52,7 @@ const GoogleSignIn: React.FC = () => {
       {user ? (
         <>
           <Text>{t('googleSignIn.loggedInAs')}</Text>
-          <Text>{user.displayName}</Text>
+          <Text>{user.username}</Text>
           <Text>{user.email}</Text>
         </>
       ) : null}

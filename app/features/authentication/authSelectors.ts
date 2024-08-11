@@ -1,5 +1,5 @@
 import { RootState } from '../../store';
-import { AppUser } from './authTypes';
+import { AppUser } from '../../types/sharedTypes';
 
 export const selectUser = (state: RootState): AppUser | null => state.auth.user;
 export const selectIsAuthenticated = (state: RootState): boolean => state.auth.isAuthenticated;

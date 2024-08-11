@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import { useAddContactMutation } from '../../../services/api';
-import { AddContactScreenProps } from '../contactsTypes';
+import { AddContactScreenProps } from '../../../types/sharedTypes';
 
 const AddContactScreen: React.FC<AddContactScreenProps> = ({ navigation }) => {
-  const [userId, setUserId] = useState('');
+  const [username, setUsername] = useState('');
   const [addContact, { isLoading }] = useAddContactMutation();
 
   const handleAddContact = async () => {
     try {
-      await addContact({ userId });
-      Alert.alert('Success', 'Contact added successfully');
-      setUserId('');
+      await addContact({ username });
+      Alert.alert('Succès', 'Contact ajouté avec succès');
+      setUsername('');
       navigation.navigate('ContactList');
     } catch (error) {
-      Alert.alert('Error', 'Failed to add contact');
+      Alert.alert('Erreur', 'Impossible d\'ajouter le contact');
     }
   };
 
@@ -22,14 +22,14 @@ const AddContactScreen: React.FC<AddContactScreenProps> = ({ navigation }) => {
     <View style={styles.container}>
       <TextInput
         style={styles.input}
-        value={userId}
-        onChangeText={setUserId}
-        placeholder="Enter contact's user ID"
+        value={username}
+        onChangeText={setUsername}
+        placeholder="Entrez le nom d'utilisateur du contact"
       />
       <Button
-        title="Add Contact"
+        title="Ajouter le contact"
         onPress={handleAddContact}
-        disabled={isLoading || !userId.trim()}
+        disabled={isLoading || !username.trim()}
       />
     </View>
   );

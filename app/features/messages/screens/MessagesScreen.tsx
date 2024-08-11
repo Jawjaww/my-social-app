@@ -6,7 +6,7 @@ import { useGetMessagesQuery, useSendMessageMutation, useDeleteMessageMutation }
 import { selectUser } from '../../authentication/authSelectors';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
-import { MessagesStackParamList } from '../../../navigation/AppNavigation';
+import { MessagesStackParamList } from '../../../types/sharedTypes';
 import { useTranslation } from 'react-i18next';
 import Toast from '../../../components/Toast';
 
@@ -85,7 +85,7 @@ const MessagesScreen: React.FC<Props> = ({ navigation, route }) => {
       onSend={onSend}
       user={{
         _id: user.uid,
-        name: user.displayName || 'User',
+        name: user.username || 'User',
         avatar: user.photoURL || 'https://placeimg.com/140/140/any',
       }}
     />

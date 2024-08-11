@@ -1,8 +1,8 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { AppUser } from './authTypes';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { AppUser } from "../../types/sharedTypes";
 
 interface AuthState {
-  user: Omit<AppUser, 'stsTokenManager'> | null;
+  user: Omit<AppUser, "stsTokenManager"> | null;
   loading: boolean;
   error: string | null;
   isAuthenticated: boolean;
@@ -18,12 +18,15 @@ const initialState: AuthState = {
 };
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     setUser: (state, action: PayloadAction<AppUser | null>) => {
       if (action.payload) {
-        state.user = action.payload;
+        state.user = {
+          ...action.payload,
+          username: action.payload.username || action.payload.email?.split("@")[0] || 'Anonymous',
+        };
         state.isAuthenticated = true;
         state.isEmailVerified = action.payload.emailVerified;
       } else {
@@ -47,6 +50,7 @@ const authSlice = createSlice({
   },
 });
 
-export const { setUser, setLoading, setError, setIsEmailVerified } = authSlice.actions;
+export const { setUser, setLoading, setError, setIsEmailVerified } =
+  authSlice.actions;
 
 export default authSlice.reducer;

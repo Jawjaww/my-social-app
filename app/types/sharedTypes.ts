@@ -1,9 +1,11 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp, CompositeNavigationProp } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import styled from '@emotion/native';
+import { Theme } from '@emotion/react';
 
-// Shared types
-export interface SharedActivity {
+// Shared Data Types
+export interface Activity {
   id: string;
   userId: string;
   type:
@@ -23,21 +25,25 @@ export interface SharedActivity {
 
 export interface Contact {
   id: string;
-  name: string;
+  username: string;
   avatar?: string;
 }
 
 export interface User {
+  uid: string;
   id: string;
-  name: string;
-  avatar?: string;
+  email: string | null;
+  username: string | null;
+  photoURL: string | null;
+  avatar: string | null;
+  emailVerified: boolean;
 }
 
 // Auth types
 export interface AppUser {
   uid: string;
   email: string | null;
-  displayName: string | null;
+  username: string | null;
   photoURL: string | null;
   emailVerified: boolean;
   isAuthenticated: boolean;
@@ -63,11 +69,10 @@ export type ProfileStackParamList = {
   ProfileHome: undefined;
   EditEmail: undefined;
   EditPassword: undefined;
-  EditDisplayName: undefined;
+  Editusername: undefined;
   EditProfilePicture: undefined;
   VerifyNewEmail: undefined;
   NotificationSettings: undefined;
-  Pseudo: undefined;
   DeleteAccount: undefined;
 };
 
@@ -91,10 +96,7 @@ export type MainTabParamList = {
 };
 
 // Screen props types
-export type ProfileScreenProps = CompositeScreenProps<
-  NativeStackScreenProps<ProfileStackParamList, 'ProfileHome'>,
-  BottomTabScreenProps<MainTabParamList>
->;
+export type ProfileScreenProps = NativeStackScreenProps<ProfileStackParamList, 'ProfileHome'>;
 
 export interface MessageListScreenProps {
   navigation: NativeStackNavigationProp<MessagesStackParamList, 'MessageList'>;
@@ -142,3 +144,27 @@ export type BottomTabScreenProps<
   navigation: BottomTabNavigationProp<T, K>;
   route: RouteProp<T, K>;
 };
+
+export const Container = styled.View<{ theme: Theme }>`
+  flex: 1;
+  background-color: ${(props) => props.theme.colors.background};
+  padding: ${(props) => props.theme.spacing.md}px;
+`;
+
+export const Header = styled.Text<{ theme: Theme }>`
+  font-size: ${(props) => props.theme.fontSizes.large}px;
+  font-weight: bold;
+  color: ${(props) => props.theme.colors.text};
+  margin-bottom: ${(props) => props.theme.spacing.md}px;
+`;
+
+export const Button = styled.TouchableOpacity<{ theme: Theme; variant?: 'primary' | 'secondary' }>`
+  background-color: ${(props) => 
+    props.variant === 'secondary' 
+      ? props.theme.colors.secondary 
+      : props.theme.colors.primary};
+  padding: ${(props) => props.theme.spacing.sm}px ${(props) => props.theme.spacing.md}px;
+  border-radius: ${(props) => props.theme.borderRadius.medium}px;
+  align-items: center;
+  justify-content: center;
+`;

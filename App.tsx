@@ -10,6 +10,8 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from './app/i18n/i18n';
 import store from './app/store';
 import AppNavigation from './app/navigation/AppNavigation';
+import { ThemeProvider } from '@emotion/react';
+import { theme } from './app/styles/theme';
 
 enableScreens();
 
@@ -23,7 +25,11 @@ const App: React.FC = () => {
     <ErrorBoundary>
       <Provider store={store}>
         <I18nextProvider i18n={i18n}>
-          <AppNavigation />
+          <ThemeProvider theme={theme}>
+            <ErrorBoundary>
+              <AppNavigation />
+            </ErrorBoundary>
+          </ThemeProvider>
         </I18nextProvider>
       </Provider>
     </ErrorBoundary>

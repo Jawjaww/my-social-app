@@ -1,15 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { View, FlatList, TextInput, StyleSheet, TouchableOpacity, Text } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
-import { useGetDiscoverUsersQuery } from '../../../services/api';
-import UserListItem from '../../messages/components/UserListItem';
-import { User } from '../../../types/sharedTypes';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../../navigation/AppNavigation';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  FlatList,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
+import { useGetDiscoverUsersQuery } from "../../../services/api";
+import UserListItem from "../../messages/components/UserListItem";
+import { User } from "../../../types/sharedTypes";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../../../types/sharedTypes";
 
 const DiscoverScreen = () => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const navigation = useNavigation();
   const { data: discoverUsers, isLoading } = useGetDiscoverUsersQuery();
   const [filteredUsers, setFilteredUsers] = useState(discoverUsers);
@@ -17,15 +24,18 @@ const DiscoverScreen = () => {
   useEffect(() => {
     if (discoverUsers) {
       setFilteredUsers(
-        discoverUsers.filter((user: User) =>
-          user.name.toLowerCase().includes(searchQuery.toLowerCase())
+        discoverUsers.filter(
+          (user: User) =>
+            user.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user.username?.toLowerCase().includes(searchQuery.toLowerCase())
         )
       );
     }
   }, [discoverUsers, searchQuery]);
 
   const handleUserPress = (userId: string) => {
-    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    const navigation =
+      useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   };
 
   const renderCategoryItem = ({ item }: { item: string }) => (
@@ -37,7 +47,12 @@ const DiscoverScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.searchContainer}>
-        <Ionicons name="search" size={24} color="#999" style={styles.searchIcon} />
+        <Ionicons
+          name="search"
+          size={24}
+          color="#999"
+          style={styles.searchIcon}
+        />
         <TextInput
           style={styles.searchInput}
           placeholder="Découvrir de nouveaux amis"
@@ -48,7 +63,7 @@ const DiscoverScreen = () => {
       <FlatList
         horizontal
         showsHorizontalScrollIndicator={false}
-        data={['Tous', 'Populaires', 'Nouveaux', 'Recommandés']}
+        data={["Tous", "Populaires", "Nouveaux", "Recommandés"]}
         renderItem={renderCategoryItem}
         keyExtractor={(item) => item}
         style={styles.categoriesList}
@@ -56,13 +71,15 @@ const DiscoverScreen = () => {
       <FlatList
         data={filteredUsers}
         renderItem={({ item }) => (
-            <UserListItem
+          <UserListItem
             user={{
-              id: item.id,
-              name: item.name,
-              avatar: item.avatar || 'https://via.placeholder.com/150'
+              id: item.uid,
+              username: item.username || '',              avatar:
+                item.photoURL ||
+                item.avatar ||
+                "https://via.placeholder.com/150",
             }}
-            onPress={() => handleUserPress(item.id)}
+            onPress={() => handleUserPress(item.uid)}
             showAddButton
           />
         )}
@@ -75,12 +92,12 @@ const DiscoverScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: "#F5F5F5",
   },
   searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'white',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "white",
     borderRadius: 20,
     margin: 10,
     paddingHorizontal: 10,
@@ -98,13 +115,13 @@ const styles = StyleSheet.create({
   categoryItem: {
     paddingHorizontal: 15,
     paddingVertical: 8,
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
     borderRadius: 20,
     marginHorizontal: 5,
   },
   categoryText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: "white",
+    fontWeight: "bold",
   },
 });
 

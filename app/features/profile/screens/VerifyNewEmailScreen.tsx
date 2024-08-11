@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { useSendVerificationEmailMutation } from "../../../services/api";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { ProfileStackParamList } from "../../../navigation/AppNavigation";
+import { ProfileStackParamList } from "../../../types/sharedTypes";
 
 const Container = styled.View`
   flex: 1;

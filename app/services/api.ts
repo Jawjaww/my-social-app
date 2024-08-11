@@ -1,23 +1,46 @@
-import { applyActionCode } from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, sendEmailVerification, reauthenticateWithCredential, EmailAuthProvider, updateProfile, applyActionCode, updatePassword } from "firebase/auth";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, sendEmailVerification, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { getFirestore, doc, updateDoc } from "firebase/firestore";
 import { IMessage } from "react-native-gifted-chat";
 import { app, auth, db } from "./firebaseConfig";
-import { Activity, Contact, User } from "../types/sharedTypes";
-import { AppUser } from "../features/authentication/authTypes";
+import { Activity, Contact, User, AppUser } from "../types/sharedTypes";
+import { getFirestore, doc, updateDoc, writeBatch, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 
 export const api = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({ baseUrl: "/" }),
   endpoints: (builder) => ({
-    addContact: builder.mutation<Contact, { userId: string }>({
-      query: (body) => ({
-        url: "contacts",
-        method: "POST",
-        body,
-      }),
+    addContact: builder.mutation<void, { username: string }>({
+      queryFn: async ({ username }, { getState }) => {
+        try {
+          const currentUser = auth.currentUser;
+          if (!currentUser) {
+            throw new Error("User not authenticated");
+          }
+    
+          const db = getFirestore();
+          const usernameDoc = await getDoc(doc(db, "usernames", username));
+    
+          if (!usernameDoc.exists()) {
+            throw new Error("User not found");
+          }
+    
+          const contactUid = usernameDoc.data().uid;
+          const contactRef = doc(db, "contacts", currentUser.uid, "userContacts", contactUid);
+          await setDoc(contactRef, { timestamp: serverTimestamp() });
+    
+          return { data: undefined };
+        } catch (error: any) {
+          return { error: { status: "CUSTOM_ERROR", error: error.message } };
+        }
+      },
+    }),
+    checkUsernameUniqueness: builder.mutation<boolean, string>({
+      queryFn: async (username) => {
+        const db = getFirestore();
+        const usernameDoc = await getDoc(doc(db, "usernames", username));
+        return { data: !usernameDoc.exists() };
+      },
     }),
     deleteAccount: builder.mutation<{ success: boolean }, { password: string }>({
       queryFn: async ({ password }) => {
@@ -106,13 +129,6 @@ export const api = createApi({
         }
       },
     }),
-    setPseudo: builder.mutation<void, string>({
-      query: (pseudo) => ({
-        url: "/setPseudo",
-        method: "POST",
-        body: { pseudo },
-      }),
-    }),
     signIn: builder.mutation<AppUser, { email: string; password: string }>({
       queryFn: async ({ email, password }) => {
         try {
@@ -120,8 +136,8 @@ export const api = createApi({
           const firebaseUser = userCredential.user;
           const appUser: AppUser = {
             uid: firebaseUser.uid,
+            username: firebaseUser.displayName || '',
             email: firebaseUser.email || '',
-            displayName: firebaseUser.displayName || null,
             photoURL: firebaseUser.photoURL || null,
             emailVerified: firebaseUser.emailVerified,
             isAuthenticated: true,
@@ -156,26 +172,47 @@ export const api = createApi({
       },
     }),
     signUp: builder.mutation({
-      queryFn: async ({ email, password }) => {
+      queryFn: async ({ email, password, username }) => {
         try {
+          const db = getFirestore();
+          const usernameDoc = await getDoc(doc(db, "usernames", username));
+    
+          if (usernameDoc.exists()) {
+            throw new Error("Username already exists");
+          }
+    
           const userCredential = await createUserWithEmailAndPassword(auth, email, password);
           const firebaseUser = userCredential.user;
-          const serializableUser = {
-            uid: firebaseUser.uid,
+    
+          const batch = writeBatch(db);
+          batch.set(doc(db, "users", firebaseUser.uid), {
             email: firebaseUser.email,
+            username: username,
+            photoURL: null,
             emailVerified: firebaseUser.emailVerified,
+          });
+          batch.set(doc(db, "usernames", username), { uid: firebaseUser.uid });
+          await batch.commit();
+    
+          const appUser: AppUser = {
+            uid: firebaseUser.uid,
+            email: firebaseUser.email || '',
+            username: username,
+            photoURL: null,
+            emailVerified: firebaseUser.emailVerified,
+            isAuthenticated: true,
           };
-          return { data: serializableUser };
+          return { data: appUser };
         } catch (error: any) {
           return { error: { status: "CUSTOM_ERROR", error: error.message } };
         }
       },
     }),
-    updateDisplayName: builder.mutation<void, string>({
-      query: (newDisplayName) => ({
-        url: "/updateDisplayName",
+    updateusername: builder.mutation<void, string>({
+      query: (newusername) => ({
+        url: "/updateusername",
         method: "POST",
-        body: { displayName: newDisplayName },
+        body: { username: newusername },
       }),
     }),
     updateEmail: builder.mutation<void, { newEmail: string; password: string }>({
@@ -185,12 +222,26 @@ export const api = createApi({
         body: { newEmail, password },
       }),
     }),
-    updatePassword: builder.mutation<void, { currentPassword: string; newPassword: string }>({
-      query: ({ currentPassword, newPassword }) => ({
-        url: "/updatePassword",
-        method: "POST",
-        body: { currentPassword, newPassword },
-      }),
+    updatePassword: builder.mutation<{ success: boolean }, { currentPassword: string; newPassword: string }>({
+      queryFn: async ({ currentPassword, newPassword }) => {
+        const auth = getAuth();
+        const user = auth.currentUser;
+    
+        if (!user || !user.email) {
+          return { error: { status: 'CUSTOM_ERROR', error: 'User not authenticated' } };
+        }
+    
+        const credential = EmailAuthProvider.credential(user.email, currentPassword);
+    
+        try {
+          await reauthenticateWithCredential(user, credential);
+          await updatePassword(user, newPassword);
+          return { data: { success: true } };
+        } catch (error: any) {
+          console.error('Error during password update:', error);
+          return { error: { status: 'CUSTOM_ERROR', error: error.message } };
+        }
+      },
     }),
     updateProfilePicture: builder.mutation<string, { uri: string; isPublic: boolean }>({
       queryFn: async ({ uri, isPublic }, { getState }) => {
@@ -230,7 +281,7 @@ export const api = createApi({
             const updatedUser: AppUser = {
               uid: user.uid,
               email: user.email,
-              displayName: user.displayName,
+              username: user.displayName || user.email?.split('@')[0] || null,
               photoURL: user.photoURL,
               emailVerified: user.emailVerified,
               isAuthenticated: true,
@@ -262,14 +313,14 @@ export const {
   useSendMessageMutation,
   useSendPasswordResetEmailMutation,
   useSendVerificationEmailMutation,
-  useSetPseudoMutation,
   useSignInMutation,
   useSignInWithGoogleMutation,
   useSignOutMutation,
   useSignUpMutation,
-  useUpdateDisplayNameMutation,
+  useUpdateusernameMutation,
   useUpdateEmailMutation,
   useUpdatePasswordMutation,
   useUpdateProfilePictureMutation,
   useVerifyEmailMutation,
+  useCheckUsernameUniquenessMutation,
 } = api;

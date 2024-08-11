@@ -1,22 +1,18 @@
-import React from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import React from 'react';
+import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 interface UserListItemProps {
   user: {
     id: string;
-    username: string | null;
+    username: string;
     avatar: string;
   };
   onPress: () => void;
   showAddButton?: boolean;
 }
 
-const UserListItem: React.FC<UserListItemProps> = ({
-  user,
-  onPress,
-  showAddButton,
-}) => {
+const UserListItem: React.FC<UserListItemProps> = ({ user, onPress, showAddButton }) => {
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
       <Image source={{ uri: user.avatar }} style={styles.avatar} />
@@ -34,11 +30,11 @@ const UserListItem: React.FC<UserListItemProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 10,
     borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
+    borderBottomColor: '#E0E0E0',
   },
   avatar: {
     width: 50,
@@ -51,7 +47,7 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   addButton: {
     padding: 5,

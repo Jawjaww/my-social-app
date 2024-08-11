@@ -11,7 +11,7 @@ import {
   MainTabParamList,
   AuthStackParamList,
   RootStackParamList,
-} from "../../../navigation/AppNavigation";
+} from "../../../types/sharedTypes";
 import {
   NavigationProp,
   CompositeNavigationProp,
@@ -58,6 +58,7 @@ function SignUpScreen() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [username, setUsername] = useState<string>("");
   const { t } = useTranslation();
   const navigation = useNavigation<SignUpScreenNavigationProp>();
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +69,7 @@ function SignUpScreen() {
       return;
     }
     try {
-      const user = await signUp({ email, password }).unwrap();
+      const user = await signUp({ email, password, username }).unwrap();
       if (user) {
         await sendVerificationEmail().unwrap();
         navigation.navigate("VerifyEmail", { oobCode: undefined });
@@ -76,8 +77,8 @@ function SignUpScreen() {
         throw new Error("User creation failed");
       }
     } catch (err) {
-      const errorMessage = handleAndLogError(err as AppError, t);
-      setError(errorMessage);
+      const { message } = handleAndLogError(err as AppError, t);
+      setError(message);
     }
   };
 
@@ -101,6 +102,12 @@ function SignUpScreen() {
         value={confirmPassword}
         secureTextEntry
         onChangeText={setConfirmPassword}
+      />
+      <Input
+        placeholder={t("signUp.usernamePlaceholder")}
+        value={username}
+        onChangeText={setUsername}
+        autoCapitalize="none"
       />
       {error && <ErrorText>{error}</ErrorText>}
       <Button

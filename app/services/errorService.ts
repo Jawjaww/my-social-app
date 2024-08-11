@@ -5,11 +5,11 @@ import { SerializedError } from "@reduxjs/toolkit";
 
 export type AppError = FetchBaseQueryError | SerializedError | Error;
 
-export const handleAndLogError = (error: AppError, t: TFunction): string => {
+export const handleAndLogError = (error: AppError, t: TFunction): { message: string; code: string } => {
   const errorCode = getErrorCode(error);
   const errorMessage = getErrorMessage(errorCode);
   logError(error, errorCode, errorMessage);
-  return t(errorMessage);
+  return { message: t(errorMessage), code: errorCode };
 };
 
 const getErrorCode = (error: AppError): string => {

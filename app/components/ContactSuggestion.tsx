@@ -10,7 +10,7 @@ const ContactSuggestion: React.FC<ContactSuggestionProps> = ({ contact }) => {
   return (
     <TouchableOpacity>
       <View>
-        <Text>{contact.name}</Text>
+        <Text>{contact.username}</Text>
       </View>
     </TouchableOpacity>
   );

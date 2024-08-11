@@ -1,27 +1,21 @@
 import React from 'react';
-import styled from '@emotion/native';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store';
+import { ToastWrapper, ToastContainer, ToastText } from './StyledComponents';
 
-const ToastContainer = styled.View<{ type: 'success' | 'error' }>`
-  padding: 10px;
-  margin: 10px;
-  border-radius: 5px;
-  background-color: ${props => props.type === 'success' ? '#4CAF50' : '#F44336'};
-`;
+const Toast: React.FC = () => {
+  const toasts = useSelector((state: RootState) => state.toast.toasts);
 
-const ToastText = styled.Text`
-  color: white;
-`;
+  if (toasts.length === 0) return null;
 
-interface ToastProps {
-  message: string;
-  type: 'success' | 'error';
-}
-
-const Toast: React.FC<ToastProps> = ({ message, type }) => {
   return (
-    <ToastContainer type={type}>
-      <ToastText>{message}</ToastText>
-    </ToastContainer>
+    <ToastWrapper>
+      {toasts.map((toast) => (
+        <ToastContainer key={toast.id} type={toast.type}>
+          <ToastText>{toast.message}</ToastText>
+        </ToastContainer>
+      ))}
+    </ToastWrapper>
   );
 };
 

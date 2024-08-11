@@ -3,9 +3,9 @@ import { Button } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import styled from '@emotion/native';
 import { useTranslation } from 'react-i18next';
-import { useUpdateDisplayNameMutation } from '../../../services/api';
+import { useUpdateusernameMutation } from '../../../services/api';
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { ProfileStackParamList } from "../../../navigation/AppNavigation";
+import { ProfileStackParamList } from '../../../types/sharedTypes';
 
 const Container = styled.View`
   flex: 1;
@@ -30,19 +30,19 @@ const ErrorText = styled.Text`
   margin-bottom: 10px;
 `;
 
-const EditDisplayNameScreen: React.FC = () => {
-  const [displayName, setDisplayName] = useState('');
+const EditusernameScreen: React.FC = () => {
+  const [username, setusername] = useState('');
   const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParamList>>();
   const { t } = useTranslation();
-  const [updateDisplayName, { isLoading, error }] = useUpdateDisplayNameMutation();
+  const [updateusername, { isLoading, error }] = useUpdateusernameMutation();
 
   const handleSave = async () => {
-    if (!displayName) {
+    if (!username) {
       return;
     }
 
     try {
-      await updateDisplayName(displayName).unwrap();
+      await updateusername(username).unwrap();
       navigation.goBack();
     } catch (err) {
       console.error(err);
@@ -51,16 +51,16 @@ const EditDisplayNameScreen: React.FC = () => {
 
   return (
     <Container>
-      <Header>{t('editDisplayName.title')}</Header>
+      <Header>{t('editusername.title')}</Header>
       <Input
-        placeholder={t('editDisplayName.placeholder')}
-        value={displayName}
-        onChangeText={setDisplayName}
+        placeholder={t('editusername.placeholder')}
+        value={username}
+        onChangeText={setusername}
       />
-      {error && <ErrorText>{(error as any).data?.message || t("editDisplayName.error.generic")}</ErrorText>}
-      <Button title={t('editDisplayName.saveButton')} onPress={handleSave} disabled={isLoading} />
+      {error && <ErrorText>{(error as any).data?.message || t("editusername.error.generic")}</ErrorText>}
+      <Button title={t('editusername.saveButton')} onPress={handleSave} disabled={isLoading} />
     </Container>
   );
 };
 
-export default EditDisplayNameScreen;
+export default EditusernameScreen;

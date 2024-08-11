@@ -15,7 +15,7 @@ import {
 } from "../../../services/api";
 import UserListItem from "../components/UserListItem";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { MessagesStackParamList } from "../../../navigation/AppNavigation";
+import { MessagesStackParamList } from "../../../types/sharedTypes";
 import { Contact } from "../../../types/sharedTypes";
 import { ActivityIndicator } from "react-native";
 
@@ -32,7 +32,7 @@ const NewChatScreen = () => {
     if (contacts) {
       setFilteredContacts(
         contacts.filter((contact) =>
-          contact.name.toLowerCase().includes(searchQuery.toLowerCase())
+          contact.username.toLowerCase().includes(searchQuery.toLowerCase())
         )
       );
     }
@@ -52,7 +52,8 @@ const NewChatScreen = () => {
     <UserListItem
       user={{
         id: item.id,
-        name: item.name,
+        username: item.username,
+        username: item.username,
         avatar: item.avatar || "https://via.placeholder.com/150",
       }}
       onPress={() => handleUserPress(item.id)}

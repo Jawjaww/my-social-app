@@ -2,7 +2,7 @@ import React from 'react';
 import { View, FlatList, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useGetContactsQuery } from '../../../services/api';
-import { ContactListScreenProps } from '../contactsTypes';
+import { ContactListScreenProps } from '../../../types/sharedTypes';
 
 const ContactListScreen: React.FC<ContactListScreenProps> = ({ navigation }) => {
   const { data: contacts, isLoading, error } = useGetContactsQuery();
@@ -28,7 +28,7 @@ const ContactListScreen: React.FC<ContactListScreenProps> = ({ navigation }) => 
               params: { screen: 'Chat', params: { contactId: item.id } }
             } as any)}
           >
-            <Text>{item.name}</Text>
+            <Text>{item.username}</Text>
           </TouchableOpacity>
         )}
       />

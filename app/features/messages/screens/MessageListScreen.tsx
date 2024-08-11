@@ -5,9 +5,8 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { RootState } from "../../../store";
 import MessageListItem from "../components/MessageListItem";
-import { MessageListScreenProps } from "../messagesTypes";
+import { MessageListScreenProps, MessagesStackParamList } from "../../../types/sharedTypes";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { MessagesStackParamList } from "../../../navigation/AppNavigation";
 
 const MessageListScreen: React.FC<MessageListScreenProps> = () => {
   const navigation =
