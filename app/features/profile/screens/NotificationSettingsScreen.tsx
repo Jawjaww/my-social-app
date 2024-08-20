@@ -68,8 +68,8 @@ const NotificationSettingsScreen: React.FC = () => {
       Toast({ message: t("notification.success.saved"), type: "success" });
       navigation.goBack();
     } catch (error) {
-      const errorMessage = handleAndLogError(error as AppError, t);
-      setError(errorMessage);
+      const { message } = handleAndLogError(error as AppError, t);
+      setError(message);
       Toast({ message: t("notification.error.saveFailed"), type: "error" });
     }
   };

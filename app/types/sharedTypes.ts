@@ -1,8 +1,11 @@
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RouteProp, CompositeNavigationProp } from '@react-navigation/native';
-import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import styled from '@emotion/native';
-import { Theme } from '@emotion/react';
+import { RouteProp, CompositeNavigationProp } from "@react-navigation/native";
+import styled from "@emotion/native";
+import { Theme } from "@emotion/react";
+import { NavigatorScreenParams } from '@react-navigation/native';
+import { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
+import { BottomTabNavigationProp, BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+
+// export { NavigatorScreenParams, NativeStackNavigationProp, NativeStackScreenProps, BottomTabNavigationProp, BottomTabScreenProps };
 
 // Shared Data Types
 export interface Activity {
@@ -47,6 +50,7 @@ export interface AppUser {
   photoURL: string | null;
   emailVerified: boolean;
   isAuthenticated: boolean;
+  isAwaitingEmailVerification?: boolean;
 }
 
 // Navigation types
@@ -54,7 +58,7 @@ export type RootStackParamList = {
   Boot: undefined;
   Auth: NavigatorScreenParams<AuthStackParamList>;
   Main: NavigatorScreenParams<MainTabParamList>;
-  VerifyEmail: { oobCode?: string };
+  VerifyEmail: undefined;
 };
 
 export type AuthStackParamList = {
@@ -62,7 +66,7 @@ export type AuthStackParamList = {
   SignUp: undefined;
   GoogleSignIn: undefined;
   ForgotPassword: undefined;
-  ResetPassword: { oobCode: string };
+  ResetPassword: { oobCode?: string; email?: string };
 };
 
 export type ProfileStackParamList = {
@@ -71,9 +75,12 @@ export type ProfileStackParamList = {
   EditPassword: undefined;
   Editusername: undefined;
   EditProfilePicture: undefined;
-  VerifyNewEmail: undefined;
+  VerifyNewEmail: { oobCode: string };
+  VerifyBeforeUpdateEmail: undefined;
   NotificationSettings: undefined;
   DeleteAccount: undefined;
+  FinalizeEmailUpdate: { newEmail: string; mode?: string };
+  SendVerificationLink: undefined;
 };
 
 export type ContactsStackParamList = {
@@ -96,20 +103,23 @@ export type MainTabParamList = {
 };
 
 // Screen props types
-export type ProfileScreenProps = NativeStackScreenProps<ProfileStackParamList, 'ProfileHome'>;
+export type ProfileScreenProps = NativeStackScreenProps<
+  ProfileStackParamList,
+  "ProfileHome"
+>;
 
 export interface MessageListScreenProps {
-  navigation: NativeStackNavigationProp<MessagesStackParamList, 'MessageList'>;
+  navigation: NativeStackNavigationProp<MessagesStackParamList, "MessageList">;
 }
 
 export interface ChatScreenProps {
-  navigation: NativeStackNavigationProp<MessagesStackParamList, 'Chat'>;
-  route: RouteProp<MessagesStackParamList, 'Chat'>;
+  navigation: NativeStackNavigationProp<MessagesStackParamList, "Chat">;
+  route: RouteProp<MessagesStackParamList, "Chat">;
 }
 
 export interface ContactListScreenProps {
   navigation: CompositeNavigationProp<
-    NativeStackNavigationProp<ContactsStackParamList, 'ContactList'>,
+    NativeStackNavigationProp<ContactsStackParamList, "ContactList">,
     CompositeNavigationProp<
       NativeStackNavigationProp<RootStackParamList>,
       NativeStackNavigationProp<MainTabParamList>
@@ -118,32 +128,26 @@ export interface ContactListScreenProps {
 }
 
 export interface AddContactScreenProps {
-  navigation: NativeStackNavigationProp<ContactsStackParamList, 'AddContact'>;
+  navigation: NativeStackNavigationProp<ContactsStackParamList, "AddContact">;
 }
-
-// Utility types
-export type NavigatorScreenParams<T> = {
-  [K in keyof T]: undefined extends T[K] ? { screen: K; params?: T[K] }
-    : { screen: K; params: T[K] };
-}[keyof T];
 
 export type CompositeScreenProps<T, S> = T & S;
 
-export type NativeStackScreenProps<
-  T extends Record<string, object | undefined>,
-  K extends keyof T
-> = {
-  navigation: NativeStackNavigationProp<T, K>;
-  route: RouteProp<T, K>;
-};
+// export type NativeStackScreenProps<
+//   T extends Record<string, object | undefined>,
+//   K extends keyof T
+// > = {
+//   navigation: NativeStackNavigationProp<T, K>;
+//   route: RouteProp<T, K>;
+// };
 
-export type BottomTabScreenProps<
-  T extends Record<string, object | undefined>,
-  K extends keyof T = keyof T
-> = {
-  navigation: BottomTabNavigationProp<T, K>;
-  route: RouteProp<T, K>;
-};
+// export type BottomTabScreenProps<
+//   T extends Record<string, object | undefined>,
+//   K extends keyof T = keyof T
+// > = {
+//   navigation: BottomTabNavigationProp<T, K>;
+//   route: RouteProp<T, K>;
+// };
 
 export const Container = styled.View<{ theme: Theme }>`
   flex: 1;
@@ -158,12 +162,16 @@ export const Header = styled.Text<{ theme: Theme }>`
   margin-bottom: ${(props) => props.theme.spacing.md}px;
 `;
 
-export const Button = styled.TouchableOpacity<{ theme: Theme; variant?: 'primary' | 'secondary' }>`
-  background-color: ${(props) => 
-    props.variant === 'secondary' 
-      ? props.theme.colors.secondary 
+export const Button = styled.TouchableOpacity<{
+  theme: Theme;
+  variant?: "primary" | "secondary";
+}>`
+  background-color: ${(props) =>
+    props.variant === "secondary"
+      ? props.theme.colors.secondary
       : props.theme.colors.primary};
-  padding: ${(props) => props.theme.spacing.sm}px ${(props) => props.theme.spacing.md}px;
+  padding: ${(props) => props.theme.spacing.sm}px
+    ${(props) => props.theme.spacing.md}px;
   border-radius: ${(props) => props.theme.borderRadius.medium}px;
   align-items: center;
   justify-content: center;

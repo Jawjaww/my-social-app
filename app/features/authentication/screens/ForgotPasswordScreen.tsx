@@ -1,37 +1,92 @@
-import React, { useState } from 'react';
-import { View, TextInput, Button, Text } from 'react-native';
-import { useTranslation } from 'react-i18next';
-import { useSendPasswordResetEmailMutation } from '../../../services/api';
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { useSendPasswordResetEmailMutation } from "../../../services/api";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import {
+  FormContainer,
+  FormInput,
+  FormButton,
+  FormButtonText,
+  FormErrorText,
+} from "../../../styles/formStyles";
+import { addToast } from "../../../features/toast/toastSlice";
+import { useDispatch } from "react-redux";
+import { useNavigation, NavigationProp } from "@react-navigation/native";
+import { AuthStackParamList } from "../../../types/sharedTypes";
+
+const schema = yup.object().shape({
+  email: yup
+    .string()
+    .email("forgotPassword.error.invalidEmail")
+    .required("forgotPassword.error.required"),
+});
+
+type ForgotPasswordScreenNavigationProp = NavigationProp<
+  AuthStackParamList,
+  "ForgotPassword"
+>;
 
 const ForgotPasswordScreen = () => {
   const { t } = useTranslation();
-  const [sendPasswordResetEmail, { isLoading }] = useSendPasswordResetEmailMutation();
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<boolean>(false);
+  const dispatch = useDispatch();
+  const navigation = useNavigation<ForgotPasswordScreenNavigationProp>();
+  const [sendPasswordResetEmail, { isLoading }] =
+    useSendPasswordResetEmailMutation();
 
-  const handleResetPassword = async () => {
-    setError(null);
-    setSuccess(false);
+  const {
+    control,
+    handleSubmit,
+    setError,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+  });
+
+  const onSubmit = async (data: { email: string }) => {
     try {
-      await sendPasswordResetEmail(email).unwrap();
-      setSuccess(true);
+      await sendPasswordResetEmail(data.email).unwrap();
+      dispatch(
+        addToast({ message: t("forgotPassword.success"), type: "success" })
+      );
+      navigation.navigate("ResetPassword", { email: data.email, oobCode: "" });
     } catch (err) {
-      setError(t('forgotPassword.error.generic'));
+      if (err && typeof err === "object" && "error" in err) {
+        setError("email", { type: "manual", message: t(err.error as string) });
+      } else {
+        setError("email", {
+          type: "manual",
+          message: t("forgotPassword.error.generic"),
+        });
+      }
     }
   };
 
   return (
-    <View>
-      <TextInput
-        placeholder={t('forgotPassword.emailPlaceholder')}
-        value={email}
-        onChangeText={setEmail}
+    <FormContainer>
+      <Controller
+        control={control}
+        name="email"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <FormInput
+            placeholder={t("forgotPassword.emailPlaceholder")}
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+          />
+        )}
       />
-      {error && <Text style={{ color: 'red' }}>{error}</Text>}
-      {success && <Text style={{ color: 'green' }}>{t('forgotPassword.success')}</Text>}
-      <Button title={t('forgotPassword.button')} onPress={handleResetPassword} disabled={isLoading} />
-    </View>
+      {errors.email && (
+        <FormErrorText>{t(errors.email.message || "")}</FormErrorText>
+      )}
+      <FormButton onPress={handleSubmit(onSubmit)} disabled={isLoading}>
+        <FormButtonText>{t("forgotPassword.button")}</FormButtonText>
+      </FormButton>
+      <FormButton onPress={() => navigation.goBack()} variant="secondary">
+        <FormButtonText>{t("common.buttons.back")}</FormButtonText>
+      </FormButton>
+    </FormContainer>
   );
 };
 

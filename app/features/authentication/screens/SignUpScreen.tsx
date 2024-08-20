@@ -1,14 +1,11 @@
 import React, { useState } from "react";
-import { Button, Text } from "react-native";
 import { useTranslation } from "react-i18next";
-import styled from "@emotion/native";
 import { useNavigation } from "@react-navigation/native";
 import {
   useSignUpMutation,
   useSendVerificationEmailMutation,
 } from "../../../services/api";
 import {
-  MainTabParamList,
   AuthStackParamList,
   RootStackParamList,
 } from "../../../types/sharedTypes";
@@ -16,117 +13,166 @@ import {
   NavigationProp,
   CompositeNavigationProp,
 } from "@react-navigation/native";
-import Toast from "../../../components/Toast";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import {
+  FormContainer,
+  FormInput,
+  FormButton,
+  FormButtonText,
+  FormErrorText,
+  FormLinkText,
+} from "../../../styles/formStyles";
 import { handleAndLogError, AppError } from "../../../services/errorService";
+import { useDispatch } from "react-redux";
+import { addToast } from "../../toast/toastSlice";
 
 type SignUpScreenNavigationProp = CompositeNavigationProp<
   NavigationProp<AuthStackParamList>,
   NavigationProp<RootStackParamList>
 >;
 
-const Container = styled.View`
-  flex: 1;
-  padding: 20px;
-  justify-content: center;
-  align-items: center;
-`;
-
-const Input = styled.TextInput`
-  height: 40px;
-  border-color: gray;
-  border-width: 1px;
-  margin-bottom: 20px;
-  padding-horizontal: 10px;
-  width: 100%;
-`;
-
-const ErrorText = styled.Text`
-  color: red;
-  margin-bottom: 10px;
-`;
-
-const LinkText = styled.Text`
-  color: blue;
-  margin-top: 10px;
-  text-decoration: underline;
-`;
+const schema = yup.object().shape({
+  email: yup
+    .string()
+    .email("signUp.error.invalidEmail")
+    .required("common.errors.required"),
+  password: yup
+    .string()
+    .min(6, "signUp.error.passwordTooShort")
+    .required("common.errors.required"),
+  confirmPassword: yup
+    .string()
+    .oneOf([yup.ref("password")], "signUp.error.passwordMismatch")
+    .required("common.errors.required"),
+});
 
 function SignUpScreen() {
-  const [signUp, { isLoading }] = useSignUpMutation();
-  const [sendVerificationEmail, { isLoading: isSendingVerificationEmail }] =
-    useSendVerificationEmailMutation();
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [confirmPassword, setConfirmPassword] = useState<string>("");
-  const [username, setUsername] = useState<string>("");
   const { t } = useTranslation();
   const navigation = useNavigation<SignUpScreenNavigationProp>();
-  const [error, setError] = useState<string | null>(null);
+  const [signUp, { isLoading }] = useSignUpMutation();
+  const [sendVerificationEmail] = useSendVerificationEmailMutation();
+  const dispatch = useDispatch();
+  const [tempErrors, setTempErrors] = useState<
+    Record<string, string | undefined>
+  >({});
 
-  const handleSignUp = async () => {
-    if (password !== confirmPassword) {
-      setError(t("auth.error.passwordMismatch"));
-      return;
-    }
+  const {
+    control,
+    handleSubmit,
+    setError,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+  });
+
+  const showTempError = (field: string, message: string) => {
+    setTempErrors((prev) => ({ ...prev, [field]: message }));
+    setTimeout(() => {
+      setTempErrors((prev) => ({ ...prev, [field]: undefined }));
+    }, 5000); // Error will disappear after 5 seconds
+  };
+
+  const onSubmit = async (data: {
+    email: string;
+    password: string;
+    confirmPassword: string;
+  }) => {
     try {
-      const user = await signUp({ email, password, username }).unwrap();
+      const user = await signUp({
+        email: data.email,
+        password: data.password,
+      }).unwrap();
       if (user) {
         await sendVerificationEmail().unwrap();
-        navigation.navigate("VerifyEmail", { oobCode: undefined });
+        dispatch(addToast({ message: t("signUp.success"), type: "success" }));
+        navigation.navigate("VerifyEmail");
       } else {
         throw new Error("User creation failed");
       }
     } catch (err) {
-      const { message } = handleAndLogError(err as AppError, t);
-      setError(message);
+      const { message, code } = handleAndLogError(err as AppError, t);
+      if (code === "auth/email-already-in-use") {
+        showTempError("email", t("signUp.error.emailInUse"));
+      } else {
+        dispatch(addToast({ message, type: "error" }));
+      }
     }
   };
 
   return (
-    <Container>
-      <Input
-        placeholder={t("signUp.emailPlaceholder")}
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
+    <FormContainer>
+      <Controller
+        control={control}
+        name="email"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <FormInput
+            placeholder={t("signUp.emailPlaceholder")}
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+        )}
       />
-      <Input
-        placeholder={t("signUp.passwordPlaceholder")}
-        value={password}
-        secureTextEntry
-        onChangeText={setPassword}
+      {(errors.email || tempErrors.email) && (
+        <FormErrorText>
+          {t(errors.email?.message || tempErrors.email || "")}
+        </FormErrorText>
+      )}
+
+      <Controller
+        control={control}
+        name="password"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <FormInput
+            placeholder={t("signUp.passwordPlaceholder")}
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+            secureTextEntry
+          />
+        )}
       />
-      <Input
-        placeholder={t("signUp.confirmPasswordPlaceholder")}
-        value={confirmPassword}
-        secureTextEntry
-        onChangeText={setConfirmPassword}
+      {errors.password && (
+        <FormErrorText>{t(errors.password.message || "")}</FormErrorText>
+      )}
+
+      <Controller
+        control={control}
+        name="confirmPassword"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <FormInput
+            placeholder={t("signUp.confirmPasswordPlaceholder")}
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+            secureTextEntry
+          />
+        )}
       />
-      <Input
-        placeholder={t("signUp.usernamePlaceholder")}
-        value={username}
-        onChangeText={setUsername}
-        autoCapitalize="none"
-      />
-      {error && <ErrorText>{error}</ErrorText>}
-      <Button
-        title={t("signUp.button")}
-        onPress={handleSignUp}
-        disabled={isLoading}
-      />
-      <LinkText
+      {errors.confirmPassword && (
+        <FormErrorText>{t(errors.confirmPassword.message || "")}</FormErrorText>
+      )}
+
+      <FormButton onPress={handleSubmit(onSubmit)} disabled={isLoading}>
+        <FormButtonText>{t("signUp.button")}</FormButtonText>
+      </FormButton>
+
+      <FormLinkText
         onPress={() => navigation.navigate("Auth", { screen: "SignIn" })}
       >
         {t("signUp.alreadyHaveAccount")}
-      </LinkText>
-      <LinkText
+      </FormLinkText>
+
+      <FormLinkText
         onPress={() => navigation.navigate("Auth", { screen: "GoogleSignIn" })}
       >
         {t("signUp.googleSignUp")}
-      </LinkText>
-      <Button title={t("signUp.back")} onPress={() => navigation.goBack()} />
-    </Container>
+      </FormLinkText>
+    </FormContainer>
   );
 }
 

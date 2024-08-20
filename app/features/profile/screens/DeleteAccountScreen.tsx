@@ -3,6 +3,7 @@ import { View, Text, TextInput, Button, Alert } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useDeleteAccountMutation } from "../../../services/api";
 import Toast from "../../../components/Toast";
+import { addToast } from '../../toast/toastSlice';
 import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../../authentication/authSlice";
 import { selectUser } from "../../authentication/authSelectors";
@@ -63,7 +64,7 @@ const DeleteAccountScreen: React.FC = () => {
               }).unwrap();
               if (result.success) {
                 dispatch(setUser(null));
-                Toast({ message: t("deleteAccount.success"), type: "success" });
+                dispatch(addToast({ message: t("deleteAccount.success"), type: "success" }));
               } else {
                 throw new Error("Account deletion failed");
               }

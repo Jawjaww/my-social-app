@@ -118,6 +118,13 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
               {t("profile.editProfilePicture")}
             </ProfileButtonText>
           </ProfileButton>
+          <ProfileButton
+            onPress={() => navigation.navigate("SendVerificationLink")}
+          >
+            <ProfileButtonText>
+              {t("profile.sendVerificationLink")}
+            </ProfileButtonText>
+          </ProfileButton>
           <ProfileButton onPress={() => navigation.navigate("EditEmail")}>
             <ProfileButtonText>{t("profile.editEmail")}</ProfileButtonText>
           </ProfileButton>

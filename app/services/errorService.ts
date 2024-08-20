@@ -20,6 +20,8 @@ const getErrorCode = (error: AppError): string => {
         : `${error.status}`;
     } else if ('code' in error && typeof error.code === 'string') {
       return error.code;
+    } else if ('message' in error && typeof error.message === 'string') {
+      return error.message;
     }
   }
   return 'unknown';

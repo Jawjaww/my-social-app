@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import Toast from '../components/Toast';
 import { removeToast } from '../features/toast/toastSlice';
-import { RootState } from '../store';
+import { RootState } from '../store/store';
 
 interface ToastProviderProps {
   children: ReactNode;

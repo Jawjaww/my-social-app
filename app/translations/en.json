@@ -4,11 +4,28 @@
     "generic": "An error occurred."
   },
   "common": {
-    "cancel": "Cancel",
-    "back": "Back",
-    "save": "Save",
-    "delete": "Delete",
-    "edit": "Edit"
+    "buttons": {
+      "submit": "Submit",
+      "cancel": "Cancel",
+      "save": "Save",
+      "delete": "Delete",
+      "edit": "Edit",
+      "back": "Back"
+    },
+    "labels": {
+      "email": "Email Address",
+      "password": "Password",
+      "username": "Username"
+    },
+    "placeholders": {
+      "email": "Enter your email address",
+      "password": "Enter your password",
+      "username": "Enter your username"
+    },
+    "passwordPlaceholder": "Password",
+    "signIn": "Sign In",
+    "title": "Sign Up",
+    "googleSignUp": "Sign Up with Google"
   },
   "googleSignIn": {
     "button": "Sign in with Google",
@@ -60,12 +77,12 @@
     "verifiedButton": "I've Verified My Email",
     "success": "Email verified successfully",
     "error": {
-      "noCode": "No verification code provided",
-      "noUser": "No user logged in"
+      "linkExpired": "The verification link has expired.",
+      "noCode": "Open the verification link received by email or resend a new one.",
+      "noUser": "User not found.",
+      "resendError": "Error sending the verification email. Please try again."
     },
-    "resendSuccess": "Verification email resent successfully",
-    "resendError": "Error resending verification email",
-    "linkExpired": "Verification link has expired"
+    "resendSuccess": "A new verification email has been sent.",
   },
   "editEmail": {
     "title": "Edit Email",

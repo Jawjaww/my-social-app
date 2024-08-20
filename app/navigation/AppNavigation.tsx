@@ -1,20 +1,19 @@
 import React, { useEffect, useState, Suspense, lazy } from "react";
 import AppInitializer from "../components/AppInitializer";
-import { View, ActivityIndicator, Linking } from "react-native";
+import { ActivityIndicator, Linking } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigation } from "@react-navigation/native";
+import { useDeepLinking } from "../hooks/useDeepLinking";
 import {
-  NavigationContainer,
-  LinkingOptions,
-  NavigatorScreenParams,
-  getStateFromPath,
-} from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+  createNativeStackNavigator,
+  NativeStackNavigationProp,
+} from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../services/firebaseConfig";
 import { setUser, setLoading } from "../features/authentication/authSlice";
-import { RootState } from "../store";
+import { RootState } from "../store/store";
 import {
   selectIsAuthenticated,
   selectIsEmailVerified,
@@ -29,14 +28,15 @@ import {
   MessagesStackParamList,
   AppUser,
 } from "../types/sharedTypes";
-import ErrorBoundary from "../components/ErrorBoundary";
 // Screens
 import HomeScreen from "../features/home/screens/HomeScreen";
 import ProfileScreen from "../features/profile/screens/ProfileScreen";
 import SignInScreen from "../features/authentication/screens/SignInScreen";
 // Lazy load screens
 const BootScreen = lazy(() => import("../features/boot/screens/BootScreen"));
-
+const SendVerificationLinkScreen = lazy(
+  () => import("../features/profile/screens/VerifyBeforeUpdateEmailScreen")
+);
 const SignUpScreen = lazy(
   () => import("../features/authentication/screens/SignUpScreen")
 );
@@ -48,6 +48,9 @@ const ResetPasswordScreen = lazy(
 );
 const VerifyEmailScreen = lazy(
   () => import("../features/authentication/screens/VerifyEmailScreen")
+);
+const VerifyNewEmailScreen = lazy(
+  () => import("../features/profile/screens/VerifyNewEmailScreen")
 );
 const DiscoverScreen = lazy(
   () => import("../features/discover/screens/DiscoverScreen")
@@ -118,6 +121,14 @@ const ProfileNavigator = () => (
       component={NotificationSettingsScreen}
     />
     <ProfileStack.Screen name="DeleteAccount" component={DeleteAccountScreen} />
+    <ProfileStack.Screen
+      name="VerifyNewEmail"
+      component={VerifyNewEmailScreen}
+    />
+    <ProfileStack.Screen
+      name="SendVerificationLink"
+      component={SendVerificationLinkScreen}
+    />
   </ProfileStack.Navigator>
 );
 
@@ -170,6 +181,10 @@ const AppNavigation: React.FC = () => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const isEmailVerified = useSelector(selectIsEmailVerified);
   const [isInitializing, setIsInitializing] = useState(true);
+  const { handleVerifyEmail, handleVerifyNewEmail, handleResetPassword } =
+    useDeepLinking();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -197,6 +212,7 @@ const AppNavigation: React.FC = () => {
           photoURL: firebaseUser.photoURL || null,
           emailVerified: firebaseUser.emailVerified,
           isAuthenticated: true,
+          isAwaitingEmailVerification: false,
         };
         dispatch(setUser(appUser));
         AsyncStorage.setItem("user", JSON.stringify(appUser));
@@ -212,86 +228,86 @@ const AppNavigation: React.FC = () => {
     };
   }, [dispatch]);
 
-  const linking: LinkingOptions<RootStackParamList> = {
-    prefixes: ["https://mysocialapp.expo.dev", "mysocialapp://"],
-    config: {
-      screens: {
-        Auth: {
-          screens: {
-            ResetPassword: "resetPassword/:oobCode",
-          },
-        },
-        VerifyEmail: "email-verified",
-        Main: {
-          screens: {
-            Home: "home",
-            Profile: "profile",
-            Messages: "messages",
-          },
-        },
-      },
-    },
-    getStateFromPath: (path, config) => {
-      const state = getStateFromPath(path, config);
-      if (path.includes("email-verified")) {
-        const params = new URLSearchParams(path.split("?")[1]);
-        const oobCode = params.get("oobCode");
-        if (oobCode) {
-          return {
-            ...state,
-            routes: [
-              {
-                name: "VerifyEmail",
-                params: { oobCode },
-              },
-            ],
-          };
-        }
+  // handleUrl use useDeepLinking hook to handle different deep link types
+  const handleUrl = async ({ url }: { url: string }) => {
+    console.log("Deep link detected:", url);
+    const parsedUrl = new URL(url);
+    const mode = parsedUrl.searchParams.get("mode");
+    const oobCode: string | null = parsedUrl.searchParams.get("oobCode");
+
+    console.log("Parsed URL parameters:", { mode, oobCode });
+
+    if (oobCode) {
+      console.log("oobCode found:", oobCode);
+      switch (mode) {
+        case "verifyEmail":
+          console.log("Handling verifyEmail mode");
+          await handleVerifyEmail(oobCode);
+          break;
+        case "verifyAndChangeEmail":
+          console.log("Handling verifyAndChangeEmail mode");
+          navigation.navigate("Main", {
+            screen: "Profile",
+            params: {
+              screen: "VerifyNewEmail",
+              params: { oobCode },
+            },
+          });
+          break;
+        case "resetPassword":
+          console.log("Handling resetPassword mode");
+          navigation.navigate("Auth", {
+            screen: "ResetPassword",
+            params: { oobCode },
+          });
+          break;
+        default:
+          console.log("Unknown mode:", mode);
       }
-      return state;
-    },
+    } else {
+      console.log("No oobCode found in the URL");
+    }
   };
 
+  // Configure deep link listener and call handleUrl function
   useEffect(() => {
-    const handleUrl = ({ url }: { url: string }) => {
-      console.log("Deep link detected:", url);
-    };
-
     const subscription = Linking.addEventListener("url", handleUrl);
+    console.log("Deep link listener added");
+
     Linking.getInitialURL().then((url) => {
-      if (url) console.log("Initial URL:", url);
+      if (url) {
+        console.log("Initial URL:", url);
+        handleUrl({ url });
+      } else {
+        console.log("No initial URL found");
+      }
     });
 
     return () => {
+      console.log("Removing deep link listener");
       subscription.remove();
     };
   }, []);
 
   if (isInitializing || loading) {
-    return (
-      <Suspense fallback={<ActivityIndicator size="large" color="#0000ff" />}>
-        <BootScreen />
-      </Suspense>
-    );
+    return <ActivityIndicator size="large" color="#0000ff" />;
   }
 
   return (
     <AppInitializer
       onInitializationComplete={() => (
-        <NavigationContainer linking={linking}>
-          <RootStack.Navigator screenOptions={{ headerShown: false }}>
-            {!isAuthenticated ? (
-              <RootStack.Screen name="Auth" component={AuthNavigator} />
-            ) : !isEmailVerified ? (
-              <RootStack.Screen
-                name="VerifyEmail"
-                component={VerifyEmailScreen}
-              />
-            ) : (
-              <RootStack.Screen name="Main" component={MainTabNavigator} />
-            )}
-          </RootStack.Navigator>
-        </NavigationContainer>
+        <RootStack.Navigator screenOptions={{ headerShown: false }}>
+          {!isAuthenticated ? (
+            <RootStack.Screen name="Auth" component={AuthNavigator} />
+          ) : !isEmailVerified ? (
+            <RootStack.Screen
+              name="VerifyEmail"
+              component={VerifyEmailScreen}
+            />
+          ) : (
+            <RootStack.Screen name="Main" component={MainTabNavigator} />
+          )}
+        </RootStack.Navigator>
       )}
     />
   );

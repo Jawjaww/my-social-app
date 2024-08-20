@@ -59,25 +59,25 @@ export const theme = {
     buttonText: '#FFFFFF',     // Button text color
   },
   spacing: {
-    xs: 4,    // Extra small spacing
-    sm: 8,    // Small spacing
-    md: 16,   // Medium spacing
-    lg: 24,   // Large spacing
-    xl: 32,   // Extra large spacing
-    xxl: 48,  // Double extra large spacing
+    xs: 4,
+    sm: 8,
+    md: 16,
+    lg: 24,
+    xl: 32,
+    xxl: 48,
   },
   fontSizes: {
-    small: 12,  // Small text size
-    medium: 16, // Medium text size
-    large: 20,  // Large text size
-    xlarge: 24, // Extra large text size
-    xxlarge: 28,// Double extra large text size
+    small: 12,
+    medium: 16,
+    large: 20,
+    xlarge: 24,
+    xxlarge: 28,
     link: 16,   // Link text size
   },
   borderRadius: {
-    small: 4,   // Small border radius
-    medium: 8,  // Medium border radius
-    large: 16,  // Large border radius
+    small: 4,
+    medium: 8,
+    large: 16,
   },
   inputHeight: 44, // Standard input height
 };

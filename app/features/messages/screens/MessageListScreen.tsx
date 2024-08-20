@@ -3,7 +3,7 @@ import { View, FlatList, StyleSheet, TouchableOpacity, Text } from "react-native
 import { useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import { RootState } from "../../../store";
+import { RootState } from "../../../store/store";
 import MessageListItem from "../components/MessageListItem";
 import { MessageListScreenProps, MessagesStackParamList } from "../../../types/sharedTypes";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";

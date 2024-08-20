@@ -1,5 +1,5 @@
 import React from "react";
-import { View, ActivityIndicator, Text } from "react-native";
+import { ActivityIndicator } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@emotion/react";
 import { useNavigation } from "@react-navigation/native";
@@ -16,12 +16,13 @@ import { useDispatch } from "react-redux";
 import { addToast } from "../../../features/toast/toastSlice";
 import { useForm, Controller } from "react-hook-form";
 import {
-  AuthContainer,
-  AuthInput,
-  AuthButton,
-  AuthButtonText,
-  AuthLinkText,
-} from "../../../styles/authStyles";
+  FormContainer,
+  FormInput,
+  FormButton,
+  FormButtonText,
+  FormLinkText,
+  FormErrorText,
+} from "../../../styles/formStyles";
 import styled from "@emotion/native";
 
 type SignInScreenNavigationProp = NavigationProp<
@@ -37,34 +38,6 @@ const schema = yup.object().shape({
     .required("common.errors.required"),
   password: yup.string().required("common.errors.required"),
 });
-
-const Container = styled.View`
-  flex: 1;
-  padding: 20px;
-  justify-content: center;
-  align-items: center;
-  background-color: #f0f0f0;
-`;
-
-const Input = styled.TextInput`
-  height: 40px;
-  border-color: gray;
-  border-width: 1px;
-  margin-bottom: 20px;
-  padding-horizontal: 10px;
-  width: 100%;
-`;
-
-const ErrorText = styled.Text`
-  color: red;
-  margin-bottom: 10px;
-`;
-
-const LinkText = styled.Text`
-  color: blue;
-  margin-top: 10px;
-  text-decoration: underline;
-`;
 
 const SignInScreen: React.FC = (props) => {
   console.log("SignInScreen component rendering");
@@ -87,14 +60,16 @@ const SignInScreen: React.FC = (props) => {
   });
 
   const onSubmit = async (data: { email: string; password: string }) => {
-    console.log("Submitting form with data:", data);
     try {
-      await signIn(data).unwrap();
-      console.log("Sign in successful");
-      navigation.navigate("Main", { screen: "Home" });
-    } catch (error: any) {
-      console.error("Sign in error:", error);
-      const { message, code } = handleAndLogError(error as AppError, t);
+      const result = await signIn(data).unwrap();
+      if (result.isAuthenticated)  {
+        dispatch(addToast({ message: t("auth.signIn.success"), type: "success" }));
+        navigation.navigate("Main", { screen: "Home" });
+      } else {
+        throw new Error("User creation failed");
+      }
+    } catch (err: any) {
+      const { message, code } = handleAndLogError(err as AppError, t);
       switch (code) {
         case "auth/invalid-email":
         case "auth/user-disabled":
@@ -124,12 +99,11 @@ const SignInScreen: React.FC = (props) => {
   console.log("SignInScreen state:", { isLoading });
 
   return (
-    <View style={{ flex: 1, backgroundColor: "red" }}>
-      <Container>
+      <FormContainer>
         <Controller
           control={control}
           render={({ field: { onChange, onBlur, value } }) => (
-            <Input
+            <FormInput
               placeholder={t("common.placeholders.email")}
               onBlur={onBlur}
               onChangeText={onChange}
@@ -141,13 +115,13 @@ const SignInScreen: React.FC = (props) => {
           name="email"
         />
         {errors.email && (
-          <ErrorText>{t(errors.email.message as string)}</ErrorText>
+          <FormErrorText>{t(errors.email.message as string)}</FormErrorText>
         )}
 
         <Controller
           control={control}
           render={({ field: { onChange, onBlur, value } }) => (
-            <Input
+            <FormInput
               placeholder={t("common.placeholders.password")}
               onBlur={onBlur}
               onChangeText={onChange}
@@ -158,23 +132,22 @@ const SignInScreen: React.FC = (props) => {
           name="password"
         />
         {errors.password && (
-          <ErrorText>{t(errors.password.message as string)}</ErrorText>
+          <FormErrorText>{t(errors.password.message as string)}</FormErrorText>
         )}
 
-        <AuthButton onPress={handleSubmit(onSubmit)} disabled={isLoading}>
-          <AuthButtonText>{t("auth.signIn.button")}</AuthButtonText>
-        </AuthButton>
+        <FormButton onPress={handleSubmit(onSubmit)} disabled={isLoading}>
+          <FormButtonText>{t("auth.signIn.button")}</FormButtonText>
+        </FormButton>
         {isLoading && <ActivityIndicator color={theme.colors.primary} />}
 
-        <LinkText onPress={() => navigation.navigate("ForgotPassword")}>
+        <FormLinkText onPress={() => navigation.navigate("ForgotPassword")}>
           {t("auth.signIn.forgotPassword")}
-        </LinkText>
+        </FormLinkText>
 
-        <LinkText onPress={() => navigation.navigate("SignUp")}>
+        <FormLinkText onPress={() => navigation.navigate("SignUp")}>
           {t("auth.signIn.noAccount")}
-        </LinkText>
-      </Container>
-    </View>
+        </FormLinkText>
+      </FormContainer>
   );
 };
 
