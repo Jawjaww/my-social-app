@@ -83,6 +83,12 @@ const AvatarText = styled.Text`
   font-weight: bold;
 `;
 
+const UserEmail = styled.Text`
+  font-size: ${(props) => props.theme.fontSizes.medium}px;
+  color: ${(props) => props.theme.colors.textSecondary};
+  margin-top: ${(props) => props.theme.spacing.xs}px;
+`;
+
 const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
@@ -108,6 +114,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           <AvatarText>{username[0].toUpperCase() || "?"}</AvatarText>
         </AvatarContainer>
         <UserName>{username}</UserName>
+        <UserEmail>{user?.email || t("profile.emailNotAvailable")}</UserEmail>
       </UserInfo>
       <ButtonContainer>
         <MainButtonsContainer>
@@ -118,15 +125,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
               {t("profile.editProfilePicture")}
             </ProfileButtonText>
           </ProfileButton>
-          <ProfileButton
-            onPress={() => navigation.navigate("SendVerificationLink")}
-          >
-            <ProfileButtonText>
-              {t("profile.sendVerificationLink")}
-            </ProfileButtonText>
-          </ProfileButton>
-          <ProfileButton onPress={() => navigation.navigate("EditEmail")}>
-            <ProfileButtonText>{t("profile.editEmail")}</ProfileButtonText>
+          <ProfileButton onPress={() => navigation.navigate("ChangeEmail")}>
+            <ProfileButtonText>{t("profile.changeEmail")}</ProfileButtonText>
           </ProfileButton>
           <ProfileButton onPress={() => navigation.navigate("EditPassword")}>
             <ProfileButtonText>{t("profile.editPassword")}</ProfileButtonText>

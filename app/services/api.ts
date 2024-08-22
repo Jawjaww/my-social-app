@@ -15,7 +15,6 @@ import {
   sendPasswordResetEmail,
 } from "firebase/auth";
 import { FirebaseError } from "firebase/app";
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { IMessage } from "react-native-gifted-chat";
 import { app, auth, db } from "./firebaseConfig";
@@ -34,6 +33,14 @@ import { RootState } from "../store/store";
 import { selectPendingNewEmail } from "../features/profile/profileSlice";
 import { setUser } from "../features/authentication/authSlice";
 import { setIsAwaitingEmailVerification } from "../../app/features/authentication/authSlice";
+import {
+  createApi,
+  fetchBaseQuery,
+  FetchBaseQueryError,
+} from "@reduxjs/toolkit/query/react";
+import { SerializedError } from "@reduxjs/toolkit";
+
+export type AppError = FetchBaseQueryError | SerializedError;
 
 export const api = createApi({
   reducerPath: "api",
@@ -70,6 +77,59 @@ export const api = createApi({
         }
       },
     }),
+
+    applyEmailVerificationCode: builder.mutation<
+      { success: boolean; user: AppUser | null; newEmail: string | null },
+      string
+    >({
+      queryFn: async (oobCode) => {
+        console.log(
+          "Début de applyEmailVerificationCode avec oobCode:",
+          oobCode
+        );
+        try {
+          await applyActionCode(auth, oobCode);
+          console.log("Code d'action appliqué avec succès");
+          const user = auth.currentUser;
+          console.log("Utilisateur actuel:", user);
+          if (user) {
+            console.log("Rechargement de l'utilisateur");
+            await user.reload();
+            console.log("Utilisateur rechargé:", user);
+            const updatedUser: AppUser = {
+              uid: user.uid,
+              email: user.email,
+              username: user.displayName || user.email?.split("@")[0] || null,
+              photoURL: user.photoURL,
+              emailVerified: user.emailVerified,
+              isAuthenticated: true,
+            };
+            console.log("Utilisateur mis à jour:", updatedUser);
+            return {
+              data: { success: true, user: updatedUser, newEmail: user.email },
+            };
+          }
+          console.log("Aucun utilisateur trouvé");
+          return { data: { success: true, user: null, newEmail: null } };
+        } catch (error: unknown) {
+          console.error(
+            "Erreur dans la mutation applyEmailVerificationCode:",
+            error
+          );
+          if (error instanceof Error) {
+            return { error: { status: "CUSTOM_ERROR", error: error.message } };
+          } else {
+            return {
+              error: {
+                status: "CUSTOM_ERROR",
+                error: "Une erreur inconnue s'est produite",
+              },
+            };
+          }
+        }
+      },
+    }),
+
     checkUsernameUniqueness: builder.mutation<boolean, string>({
       queryFn: async (username) => {
         const db = getFirestore();
@@ -141,8 +201,8 @@ export const api = createApi({
         try {
           await confirmPasswordReset(auth, oobCode, newPassword);
           return { data: { success: true } };
-        } catch (error: any) {
-          return { error: { status: "CUSTOM_ERROR", error: error.message } };
+        } catch (error) {
+          throw error;
         }
       },
     }),
@@ -233,14 +293,8 @@ export const api = createApi({
             isAuthenticated: true,
           };
           return { data: appUser };
-        } catch (error: any) {
-          return {
-            error: {
-              status: "CUSTOM_ERROR",
-              error: error.message,
-              data: { code: error.code, message: error.message },
-            },
-          };
+        } catch (error) {
+          throw error;
         }
       },
     }),
@@ -257,7 +311,7 @@ export const api = createApi({
           await signOut(auth);
           return { data: null };
         } catch (error: any) {
-          return { error: { status: "CUSTOM_ERROR", error: error.message } };
+          throw error;
         }
       },
     }),
@@ -368,46 +422,104 @@ export const api = createApi({
         }
       },
     }),
-    updateEmail: builder.mutation<
-      { success: boolean; user: AppUser | null },
+    // updateEmail: builder.mutation<
+    //   { success: boolean; emailUpdated: boolean },
+    //   { newEmail: string; password: string }
+    // >({
+    //   queryFn: async ({ newEmail, password }) => {
+    //     try {
+    //       const auth = getAuth();
+    //       const user = auth.currentUser;
+    //       if (!user) {
+    //         throw new Error("Aucun utilisateur connecté");
+    //       }
+
+    //       // Réauthentifier l'utilisateur
+    //       const credential = EmailAuthProvider.credential(
+    //         user.email!,
+    //         password
+    //       );
+    //       await reauthenticateWithCredential(user, credential);
+
+    //       // Mettre à jour l'e-mail
+    //       await updateEmail(user, newEmail);
+
+    //       // Envoyer un e-mail de vérification
+    //       await sendEmailVerification(user);
+
+    //       return { data: { success: true, emailUpdated: true } };
+    //     } catch (error: unknown) {
+    //       console.error("Erreur lors de la mise à jour de l'e-mail:", error);
+    //       if (error instanceof FirebaseError) {
+    //         return {
+    //           error: {
+    //             status: "CUSTOM_ERROR",
+    //             error: error.code,
+    //             emailUpdated: false,
+    //           },
+    //         };
+    //       } else {
+    //         return {
+    //           error: {
+    //             status: "CUSTOM_ERROR",
+    //             error: "Une erreur inconnue s'est produite",
+    //             emailUpdated: false,
+    //           },
+    //         };
+    //       }
+    //     }
+    //   },
+    // }),
+
+    reauthenticateAndUpdateEmail: builder.mutation<
+      { success: boolean; emailSent: boolean },
       { newEmail: string; password: string }
     >({
       queryFn: async ({ newEmail, password }) => {
+        console.log("reauthenticateAndUpdateEmail called with:", {
+          newEmail,
+          password: "***",
+        });
         try {
           const user = auth.currentUser;
-          if (user) {
-            await reauthenticateWithCredential(
-              user,
-              EmailAuthProvider.credential(user.email!, password)
-            );
-            await sendEmailVerification(user);
-            await updateEmail(user, newEmail);
-
-            const updatedUser: AppUser = {
-              uid: user.uid,
-              email: newEmail,
-              username: user.displayName || newEmail.split("@")[0] || null,
-              photoURL: user.photoURL,
-              emailVerified: false,
-              isAuthenticated: true,
-              isAwaitingEmailVerification: true,
-            };
-
-            return { data: { success: true, user: updatedUser } };
+          if (!user || !user.email) {
+            console.error("No authenticated user or user email is missing");
+            throw new Error("No authenticated user or user email is missing");
           }
-          return { data: { success: false, user: null } };
-        } catch (error: unknown) {
-          console.error("Error in updateEmail mutation:", error);
-          if (error instanceof Error) {
-            return { error: { status: "CUSTOM_ERROR", error: error.message } };
-          } else {
-            return {
-              error: {
-                status: "CUSTOM_ERROR",
-                error: "An unknown error occurred",
-              },
-            };
+
+          console.log("Reauthenticating user");
+          const credential = EmailAuthProvider.credential(user.email, password);
+          await reauthenticateWithCredential(user, credential);
+          console.log("User reauthenticated successfully");
+
+          console.log("Sending verification email to new address");
+          await verifyBeforeUpdateEmail(user, newEmail);
+          console.log("Verification email sent successfully");
+
+          return { data: { success: true, emailSent: true } };
+        } catch (error) {
+          console.error("Error in reauthenticateAndUpdateEmail:", error);
+          if (error instanceof FirebaseError) {
+            if (error.code === "auth/email-already-in-use") {
+              return {
+                error: {
+                  status: "CUSTOM_ERROR",
+                  error: "This email is already in use",
+                  emailSent: false,
+                },
+              };
+            }
           }
+          return {
+            error: {
+              status: "CUSTOM_ERROR",
+              error:
+                error instanceof Error
+                  ? error.message
+                  : "An unknown error occurred",
+              emailSent: false,
+            },
+          };
         }
       },
     }),
@@ -451,115 +563,69 @@ export const api = createApi({
       },
     }),
 
-    VerifyBeforeUpdateEmail: builder.mutation<
-      { success: boolean },
-      { newEmail: string; password: string }
-    >({
-      queryFn: async ({ newEmail, password }) => {
-        try {
-          const auth = getAuth();
-          const user = auth.currentUser;
-          if (!user) {
-            throw new Error("No user is currently signed in");
-          }
+    // verifyNewEmail: builder.mutation<
+    //   { success: boolean; user: AppUser | null; newEmail: string | null },
+    //   { oobCode: string }
+    // >({
+    //   queryFn: async ({ oobCode }, { getState }) => {
+    //     console.log("Début de verifyNewEmail avec oobCode:", oobCode);
+    //     try {
+    //       const auth = getAuth();
+    //       console.log("Tentative d'appliquer le code d'action");
+    //       await applyActionCode(auth, oobCode);
+    //       console.log("Code d'action appliqué avec succès");
 
-          // Reauthenticate the user
-          const credential = EmailAuthProvider.credential(
-            user.email!,
-            password
-          );
-          await reauthenticateWithCredential(user, credential);
+    //       const user = auth.currentUser;
+    //       console.log("Utilisateur actuel:", user);
 
-          // Configure the action code settings
-          const actionCodeSettings: ActionCodeSettings = {
-            url: `https://mysocialapp.expo.dev/verify-new-email?email=${encodeURIComponent(
-              newEmail
-            )}`,
-            handleCodeInApp: true,
-          };
+    //       if (user) {
+    //         console.log("Rechargement de l'utilisateur");
+    //         await user.reload();
+    //         console.log("Utilisateur rechargé:", user);
 
-          // Send verification mail to the new one
-          await verifyBeforeUpdateEmail(user, newEmail, actionCodeSettings);
+    //         const state = getState() as RootState;
+    //         const pendingNewEmail = selectPendingNewEmail(state);
 
-          return { data: { success: true } };
-        } catch (error: unknown) {
-          console.error("Error in sendVerificationEmail mutation:", error);
-          if (error instanceof Error) {
-            return { error: { status: "CUSTOM_ERROR", error: error.message } };
-          } else {
-            return {
-              error: {
-                status: "CUSTOM_ERROR",
-                error: "An unknown error occurred",
-              },
-            };
-          }
-        }
-      },
-    }),
+    //         const updatedUser: AppUser = {
+    //           uid: user.uid,
+    //           email: user.email || "",
+    //           username: user.displayName || user.email?.split("@")[0] || null,
+    //           photoURL: user.photoURL,
+    //           emailVerified: user.emailVerified,
+    //           isAuthenticated: true,
+    //         };
+    //         console.log("Utilisateur mis à jour:", updatedUser);
 
-    verifyNewEmail: builder.mutation<
-      { success: boolean; user: AppUser | null; newEmail: string | null },
-      { oobCode: string }
-    >({
-      queryFn: async ({ oobCode }, { getState }) => {
-        console.log("Début de verifyNewEmail avec oobCode:", oobCode);
-        try {
-          const auth = getAuth();
-          console.log("Tentative d'appliquer le code d'action");
-          await applyActionCode(auth, oobCode);
-          console.log("Code d'action appliqué avec succès");
-
-          const user = auth.currentUser;
-          console.log("Utilisateur actuel:", user);
-
-          if (user) {
-            console.log("Rechargement de l'utilisateur");
-            await user.reload();
-            console.log("Utilisateur rechargé:", user);
-
-            const state = getState() as RootState;
-            const pendingNewEmail = selectPendingNewEmail(state);
-
-            const updatedUser: AppUser = {
-              uid: user.uid,
-              email: user.email || "",
-              username: user.displayName || user.email?.split("@")[0] || null,
-              photoURL: user.photoURL,
-              emailVerified: user.emailVerified,
-              isAuthenticated: true,
-            };
-            console.log("Utilisateur mis à jour:", updatedUser);
-
-            return {
-              data: {
-                success: true,
-                user: updatedUser,
-                newEmail: user.email,
-              },
-            };
-          }
-          return { data: { success: false, user: null, newEmail: null } };
-        } catch (error: unknown) {
-          console.error("Erreur dans la mutation verifyNewEmail:", error);
-          if (error instanceof Error) {
-            return { error: { status: "CUSTOM_ERROR", error: error.message } };
-          } else {
-            return {
-              error: {
-                status: "CUSTOM_ERROR",
-                error: "Une erreur inconnue s'est produite",
-              },
-            };
-          }
-        }
-      },
-    }),
+    //         return {
+    //           data: {
+    //             success: true,
+    //             user: updatedUser,
+    //             newEmail: user.email,
+    //           },
+    //         };
+    //       }
+    //       return { data: { success: false, user: null, newEmail: null } };
+    //     } catch (error: unknown) {
+    //       console.error("Erreur dans la mutation verifyNewEmail:", error);
+    //       if (error instanceof Error) {
+    //         return { error: { status: "CUSTOM_ERROR", error: error.message } };
+    //       } else {
+    //         return {
+    //           error: {
+    //             status: "CUSTOM_ERROR",
+    //             error: "Une erreur inconnue s'est produite",
+    //           },
+    //         };
+    //       }
+    //     }
+    //   },
+    // }),
   }),
 });
 
 export const {
   useAddContactMutation,
+  useApplyEmailVerificationCodeMutation,
   useCheckUsernameUniquenessMutation,
   useDeleteAccountMutation,
   useDeleteMessageMutation,
@@ -579,11 +645,11 @@ export const {
   useSignInWithGoogleMutation,
   useSignOutMutation,
   useSignUpMutation,
-  useUpdateEmailMutation,
+  // useUpdateEmailMutation,
   useUpdateusernameMutation,
   useUpdatePasswordMutation,
   useUpdateProfilePictureMutation,
+  useReauthenticateAndUpdateEmailMutation,
   useVerifyEmailMutation,
-  useVerifyNewEmailMutation,
-  useVerifyBeforeUpdateEmailMutation,
+  // useVerifyNewEmailMutation,
 } = api;

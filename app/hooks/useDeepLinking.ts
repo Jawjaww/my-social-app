@@ -1,11 +1,11 @@
 import { useCallback } from "react";
 import { useDispatch } from "react-redux";
 import {
-  useVerifyNewEmailMutation,
+  // useVerifyNewEmailMutation,
   useVerifyEmailMutation,
   useResetPasswordMutation,
   useSendVerificationEmailMutation,
-  useUpdateEmailMutation,
+  // useUpdateEmailMutation,
 } from "../services/api";
 import {
   setUser,
@@ -19,11 +19,11 @@ import { applyActionCode, } from "firebase/auth";
 export const useDeepLinking = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const [verifyNewEmail] = useVerifyNewEmailMutation();
+  // const [verifyNewEmail] = useVerifyNewEmailMutation();
   const [verifyEmail] = useVerifyEmailMutation();
   const [resetPassword] = useResetPasswordMutation();
   const [sendVerificationEmail] = useSendVerificationEmailMutation();
-  const [updateEmail] = useUpdateEmailMutation();
+  // const [updateEmail] = useUpdateEmailMutation();
 
   // const handleSendVerificationEmail = useCallback(
   //   async (newEmail: string, password: string) => {
@@ -86,39 +86,39 @@ export const useDeepLinking = () => {
     [dispatch, t, verifyEmail]
   );
 
-  const handleVerifyNewEmail = useCallback(
-    async (oobCode: string) => {
-      console.log("Début de handleVerifyNewEmail avec oobCode:", oobCode);
-      try {
-        const result = await verifyNewEmail({ oobCode }).unwrap();
-        console.log("Résultat de verifyNewEmail:", result);
+  // const handleVerifyNewEmail = useCallback(
+  //   async (oobCode: string) => {
+  //     console.log("Début de handleVerifyNewEmail avec oobCode:", oobCode);
+  //     try {
+  //       const result = await verifyNewEmail({ oobCode }).unwrap();
+  //       console.log("Résultat de verifyNewEmail:", result);
 
-        if (result.success && result.user) {
-          console.log("Mise à jour de l'utilisateur dans le store");
-          dispatch(setUser(result.user));
-          dispatch(
-            addToast({
-              message: t("editEmail.success"),
-              type: "success",
-            })
-          );
-          return true;
-        } else {
-          throw new Error("Échec de la vérification de l'e-mail");
-        }
-      } catch (error) {
-        console.error("Erreur dans handleVerifyNewEmail:", error);
-        dispatch(
-          addToast({
-            message: t("editEmail.error.update"),
-            type: "error",
-          })
-        );
-        return false;
-      }
-    },
-    [dispatch, t, verifyNewEmail]
-  );
+  //       if (result.success && result.user) {
+  //         console.log("Mise à jour de l'utilisateur dans le store");
+  //         dispatch(setUser(result.user));
+  //         dispatch(
+  //           addToast({
+  //             message: t("editEmail.success"),
+  //             type: "success",
+  //           })
+  //         );
+  //         return true;
+  //       } else {
+  //         throw new Error("Échec de la vérification de l'e-mail");
+  //       }
+  //     } catch (error) {
+  //       console.error("Erreur dans handleVerifyNewEmail:", error);
+  //       dispatch(
+  //         addToast({
+  //           message: t("editEmail.error.update"),
+  //           type: "error",
+  //         })
+  //       );
+  //       return false;
+  //     }
+  //   },
+  //   [dispatch, t, verifyNewEmail]
+  // );
 
   const handleResetPassword = useCallback(
     async (oobCode: string, newPassword: string) => {
@@ -175,7 +175,7 @@ export const useDeepLinking = () => {
 
   return {
     // handleSendVerificationEmail,
-    handleVerifyNewEmail,
+    // handleVerifyNewEmail,
     handleResetPassword,
     // handleResendVerificationEmail,
     handleVerifyEmail,

@@ -24,24 +24,25 @@ Sentry.init({
 });
 
 const linking: LinkingOptions<RootStackParamList> = {
-  prefixes: ['https://mysocialapp.expo.dev', 'mysocialapp://'],
+  prefixes: ["https://mysocialapp.expo.dev", "mysocialapp://"],
   config: {
     screens: {
       Auth: {
         screens: {
-          ResetPassword: 'reset-password',
+          VerifyEmail: "verify-email",
+          ResetPassword: "reset-password",
         },
       },
       Main: {
         screens: {
           Profile: {
             screens: {
-              VerifyNewEmail: 'verify-new-email',
+              ComfirmEmailChange: "comfirm-email-change",
+              // VerifyNewEmail: "verify-new-email",
             },
           },
         },
       },
-      VerifyEmail: 'verify-email',
     },
   },
 };

@@ -34,9 +34,9 @@ import ProfileScreen from "../features/profile/screens/ProfileScreen";
 import SignInScreen from "../features/authentication/screens/SignInScreen";
 // Lazy load screens
 const BootScreen = lazy(() => import("../features/boot/screens/BootScreen"));
-const SendVerificationLinkScreen = lazy(
-  () => import("../features/profile/screens/VerifyBeforeUpdateEmailScreen")
-);
+// const SendVerificationLinkScreen = lazy(
+//   () => import("../features/profile/screens/VerifyBeforeUpdateEmailScreen")
+// );
 const SignUpScreen = lazy(
   () => import("../features/authentication/screens/SignUpScreen")
 );
@@ -49,15 +49,15 @@ const ResetPasswordScreen = lazy(
 const VerifyEmailScreen = lazy(
   () => import("../features/authentication/screens/VerifyEmailScreen")
 );
-const VerifyNewEmailScreen = lazy(
-  () => import("../features/profile/screens/VerifyNewEmailScreen")
-);
+// const VerifyNewEmailScreen = lazy(
+//   () => import("../features/profile/screens/VerifyNewEmailScreen")
+// );
 const DiscoverScreen = lazy(
   () => import("../features/discover/screens/DiscoverScreen")
 );
-const EditEmailScreen = lazy(
-  () => import("../features/profile/screens/EditEmailScreen")
-);
+// const EditEmailScreen = lazy(
+//   () => import("../features/profile/screens/EditEmailScreen")
+// );
 const EditPasswordScreen = lazy(
   () => import("../features/profile/screens/EditPasswordScreen")
 );
@@ -88,6 +88,12 @@ const ChatScreen = lazy(
 const NewChatScreen = lazy(
   () => import("../features/messages/screens/NewChatScreen")
 );
+const ConfirmEmailChangeScreen = lazy(
+  () => import("../features/profile/screens/ConfirmEmailChangeScreen")
+);
+const ChangeEmailScreen = lazy(
+  () => import("../features/profile/screens/ChangeEmailScreen")
+);
 
 // Create navigators
 const RootStack = createNativeStackNavigator<RootStackParamList>();
@@ -103,13 +109,14 @@ const AuthNavigator = () => (
     <AuthStack.Screen name="SignUp" component={SignUpScreen} />
     <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
     <AuthStack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+    <AuthStack.Screen name="VerifyEmail" component={VerifyEmailScreen} />
   </AuthStack.Navigator>
 );
 
 const ProfileNavigator = () => (
   <ProfileStack.Navigator screenOptions={{ headerShown: false }}>
     <ProfileStack.Screen name="ProfileHome" component={ProfileScreen} />
-    <ProfileStack.Screen name="EditEmail" component={EditEmailScreen} />
+    {/* <ProfileStack.Screen name="EditEmail" component={EditEmailScreen} /> */}
     <ProfileStack.Screen name="EditPassword" component={EditPasswordScreen} />
     <ProfileStack.Screen name="Editusername" component={EditUsernameScreen} />
     <ProfileStack.Screen
@@ -121,14 +128,19 @@ const ProfileNavigator = () => (
       component={NotificationSettingsScreen}
     />
     <ProfileStack.Screen name="DeleteAccount" component={DeleteAccountScreen} />
-    <ProfileStack.Screen
+    {/* <ProfileStack.Screen
       name="VerifyNewEmail"
       component={VerifyNewEmailScreen}
     />
     <ProfileStack.Screen
       name="SendVerificationLink"
       component={SendVerificationLinkScreen}
+    /> */}
+    <ProfileStack.Screen
+      name="ConfirmEmailChange"
+      component={ConfirmEmailChangeScreen}
     />
+    <ProfileStack.Screen name="ChangeEmail" component={ChangeEmailScreen} />
   </ProfileStack.Navigator>
 );
 
@@ -181,8 +193,7 @@ const AppNavigation: React.FC = () => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const isEmailVerified = useSelector(selectIsEmailVerified);
   const [isInitializing, setIsInitializing] = useState(true);
-  const { handleVerifyEmail, handleVerifyNewEmail, handleResetPassword } =
-    useDeepLinking();
+  const { handleVerifyEmail, handleResetPassword } = useDeepLinking();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -249,7 +260,7 @@ const AppNavigation: React.FC = () => {
           navigation.navigate("Main", {
             screen: "Profile",
             params: {
-              screen: "VerifyNewEmail",
+              screen: "ConfirmEmailChange",
               params: { oobCode },
             },
           });
@@ -297,13 +308,8 @@ const AppNavigation: React.FC = () => {
     <AppInitializer
       onInitializationComplete={() => (
         <RootStack.Navigator screenOptions={{ headerShown: false }}>
-          {!isAuthenticated ? (
+          {!isAuthenticated || !isEmailVerified ? (
             <RootStack.Screen name="Auth" component={AuthNavigator} />
-          ) : !isEmailVerified ? (
-            <RootStack.Screen
-              name="VerifyEmail"
-              component={VerifyEmailScreen}
-            />
           ) : (
             <RootStack.Screen name="Main" component={MainTabNavigator} />
           )}

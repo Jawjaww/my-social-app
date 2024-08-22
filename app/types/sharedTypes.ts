@@ -58,7 +58,6 @@ export type RootStackParamList = {
   Boot: undefined;
   Auth: NavigatorScreenParams<AuthStackParamList>;
   Main: NavigatorScreenParams<MainTabParamList>;
-  VerifyEmail: undefined;
 };
 
 export type AuthStackParamList = {
@@ -67,7 +66,7 @@ export type AuthStackParamList = {
   GoogleSignIn: undefined;
   ForgotPassword: undefined;
   ResetPassword: { oobCode?: string; email?: string };
-};
+  VerifyEmail: { email: string; oobCode?: string };};
 
 export type ProfileStackParamList = {
   ProfileHome: undefined;
@@ -81,6 +80,8 @@ export type ProfileStackParamList = {
   DeleteAccount: undefined;
   FinalizeEmailUpdate: { newEmail: string; mode?: string };
   SendVerificationLink: undefined;
+  ChangeEmail: undefined;
+  ConfirmEmailChange: { oobCode: string };
 };
 
 export type ContactsStackParamList = {

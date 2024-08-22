@@ -54,4 +54,5 @@ export const {
   setIsAwaitingEmailVerification 
 } = authSlice.actions;
 
+
 export default authSlice.reducer;

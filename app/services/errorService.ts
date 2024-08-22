@@ -5,7 +5,7 @@ import { SerializedError } from "@reduxjs/toolkit";
 
 export type AppError = FetchBaseQueryError | SerializedError | Error;
 
-export const handleAndLogError = (error: AppError, t: TFunction): { message: string; code: string } => {
+export const handleAndLogError = (error: FetchBaseQueryError | SerializedError, t: TFunction): { message: string; code: string } => {
   const errorCode = getErrorCode(error);
   const errorMessage = getErrorMessage(errorCode);
   logError(error, errorCode, errorMessage);
@@ -14,10 +14,13 @@ export const handleAndLogError = (error: AppError, t: TFunction): { message: str
 
 const getErrorCode = (error: AppError): string => {
   if (typeof error === 'object' && error !== null) {
-    if ('status' in error) {
-      return error.status === 'CUSTOM_ERROR' && typeof error.data === 'object' && error.data !== null && 'code' in error.data
-        ? error.data.code as string || 'unknown'
-        : `${error.status}`;
+    if ('status' in error && error.status === 'CUSTOM_ERROR') {
+      if (typeof error.data === 'object' && error.data !== null && 'code' in error.data) {
+        return error.data.code as string;
+      }
+      if (typeof error.error === 'string' && error.error.includes('auth/')) {
+        return error.error.split('(')[1].split(')')[0];
+      }
     } else if ('code' in error && typeof error.code === 'string') {
       return error.code;
     } else if ('message' in error && typeof error.message === 'string') {
