@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback } from 'react';
-import { View, Button, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator } from 'react-native';
 import * as Google from 'expo-auth-session/providers/google';
 import { makeRedirectUri, ResponseType } from 'expo-auth-session';
 import { GOOGLE_CLIENT_ID } from '@env';
@@ -8,6 +8,16 @@ import { useTranslation } from 'react-i18next';
 import { useSignInWithGoogleMutation } from '../../../services/api';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../authSelectors';
+import {
+  CenteredContainer,
+  Container,
+  Button,
+  ButtonText,
+  Card,
+  CardText
+} from "../../../components/StyledComponents";
+import { Ionicons } from '@expo/vector-icons';
+import { theme } from "../../../styles/theme";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -43,29 +53,28 @@ const GoogleSignIn: React.FC = () => {
   }, [handleGoogleSignIn]);
 
   return (
-    <View style={styles.container}>
-      <Button
-        title={t('googleSignIn.button')}
-        disabled={!request || isLoading}
-        onPress={() => promptAsync()}
-      />
-      {user ? (
-        <>
-          <Text>{t('googleSignIn.loggedInAs')}</Text>
-          <Text>{user.username}</Text>
-          <Text>{user.email}</Text>
-        </>
-      ) : null}
-    </View>
+      <CenteredContainer>
+        <Container>
+          <Button
+            onPress={() => promptAsync()}
+            disabled={!request || isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator color={theme.colors.buttonText} />
+            ) : (
+              <ButtonText>{t('googleSignIn.button')}</ButtonText>
+            )}
+          </Button>
+          {user && (
+            <Card>
+              <Ionicons name="person" size={24} color={theme.colors.primary} />
+              <CardText>{t('googleSignIn.loggedInAs')}</CardText>
+              <CardText>{user.email}</CardText>
+            </Card>
+          )}
+        </Container>
+      </CenteredContainer>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
 
 export default GoogleSignIn;

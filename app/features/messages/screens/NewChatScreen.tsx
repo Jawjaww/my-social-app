@@ -53,7 +53,6 @@ const NewChatScreen = () => {
       user={{
         id: item.id,
         username: item.username,
-        username: item.username,
         avatar: item.avatar || "https://via.placeholder.com/150",
       }}
       onPress={() => handleUserPress(item.id)}

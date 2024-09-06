@@ -1,5 +1,5 @@
-import React, { useEffect, useState, Suspense, lazy } from "react";
-import AppInitializer from "../components/AppInitializer";
+import React, { useEffect, useState, useRef, lazy } from "react";
+import * as SplashScreen from "expo-splash-screen";
 import { ActivityIndicator, Linking } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
@@ -27,16 +27,20 @@ import {
   ContactsStackParamList,
   MessagesStackParamList,
   AppUser,
+  ProfileUser,
 } from "../types/sharedTypes";
+import { selectProfile } from "../features/profile/profileSelectors";
+import { setProfile } from "../features/profile/profileSlice";
+import { NavigationContainerRef } from "@react-navigation/native";
+
 // Screens
 import HomeScreen from "../features/home/screens/HomeScreen";
 import ProfileScreen from "../features/profile/screens/ProfileScreen";
 import SignInScreen from "../features/authentication/screens/SignInScreen";
 // Lazy load screens
-const BootScreen = lazy(() => import("../features/boot/screens/BootScreen"));
-// const SendVerificationLinkScreen = lazy(
-//   () => import("../features/profile/screens/VerifyBeforeUpdateEmailScreen")
-// );
+const ChooseUsernameScreen = lazy(
+  () => import("../features/profile/screens/ChooseUsernameScreen")
+);
 const SignUpScreen = lazy(
   () => import("../features/authentication/screens/SignUpScreen")
 );
@@ -49,23 +53,17 @@ const ResetPasswordScreen = lazy(
 const VerifyEmailScreen = lazy(
   () => import("../features/authentication/screens/VerifyEmailScreen")
 );
-// const VerifyNewEmailScreen = lazy(
-//   () => import("../features/profile/screens/VerifyNewEmailScreen")
-// );
 const DiscoverScreen = lazy(
   () => import("../features/discover/screens/DiscoverScreen")
 );
-// const EditEmailScreen = lazy(
-//   () => import("../features/profile/screens/EditEmailScreen")
-// );
 const EditPasswordScreen = lazy(
   () => import("../features/profile/screens/EditPasswordScreen")
 );
 const EditUsernameScreen = lazy(
   () => import("../features/profile/screens/EditUsernameScreen")
 );
-const EditProfilePictureScreen = lazy(
-  () => import("../features/profile/screens/EditProfilePictureScreen")
+const AvatarManagerScreen = lazy(
+  () => import("../features/profile/screens/AvatarManagerScreen")
 );
 const NotificationSettingsScreen = lazy(
   () => import("../features/profile/screens/NotificationSettingsScreen")
@@ -116,26 +114,14 @@ const AuthNavigator = () => (
 const ProfileNavigator = () => (
   <ProfileStack.Navigator screenOptions={{ headerShown: false }}>
     <ProfileStack.Screen name="ProfileHome" component={ProfileScreen} />
-    {/* <ProfileStack.Screen name="EditEmail" component={EditEmailScreen} /> */}
     <ProfileStack.Screen name="EditPassword" component={EditPasswordScreen} />
     <ProfileStack.Screen name="Editusername" component={EditUsernameScreen} />
-    <ProfileStack.Screen
-      name="EditProfilePicture"
-      component={EditProfilePictureScreen}
-    />
+    <ProfileStack.Screen name="AvatarManager" component={AvatarManagerScreen} />
     <ProfileStack.Screen
       name="NotificationSettings"
       component={NotificationSettingsScreen}
     />
     <ProfileStack.Screen name="DeleteAccount" component={DeleteAccountScreen} />
-    {/* <ProfileStack.Screen
-      name="VerifyNewEmail"
-      component={VerifyNewEmailScreen}
-    />
-    <ProfileStack.Screen
-      name="SendVerificationLink"
-      component={SendVerificationLinkScreen}
-    /> */}
     <ProfileStack.Screen
       name="ConfirmEmailChange"
       component={ConfirmEmailChangeScreen}
@@ -189,6 +175,8 @@ const MainTabNavigator = () => (
 
 const AppNavigation: React.FC = () => {
   const dispatch = useDispatch();
+  const profile = useSelector(selectProfile);
+  const username = profile?.username;
   const loading = useSelector((state: RootState) => state.auth.loading);
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const isEmailVerified = useSelector(selectIsEmailVerified);
@@ -196,19 +184,30 @@ const AppNavigation: React.FC = () => {
   const { handleVerifyEmail, handleResetPassword } = useDeepLinking();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigationRef =
+    useRef<NavigationContainerRef<RootStackParamList>>(null);
 
   useEffect(() => {
     const initializeApp = async () => {
+      const startTime = Date.now();
       try {
         const user = await AsyncStorage.getItem("user");
+        const profile = await AsyncStorage.getItem("profile");
         if (user) {
           dispatch(setUser(JSON.parse(user)));
+        }
+        if (profile) {
+          dispatch(setProfile(JSON.parse(profile)));
         }
       } catch (error) {
         console.error("Error initializing app:", error);
       } finally {
         dispatch(setLoading(false));
-        setIsInitializing(false);
+        const elapsedTime = Date.now() - startTime;
+        const remainingTime = Math.max(500 - elapsedTime, 0);
+        setTimeout(() => {
+          setIsInitializing(false);
+        }, remainingTime);
       }
     };
 
@@ -218,26 +217,37 @@ const AppNavigation: React.FC = () => {
       if (firebaseUser) {
         const appUser: AppUser = {
           uid: firebaseUser.uid,
-          username: firebaseUser.displayName || "",
           email: firebaseUser.email || "",
-          photoURL: firebaseUser.photoURL || null,
           emailVerified: firebaseUser.emailVerified,
           isAuthenticated: true,
-          isAwaitingEmailVerification: false,
+        };
+        const profileUser: ProfileUser = {
+          uid: firebaseUser.uid,
+          username: null,
+          avatarUrl: null,
+          bio: null,
         };
         dispatch(setUser(appUser));
+        dispatch(setProfile(profileUser));
         AsyncStorage.setItem("user", JSON.stringify(appUser));
+        AsyncStorage.setItem("profile", JSON.stringify(profileUser));
       } else {
         dispatch(setUser(null));
+        dispatch(setProfile(null));
         AsyncStorage.removeItem("user");
+        AsyncStorage.removeItem("profile");
       }
       dispatch(setLoading(false));
     });
 
-    return () => {
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, [dispatch]);
+
+  useEffect(() => {
+    if (!loading && !isInitializing) {
+      SplashScreen.hideAsync();
+    }
+  }, [loading, isInitializing]);
 
   // handleUrl use useDeepLinking hook to handle different deep link types
   const handleUrl = async ({ url }: { url: string }) => {
@@ -300,22 +310,39 @@ const AppNavigation: React.FC = () => {
     };
   }, []);
 
+  // Redirect to ChooseUsernameScreen if the user has no username
+  // useEffect(() => {
+  //   console.log("Checking redirection conditions:", {
+  //     isAuthenticated,
+  //     isEmailVerified,
+  //     profile,
+  //   });
+  //   if (isAuthenticated && isEmailVerified && !profile?.username) {
+  //     setTimeout(() => {
+  //       console.log("Navigating to ChooseUsername");
+  //       navigationRef.current?.navigate("ChooseUsername");
+  //     }, 2000);
+  //   }
+  // }, [isAuthenticated, isEmailVerified, profile]);
+
+  // Render splash screen while initializing
   if (isInitializing || loading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
+    return null; // SplashScreen still visible
   }
 
   return (
-    <AppInitializer
-      onInitializationComplete={() => (
-        <RootStack.Navigator screenOptions={{ headerShown: false }}>
-          {!isAuthenticated || !isEmailVerified ? (
-            <RootStack.Screen name="Auth" component={AuthNavigator} />
-          ) : (
-            <RootStack.Screen name="Main" component={MainTabNavigator} />
-          )}
-        </RootStack.Navigator>
+    <RootStack.Navigator screenOptions={{ headerShown: false }}>
+      {!isAuthenticated || !isEmailVerified ? (
+        <RootStack.Screen name="Auth" component={AuthNavigator} />
+      ) : !username ? (
+        <RootStack.Screen
+          name="ChooseUsername"
+          component={ChooseUsernameScreen}
+        />
+      ) : (
+        <RootStack.Screen name="Main" component={MainTabNavigator} />
       )}
-    />
+    </RootStack.Navigator>
   );
 };
 

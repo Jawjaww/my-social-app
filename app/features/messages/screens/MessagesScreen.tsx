@@ -3,7 +3,7 @@ import { View, ActivityIndicator, Text, Alert } from 'react-native';
 import { GiftedChat, IMessage } from 'react-native-gifted-chat';
 import { useSelector } from 'react-redux';
 import { useGetMessagesQuery, useSendMessageMutation, useDeleteMessageMutation } from '../../../services/api';
-import { selectUser } from '../../authentication/authSelectors';
+import { selectProfile } from '../../profile/profileSelectors';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { MessagesStackParamList } from '../../../types/sharedTypes';
@@ -17,7 +17,7 @@ interface Props {
 
 const MessagesScreen: React.FC<Props> = ({ navigation, route }) => {
   const contactId = route.params?.contactId;
-  const user = useSelector(selectUser);
+  const user = useSelector(selectProfile) ;
   const { data: messages, isLoading, error } = useGetMessagesQuery(contactId ?? '');
   const [sendMessage] = useSendMessageMutation();
   const [deleteMessage] = useDeleteMessageMutation();
@@ -86,7 +86,7 @@ const MessagesScreen: React.FC<Props> = ({ navigation, route }) => {
       user={{
         _id: user.uid,
         name: user.username || 'User',
-        avatar: user.photoURL || 'https://placeimg.com/140/140/any',
+        avatar: user.avatarUrl || 'https://placeimg.com/140/140/any',
       }}
     />
   );

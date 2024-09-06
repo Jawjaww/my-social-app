@@ -7,16 +7,20 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import {
-  FormContainer,
-  FormInput,
-  FormButton,
-  FormButtonText,
-  FormErrorText,
-  FormMessage,
-} from "../../../styles/formStyles";
+  CenteredContainer,
+  Container,
+  Input,
+  Button,
+  ButtonText,
+  ErrorText,
+  Card,
+  CardText
+} from "../../../components/StyledComponents";
 import { useDeepLinking } from "../../../hooks/useDeepLinking";
 import { useDispatch } from "react-redux";
 import { addToast } from "../../toast/toastSlice";
+import { Ionicons } from '@expo/vector-icons';
+import { theme } from "../../../styles/theme";
 
 type ResetPasswordScreenRouteProp = RouteProp<AuthStackParamList, "ResetPassword">;
 
@@ -113,55 +117,57 @@ const ResetPasswordScreen: React.FC<Props> = ({ route }) => {
   };
 
   return (
-    <FormContainer>
-      <Controller
-        control={control}
-        name="newPassword"
-        render={({ field: { onChange, onBlur, value } }) => (
-          <FormInput
-            placeholder={t("resetPassword.newPassword")}
-            onBlur={onBlur}
-            onChangeText={onChange}
-            value={value}
-            secureTextEntry
+      <CenteredContainer>
+        <Container>
+          <Controller
+            control={control}
+            name="newPassword"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <Input
+                placeholder={t("resetPassword.newPassword")}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                secureTextEntry
+              />
+            )}
           />
-        )}
-      />
-      {errors.newPassword && (
-        <FormErrorText>{t(errors.newPassword.message || "")}</FormErrorText>
-      )}
+          {errors.newPassword && (
+            <ErrorText>{t(errors.newPassword.message || "")}</ErrorText>
+          )}
 
-      <Controller
-        control={control}
-        name="confirmPassword"
-        render={({ field: { onChange, onBlur, value } }) => (
-          <FormInput
-            placeholder={t("resetPassword.confirmPassword")}
-            onBlur={onBlur}
-            onChangeText={onChange}
-            value={value}
-            secureTextEntry
+          <Controller
+            control={control}
+            name="confirmPassword"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <Input
+                placeholder={t("resetPassword.confirmPassword")}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                secureTextEntry
+              />
+            )}
           />
-        )}
-      />
-      {errors.confirmPassword && (
-        <FormErrorText>{t(errors.confirmPassword.message || "")}</FormErrorText>
-      )}
-      <FormButton onPress={handleSubmit(onSubmit)} disabled={isLoading}>
-        <FormButtonText>{t("resetPassword.button")}</FormButtonText>
-      </FormButton>
-      <FormButton
-        onPress={handleResendEmail}
-        disabled={isResendDisabled}
-        style={{ opacity: isResendDisabled ? 0.5 : 1 }}
-      >
-        <FormButtonText>
-          {isResendDisabled
-            ? `${t("resetPassword.resendEmail")} (${resendCountdown}s)`
-            : t("resetPassword.resendEmail")}
-        </FormButtonText>
-      </FormButton>
-    </FormContainer>
+          {errors.confirmPassword && (
+            <ErrorText>{t(errors.confirmPassword.message || "")}</ErrorText>
+          )}
+          <Button onPress={handleSubmit(onSubmit)} disabled={isLoading}>
+            <ButtonText>{t("resetPassword.button")}</ButtonText>
+          </Button>
+          <Card
+            onPress={handleResendEmail}
+            disabled={isResendDisabled}
+          >
+            <Ionicons name="mail" size={24} color={theme.colors.primary} />
+            <CardText>
+              {isResendDisabled
+                ? `${t("resetPassword.resendEmail")} (${resendCountdown}s)`
+                : t("resetPassword.resendEmail")}
+            </CardText>
+          </Card>
+        </Container>
+      </CenteredContainer>
   );
 };
 

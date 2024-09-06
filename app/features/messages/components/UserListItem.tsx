@@ -1,61 +1,59 @@
-import React from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import React from 'react';
+import { TouchableOpacity } from 'react-native';
+import styled from '@emotion/native';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '@emotion/react';
+
+const UserItemContainer = styled(TouchableOpacity)`
+  flex-direction: row;
+  align-items: center;
+  padding: 15px;
+  background-color: ${({ theme }) => theme.colors.card};
+  border-radius: 10px;
+  margin-bottom: 10px;
+`;
+
+const Avatar = styled.Image`
+  width: 50px;
+  height: 50px;
+  border-radius: 25px;
+  margin-right: 15px;
+`;
+
+const Username = styled.Text`
+  font-size: 16px;
+  font-weight: bold;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+const AddButton = styled(TouchableOpacity)`
+  margin-left: auto;
+`;
 
 interface UserListItemProps {
   user: {
     id: string;
-    username: string | null;
+    username: string;
     avatar: string;
   };
   onPress: () => void;
   showAddButton?: boolean;
 }
 
-const UserListItem: React.FC<UserListItemProps> = ({
-  user,
-  onPress,
-  showAddButton,
-}) => {
+const UserListItem: React.FC<UserListItemProps> = ({ user, onPress, showAddButton }) => {
+  const theme = useTheme();
+
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress}>
-      <Image source={{ uri: user.avatar }} style={styles.avatar} />
-      <View style={styles.textContainer}>
-        <Text style={styles.name}>{user.username || user.username}</Text>
-      </View>
+    <UserItemContainer onPress={onPress}>
+      <Avatar source={{ uri: user.avatar }} />
+      <Username>{user.username}</Username>
       {showAddButton && (
-        <TouchableOpacity style={styles.addButton}>
-          <Ionicons name="person-add" size={24} color="#007AFF" />
-        </TouchableOpacity>
+        <AddButton>
+          <Ionicons name="person-add" size={24} color={theme.colors.primary} />
+        </AddButton>
       )}
-    </TouchableOpacity>
+    </UserItemContainer>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
-  },
-  avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 10,
-  },
-  textContainer: {
-    flex: 1,
-  },
-  name: {
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  addButton: {
-    padding: 5,
-  },
-});
 
 export default UserListItem;

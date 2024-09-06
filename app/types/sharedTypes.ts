@@ -1,11 +1,8 @@
 import { RouteProp, CompositeNavigationProp } from "@react-navigation/native";
-import styled from "@emotion/native";
-import { Theme } from "@emotion/react";
+
 import { NavigatorScreenParams } from '@react-navigation/native';
 import { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
-import { BottomTabNavigationProp, BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 
-// export { NavigatorScreenParams, NativeStackNavigationProp, NativeStackScreenProps, BottomTabNavigationProp, BottomTabScreenProps };
 
 // Shared Data Types
 export interface Activity {
@@ -37,8 +34,7 @@ export interface User {
   id: string;
   email: string | null;
   username: string | null;
-  photoURL: string | null;
-  avatar: string | null;
+  avatarUrl: string | null;
   emailVerified: boolean;
 }
 
@@ -46,22 +42,27 @@ export interface User {
 export interface AppUser {
   uid: string;
   email: string | null;
-  username: string | null;
-  photoURL: string | null;
   emailVerified: boolean;
   isAuthenticated: boolean;
-  isAwaitingEmailVerification?: boolean;
 }
+
+export interface ProfileUser {
+  uid: string;
+  username: string | null;
+  avatarUrl: string | null;
+  bio: string | null;
+  // Add other profile specific fields here
+};
 
 // Navigation types
 export type RootStackParamList = {
-  Boot: undefined;
   Auth: NavigatorScreenParams<AuthStackParamList>;
   Main: NavigatorScreenParams<MainTabParamList>;
+  ChooseUsername: undefined;
 };
 
 export type AuthStackParamList = {
-  SignIn: undefined;
+  SignIn: undefined | { emailChanged: boolean };
   SignUp: undefined;
   GoogleSignIn: undefined;
   ForgotPassword: undefined;
@@ -73,7 +74,7 @@ export type ProfileStackParamList = {
   EditEmail: undefined;
   EditPassword: undefined;
   Editusername: undefined;
-  EditProfilePicture: undefined;
+  AvatarManager: undefined;
   VerifyNewEmail: { oobCode: string };
   VerifyBeforeUpdateEmail: undefined;
   NotificationSettings: undefined;
@@ -134,46 +135,8 @@ export interface AddContactScreenProps {
 
 export type CompositeScreenProps<T, S> = T & S;
 
-// export type NativeStackScreenProps<
-//   T extends Record<string, object | undefined>,
-//   K extends keyof T
-// > = {
-//   navigation: NativeStackNavigationProp<T, K>;
-//   route: RouteProp<T, K>;
-// };
-
-// export type BottomTabScreenProps<
-//   T extends Record<string, object | undefined>,
-//   K extends keyof T = keyof T
-// > = {
-//   navigation: BottomTabNavigationProp<T, K>;
-//   route: RouteProp<T, K>;
-// };
-
-export const Container = styled.View<{ theme: Theme }>`
-  flex: 1;
-  background-color: ${(props) => props.theme.colors.background};
-  padding: ${(props) => props.theme.spacing.md}px;
-`;
-
-export const Header = styled.Text<{ theme: Theme }>`
-  font-size: ${(props) => props.theme.fontSizes.large}px;
-  font-weight: bold;
-  color: ${(props) => props.theme.colors.text};
-  margin-bottom: ${(props) => props.theme.spacing.md}px;
-`;
-
-export const Button = styled.TouchableOpacity<{
-  theme: Theme;
-  variant?: "primary" | "secondary";
-}>`
-  background-color: ${(props) =>
-    props.variant === "secondary"
-      ? props.theme.colors.secondary
-      : props.theme.colors.primary};
-  padding: ${(props) => props.theme.spacing.sm}px
-    ${(props) => props.theme.spacing.md}px;
-  border-radius: ${(props) => props.theme.borderRadius.medium}px;
-  align-items: center;
-  justify-content: center;
-`;
+// Discover types
+export interface Category {
+  id: string;
+  name: string;
+}

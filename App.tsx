@@ -1,4 +1,5 @@
 import React from "react";
+import * as SplashScreen from 'expo-splash-screen';
 import ErrorBoundary from "./app/components/ErrorBoundary";
 import "./env.d.ts";
 import { Provider } from "react-redux";
@@ -15,6 +16,11 @@ import { theme } from "./app/styles/theme";
 import { ToastProvider } from "./app/providers/ToastProvider";
 import { NavigationContainer, LinkingOptions } from "@react-navigation/native";
 import { RootStackParamList } from "./app/types/sharedTypes.ts";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import styled from "@emotion/native";
+
+// Prevent the splash screen from automatically hiding
+SplashScreen.preventAutoHideAsync();
 
 enableScreens();
 
@@ -24,21 +30,25 @@ Sentry.init({
 });
 
 const linking: LinkingOptions<RootStackParamList> = {
-  prefixes: ["https://mysocialapp.expo.dev", "mysocialapp://"],
+  prefixes: ['https://mysocialapp.expo.dev', 'mysocialapp://'],
   config: {
     screens: {
       Auth: {
+        path: 'auth',
+        parse: {
+          mode: (mode: string) => mode,
+          oobCode: (oobCode: string) => oobCode,
+        },
         screens: {
-          VerifyEmail: "verify-email",
-          ResetPassword: "reset-password",
+          VerifyEmail: 'verify-email',
+          ResetPassword: 'reset-password',
         },
       },
       Main: {
         screens: {
           Profile: {
             screens: {
-              ComfirmEmailChange: "comfirm-email-change",
-              // VerifyNewEmail: "verify-new-email",
+              VerifyNewEmail: 'verify-new-email',
             },
           },
         },
@@ -47,17 +57,26 @@ const linking: LinkingOptions<RootStackParamList> = {
   },
 };
 
+const SafeContainer = styled(SafeAreaView)`
+  flex: 1;
+  background-color: ${({ theme }) => theme.colors.background};
+`;
+
 const App: React.FC = () => {
   return (
     <ErrorBoundary>
       <Provider store={store}>
         <I18nextProvider i18n={i18n}>
           <ThemeProvider theme={theme}>
-            <ToastProvider>
-              <NavigationContainer linking={linking}>
-                <AppNavigation />
-              </NavigationContainer>
-            </ToastProvider>
+            <SafeAreaProvider>
+              <SafeContainer>
+                <ToastProvider>
+                  <NavigationContainer linking={linking}>
+                    <AppNavigation />
+                  </NavigationContainer>
+                </ToastProvider>
+              </SafeContainer>
+            </SafeAreaProvider>
           </ThemeProvider>
         </I18nextProvider>
       </Provider>

@@ -1,5 +1,4 @@
 import {
-  ActionCodeSettings,
   confirmPasswordReset,
   getAuth,
   signInWithEmailAndPassword,
@@ -8,31 +7,30 @@ import {
   sendEmailVerification,
   reauthenticateWithCredential,
   EmailAuthProvider,
-  applyActionCode,
   updatePassword,
   verifyBeforeUpdateEmail,
-  updateEmail,
   sendPasswordResetEmail,
+  updateProfile,
+  checkActionCode,
+  applyActionCode,
+  updateEmail,
 } from "firebase/auth";
+import { ref, set, get, update } from "firebase/database";
 import { FirebaseError } from "firebase/app";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { IMessage } from "react-native-gifted-chat";
-import { app, auth, db } from "./firebaseConfig";
-import { Activity, Contact, User, AppUser } from "../types/sharedTypes";
 import {
-  getFirestore,
-  doc,
-  updateDoc,
-  writeBatch,
-  getDoc,
-  setDoc,
-  serverTimestamp,
-} from "firebase/firestore";
-import { useSelector } from "react-redux";
-import { RootState } from "../store/store";
-import { selectPendingNewEmail } from "../features/profile/profileSlice";
-import { setUser } from "../features/authentication/authSlice";
-import { setIsAwaitingEmailVerification } from "../../app/features/authentication/authSlice";
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+} from "firebase/storage";
+import { auth, realtimeDb, storage } from "./firebaseConfig";
+import { IMessage } from "react-native-gifted-chat";
+import {
+  Activity,
+  Contact,
+  User,
+  AppUser,
+  ProfileUser,
+} from "../types/sharedTypes";
 import {
   createApi,
   fetchBaseQuery,
@@ -54,22 +52,19 @@ export const api = createApi({
             throw new Error("User not authenticated");
           }
 
-          const db = getFirestore();
-          const usernameDoc = await getDoc(doc(db, "usernames", username));
+          const usernameRef = ref(realtimeDb, `usernames/${username}`);
+          const snapshot = await get(usernameRef);
 
-          if (!usernameDoc.exists()) {
+          if (!snapshot.exists()) {
             throw new Error("User not found");
           }
 
-          const contactUid = usernameDoc.data().uid;
-          const contactRef = doc(
-            db,
-            "contacts",
-            currentUser.uid,
-            "userContacts",
-            contactUid
+          const contactUid = snapshot.val();
+          const contactRef = ref(
+            realtimeDb,
+            `contacts/${currentUser.uid}/${contactUid}`
           );
-          await setDoc(contactRef, { timestamp: serverTimestamp() });
+          await set(contactRef, true);
 
           return { data: undefined };
         } catch (error: any) {
@@ -83,24 +78,38 @@ export const api = createApi({
       string
     >({
       queryFn: async (oobCode) => {
-        console.log(
-          "Début de applyEmailVerificationCode avec oobCode:",
-          oobCode
-        );
+        console.log("Début de applyEmailVerificationCode avec oobCode:", oobCode);
         try {
+          const auth = getAuth();
+          const checkResult = await checkActionCode(auth, oobCode);
+          const newEmail = checkResult.data.email;
+      
+          console.log("Résultat de checkActionCode:", checkResult);
+          console.log("Nouvel email obtenu:", newEmail);
+      
+          if (!newEmail) {
+            console.log("Nouvel email non trouvé dans le code d'action");
+            throw new Error("Nouvel email non trouvé dans le code d'action");
+          }
+      
           await applyActionCode(auth, oobCode);
           console.log("Code d'action appliqué avec succès");
+      
           const user = auth.currentUser;
           console.log("Utilisateur actuel:", user);
+      
           if (user) {
-            console.log("Rechargement de l'utilisateur");
+            // Update the user's email
+            await updateEmail(user, newEmail);
+            console.log("Email mis à jour avec succès:", newEmail);
+      
+            // Reload the user to get the latest information
             await user.reload();
             console.log("Utilisateur rechargé:", user);
+      
             const updatedUser: AppUser = {
               uid: user.uid,
               email: user.email,
-              username: user.displayName || user.email?.split("@")[0] || null,
-              photoURL: user.photoURL,
               emailVerified: user.emailVerified,
               isAuthenticated: true,
             };
@@ -112,10 +121,7 @@ export const api = createApi({
           console.log("Aucun utilisateur trouvé");
           return { data: { success: true, user: null, newEmail: null } };
         } catch (error: unknown) {
-          console.error(
-            "Erreur dans la mutation applyEmailVerificationCode:",
-            error
-          );
+          console.error("Erreur dans la mutation applyEmailVerificationCode:", error);
           if (error instanceof Error) {
             return { error: { status: "CUSTOM_ERROR", error: error.message } };
           } else {
@@ -129,12 +135,30 @@ export const api = createApi({
         }
       },
     }),
-
-    checkUsernameUniqueness: builder.mutation<boolean, string>({
-      queryFn: async (username) => {
-        const db = getFirestore();
-        const usernameDoc = await getDoc(doc(db, "usernames", username));
-        return { data: !usernameDoc.exists() };
+    checkUsernameAvailability: builder.mutation<{ available: boolean }, string>(
+      {
+        queryFn: async (username) => {
+          try {
+            const usernameRef = ref(realtimeDb, `usernames/${username}`);
+            const snapshot = await get(usernameRef);
+            return { data: { available: !snapshot.exists() } };
+          } catch (error) {
+            console.error("Error checking username availability:", error);
+            return { error: { status: 500, data: (error as Error).message } };
+          }
+        },
+      }
+    ),
+    createProfileUser: builder.mutation<ProfileUser, ProfileUser>({
+      queryFn: async (profileUser) => {
+        try {
+          const userRef = ref(realtimeDb, `users/${profileUser.uid}`);
+          await set(userRef, profileUser);
+          return { data: profileUser };
+        } catch (error) {
+          console.error("Error creating user profile:", error);
+          return { error: { status: 500, data: (error as Error).message } };
+        }
       },
     }),
     deleteAccount: builder.mutation<{ success: boolean }, { password: string }>(
@@ -186,6 +210,59 @@ export const api = createApi({
     }),
     getUnreadMessagesCount: builder.query<number, void>({
       query: () => "unreadMessagesCount",
+    }),
+
+    reauthenticateAndUpdateEmail: builder.mutation<
+      { success: boolean; emailSent: boolean },
+      { newEmail: string; password: string }
+    >({
+      queryFn: async ({ newEmail, password }) => {
+        console.log("reauthenticateAndUpdateEmail called with:", {
+          newEmail,
+          password: "***",
+        });
+        try {
+          const user = auth.currentUser;
+          if (!user || !user.email) {
+            console.error("No authenticated user or user email is missing");
+            throw new Error("No authenticated user or user email is missing");
+          }
+
+          console.log("Reauthenticating user");
+          const credential = EmailAuthProvider.credential(user.email, password);
+          await reauthenticateWithCredential(user, credential);
+          console.log("User reauthenticated successfully");
+
+          console.log("Sending verification email to new address");
+          await verifyBeforeUpdateEmail(user, newEmail);
+          console.log("Verification email sent successfully");
+
+          return { data: { success: true, emailSent: true } };
+        } catch (error) {
+          console.error("Error in reauthenticateAndUpdateEmail:", error);
+          if (error instanceof FirebaseError) {
+            if (error.code === "auth/email-already-in-use") {
+              return {
+                error: {
+                  status: "CUSTOM_ERROR",
+                  error: "This email is already in use",
+                  emailSent: false,
+                },
+              };
+            }
+          }
+          return {
+            error: {
+              status: "CUSTOM_ERROR",
+              error:
+                error instanceof Error
+                  ? error.message
+                  : "An unknown error occurred",
+              emailSent: false,
+            },
+          };
+        }
+      },
     }),
     removeContact: builder.mutation<void, string>({
       query: (userId) => ({
@@ -284,11 +361,12 @@ export const api = createApi({
             password
           );
           const firebaseUser = userCredential.user;
+          const userRef = ref(realtimeDb, `users/${firebaseUser.uid}`);
+          const snapshot = await get(userRef);
+          const userData = snapshot.val();
           const appUser: AppUser = {
             uid: firebaseUser.uid,
-            username: firebaseUser.displayName || "",
             email: firebaseUser.email || "",
-            photoURL: firebaseUser.photoURL || null,
             emailVerified: firebaseUser.emailVerified,
             isAuthenticated: true,
           };
@@ -298,6 +376,7 @@ export const api = createApi({
         }
       },
     }),
+
     signInWithGoogle: builder.mutation<void, string>({
       query: (idToken) => ({
         url: "/signInWithGoogle",
@@ -315,8 +394,11 @@ export const api = createApi({
         }
       },
     }),
-    signUp: builder.mutation<AppUser, { email: string; password: string }>({
-      queryFn: async ({ email, password }) => {
+    signUp: builder.mutation<
+      { appUser: AppUser; profileUser: ProfileUser },
+      { email: string; password: string }
+    >({
+      async queryFn({ email, password }, { dispatch, getState }) {
         try {
           const auth = getAuth();
           const userCredential = await createUserWithEmailAndPassword(
@@ -325,20 +407,34 @@ export const api = createApi({
             password
           );
           const firebaseUser = userCredential?.user;
-
+      
           if (!firebaseUser) {
             throw new Error("Failed to create user");
           }
-
+      
           const appUser: AppUser = {
             uid: firebaseUser.uid,
             email: firebaseUser.email || "",
-            username: null,
-            photoURL: null,
             emailVerified: firebaseUser.emailVerified,
             isAuthenticated: true,
           };
-          return { data: appUser };
+      
+          const profileUser: ProfileUser = {
+            uid: firebaseUser.uid,
+            username: null,
+            avatarUrl: null,
+            bio: null,
+          };
+      
+          console.log("Creating profile user:", profileUser);
+      
+          await dispatch(
+            api.endpoints.createProfileUser.initiate(profileUser)
+          ).unwrap();
+      
+          console.log("Profile user created successfully");
+      
+          return { data: { appUser, profileUser } };
         } catch (error: any) {
           console.error("Erreur lors de l'inscription:", error);
           return {
@@ -349,15 +445,62 @@ export const api = createApi({
             },
           };
         }
+      }
+    }),
+    updateAvatar: builder.mutation<string, { uri: string; userId: string }>({
+      queryFn: async ({ uri, userId }) => {
+        try {
+          const response = await fetch(uri);
+          const blob = await response.blob();
+
+          const avatarRef = storageRef(storage, `avatars/${userId}.jpg`);
+          await uploadBytes(avatarRef, blob);
+          const downloadURL = await getDownloadURL(avatarRef);
+
+          const userRef = ref(realtimeDb, `users/${userId}`);
+          await update(userRef, { avatarUrl: downloadURL });
+
+          return { data: downloadURL };
+        } catch (error: any) {
+          return {
+            error: {
+              status: "CUSTOM_ERROR",
+              error: error.message || "An unknown error occurred",
+            },
+          };
+        }
       },
     }),
 
-    updateusername: builder.mutation<void, string>({
-      query: (newusername) => ({
-        url: "/updateusername",
-        method: "POST",
-        body: { username: newusername },
-      }),
+    updateUsername: builder.mutation<
+      ProfileUser,
+      { uid: string; username: string }
+    >({
+      queryFn: async ({ uid, username }) => {
+        try {
+          const userRef = ref(realtimeDb, `users/${uid}`);
+          const usernameRef = ref(realtimeDb, `usernames/${username}`);
+
+          // Verify username availability again
+          const snapshot = await get(usernameRef);
+          if (snapshot.exists()) {
+            throw new Error("Username is already taken");
+          }
+
+          // Update user profile and book username
+          await update(userRef, { username });
+          await set(usernameRef, uid);
+
+          // Get the updated profile
+          const updatedProfileSnapshot = await get(userRef);
+          const updatedProfile = updatedProfileSnapshot.val() as ProfileUser;
+
+          return { data: updatedProfile };
+        } catch (error) {
+          console.error("Error updating username:", error);
+          return { error: { status: 500, data: (error as Error).message } };
+        }
+      },
     }),
     updatePassword: builder.mutation<
       { success: boolean },
@@ -388,138 +531,27 @@ export const api = createApi({
         }
       },
     }),
-    updateProfilePicture: builder.mutation<
-      string,
-      { uri: string; isPublic: boolean }
+    updateUserProfile: builder.mutation<
+      ProfileUser,
+      Partial<ProfileUser> & { uid: string }
     >({
-      queryFn: async ({ uri, isPublic }, { getState }) => {
+      queryFn: async (updatedProfile) => {
         try {
-          const user = auth.currentUser;
-          if (!user) {
-            throw new Error("User not authenticated");
-          }
+          const { uid, ...profileData } = updatedProfile;
+          const userRef = ref(realtimeDb, `users/${uid}`);
+          await update(userRef, profileData);
 
-          const response = await fetch(uri);
-          const blob = await response.blob();
-
-          const storage = getStorage();
-          const storageRef = ref(
-            storage,
-            `profile_pictures/${user.uid}/profile.jpg`
-          );
-
-          await uploadBytes(storageRef, blob);
-          const downloadURL = await getDownloadURL(storageRef);
-
-          // TODO: Update the user's profile picture in Firestore
-          const db = getFirestore();
-          const userRef = doc(db, "users", user.uid);
-          await updateDoc(userRef, { photoURL: downloadURL });
-
-          return { data: downloadURL };
-        } catch (error: any) {
-          return { error: { status: "CUSTOM_ERROR", error: error.message } };
-        }
-      },
-    }),
-    // updateEmail: builder.mutation<
-    //   { success: boolean; emailUpdated: boolean },
-    //   { newEmail: string; password: string }
-    // >({
-    //   queryFn: async ({ newEmail, password }) => {
-    //     try {
-    //       const auth = getAuth();
-    //       const user = auth.currentUser;
-    //       if (!user) {
-    //         throw new Error("Aucun utilisateur connecté");
-    //       }
-
-    //       // Réauthentifier l'utilisateur
-    //       const credential = EmailAuthProvider.credential(
-    //         user.email!,
-    //         password
-    //       );
-    //       await reauthenticateWithCredential(user, credential);
-
-    //       // Mettre à jour l'e-mail
-    //       await updateEmail(user, newEmail);
-
-    //       // Envoyer un e-mail de vérification
-    //       await sendEmailVerification(user);
-
-    //       return { data: { success: true, emailUpdated: true } };
-    //     } catch (error: unknown) {
-    //       console.error("Erreur lors de la mise à jour de l'e-mail:", error);
-    //       if (error instanceof FirebaseError) {
-    //         return {
-    //           error: {
-    //             status: "CUSTOM_ERROR",
-    //             error: error.code,
-    //             emailUpdated: false,
-    //           },
-    //         };
-    //       } else {
-    //         return {
-    //           error: {
-    //             status: "CUSTOM_ERROR",
-    //             error: "Une erreur inconnue s'est produite",
-    //             emailUpdated: false,
-    //           },
-    //         };
-    //       }
-    //     }
-    //   },
-    // }),
-
-    reauthenticateAndUpdateEmail: builder.mutation<
-      { success: boolean; emailSent: boolean },
-      { newEmail: string; password: string }
-    >({
-      queryFn: async ({ newEmail, password }) => {
-        console.log("reauthenticateAndUpdateEmail called with:", {
-          newEmail,
-          password: "***",
-        });
-        try {
-          const user = auth.currentUser;
-          if (!user || !user.email) {
-            console.error("No authenticated user or user email is missing");
-            throw new Error("No authenticated user or user email is missing");
-          }
-
-          console.log("Reauthenticating user");
-          const credential = EmailAuthProvider.credential(user.email, password);
-          await reauthenticateWithCredential(user, credential);
-          console.log("User reauthenticated successfully");
-
-          console.log("Sending verification email to new address");
-          await verifyBeforeUpdateEmail(user, newEmail);
-          console.log("Verification email sent successfully");
-
-          return { data: { success: true, emailSent: true } };
-        } catch (error) {
-          console.error("Error in reauthenticateAndUpdateEmail:", error);
-          if (error instanceof FirebaseError) {
-            if (error.code === "auth/email-already-in-use") {
-              return {
-                error: {
-                  status: "CUSTOM_ERROR",
-                  error: "This email is already in use",
-                  emailSent: false,
-                },
-              };
-            }
-          }
-          return {
-            error: {
-              status: "CUSTOM_ERROR",
-              error:
-                error instanceof Error
-                  ? error.message
-                  : "An unknown error occurred",
-              emailSent: false,
-            },
+          const updatedProfileUser: ProfileUser = {
+            uid,
+            username: profileData.username ?? null,
+            avatarUrl: profileData.avatarUrl ?? null,
+            bio: profileData.bio ?? null,
           };
+
+          return { data: updatedProfileUser };
+        } catch (error) {
+          console.error("Error updating user profile:", error);
+          return { error: { status: 500, data: (error as Error).message } };
         }
       },
     }),
@@ -537,8 +569,6 @@ export const api = createApi({
             const updatedUser: AppUser = {
               uid: user.uid,
               email: user.email,
-              username: user.displayName || user.email?.split("@")[0] || null,
-              photoURL: user.photoURL,
               emailVerified: user.emailVerified,
               isAuthenticated: true,
             };
@@ -562,71 +592,14 @@ export const api = createApi({
         }
       },
     }),
-
-    // verifyNewEmail: builder.mutation<
-    //   { success: boolean; user: AppUser | null; newEmail: string | null },
-    //   { oobCode: string }
-    // >({
-    //   queryFn: async ({ oobCode }, { getState }) => {
-    //     console.log("Début de verifyNewEmail avec oobCode:", oobCode);
-    //     try {
-    //       const auth = getAuth();
-    //       console.log("Tentative d'appliquer le code d'action");
-    //       await applyActionCode(auth, oobCode);
-    //       console.log("Code d'action appliqué avec succès");
-
-    //       const user = auth.currentUser;
-    //       console.log("Utilisateur actuel:", user);
-
-    //       if (user) {
-    //         console.log("Rechargement de l'utilisateur");
-    //         await user.reload();
-    //         console.log("Utilisateur rechargé:", user);
-
-    //         const state = getState() as RootState;
-    //         const pendingNewEmail = selectPendingNewEmail(state);
-
-    //         const updatedUser: AppUser = {
-    //           uid: user.uid,
-    //           email: user.email || "",
-    //           username: user.displayName || user.email?.split("@")[0] || null,
-    //           photoURL: user.photoURL,
-    //           emailVerified: user.emailVerified,
-    //           isAuthenticated: true,
-    //         };
-    //         console.log("Utilisateur mis à jour:", updatedUser);
-
-    //         return {
-    //           data: {
-    //             success: true,
-    //             user: updatedUser,
-    //             newEmail: user.email,
-    //           },
-    //         };
-    //       }
-    //       return { data: { success: false, user: null, newEmail: null } };
-    //     } catch (error: unknown) {
-    //       console.error("Erreur dans la mutation verifyNewEmail:", error);
-    //       if (error instanceof Error) {
-    //         return { error: { status: "CUSTOM_ERROR", error: error.message } };
-    //       } else {
-    //         return {
-    //           error: {
-    //             status: "CUSTOM_ERROR",
-    //             error: "Une erreur inconnue s'est produite",
-    //           },
-    //         };
-    //       }
-    //     }
-    //   },
-    // }),
   }),
 });
 
 export const {
   useAddContactMutation,
   useApplyEmailVerificationCodeMutation,
-  useCheckUsernameUniquenessMutation,
+  useCheckUsernameAvailabilityMutation,
+  useCreateProfileUserMutation,
   useDeleteAccountMutation,
   useDeleteMessageMutation,
   useGetContactActivitiesQuery,
@@ -645,11 +618,10 @@ export const {
   useSignInWithGoogleMutation,
   useSignOutMutation,
   useSignUpMutation,
-  // useUpdateEmailMutation,
-  useUpdateusernameMutation,
+  useUpdateAvatarMutation,
+  useUpdateUsernameMutation,
   useUpdatePasswordMutation,
-  useUpdateProfilePictureMutation,
+  useUpdateUserProfileMutation,
   useReauthenticateAndUpdateEmailMutation,
   useVerifyEmailMutation,
-  // useVerifyNewEmailMutation,
 } = api;

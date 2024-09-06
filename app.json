@@ -6,6 +6,11 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
+    "splash": {
+         "image": "./assets/splash.png",
+         "resizeMode": "contain",
+         "backgroundColor": "#dedee4"
+       },
     "userInterfaceStyle": "light",
     "updates": {
       "enabled": true,
@@ -13,21 +18,29 @@
       "fallbackToCacheTimeout": 0,
       "url": "https://u.expo.dev/ac182c59-77c0-4856-97f4-a5235b127f65"
     },
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.jawjaww.mysocialapp",
-      "associatedDomains": ["applinks:mysocialapp.expo.dev"]
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "L'autorisation d'accès à la bibliothèque multimédia est nécessaire pour gérer votre avatar.",
+        "NSCameraUsageDescription": "L'autorisation d'accès à la caméra est nécessaire pour prendre une photo de profil.",
+        "NSMicrophoneUsageDescription": "L'autorisation d'accès au microphone est nécessaire pour utiliser la fonctionnalité de publication de vidéos."
+      },
+      "associatedDomains": [
+        "applinks:mysocialapp.expo.dev"
+      ]
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "permissions": [
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "CAMERA",
+        "RECORD_AUDIO"
+      ],
       "package": "com.brainsmosaique.MySocialApp",
       "intentFilters": [
         {
@@ -37,7 +50,7 @@
             {
               "scheme": "https",
               "host": "mysocialapp.expo.dev",
-              "pathPrefix": "/email-verified"
+              "pathPrefix": "/auth"
             }
           ],
           "category": [
@@ -63,7 +76,9 @@
           "organization": "brains-mosaic",
           "project": "my-social-app"
         }
-      ]
+      ],
+      "@config-plugins/react-native-webrtc",
+      "expo-localization"
     ],
     "runtimeVersion": {
       "policy": "appVersion"

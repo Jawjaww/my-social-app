@@ -1,105 +1,53 @@
 import React from "react";
+import { ActivityIndicator, TouchableOpacity } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
-import styled from "@emotion/native";
-import { selectUser } from "../../authentication/authSelectors";
 import { useSignOutMutation } from "../../../services/api";
 import { addToast } from "../../toast/toastSlice";
+import { selectProfile } from "../../profile/profileSelectors";
+import { selectUser } from "../../authentication/authSelectors"; // Importer selectUser
+import FastImage from "react-native-fast-image";
+import { Ionicons } from "@expo/vector-icons";
 import { ProfileScreenProps } from "../../../types/sharedTypes";
+import { useTheme } from "@emotion/react";
+import styled from "@emotion/native";
 import {
+  CenteredContainer,
   Container,
-  Header,
-  Button,
-  ButtonText,
+  AvatarContainer,
+  AvatarImage,
+  AvatarPlaceholder,
+  AvatarText,
+  Card,
+  CardText,
 } from "../../../components/StyledComponents";
 
-const ProfileContainer = styled(Container)`
-  justify-content: space-between;
-`;
-
-const UserInfo = styled.View`
-  align-items: center;
-  justify-content: center;
-  margin-bottom: ${(props) => props.theme.spacing.xl}px;
-  flex: 1;
-`;
-
-const UserName = styled.Text`
-  font-size: ${(props) => props.theme.fontSizes.large}px;
-  font-weight: bold;
-  color: ${(props) => props.theme.colors.text};
-  margin-top: ${(props) => props.theme.spacing.sm}px;
-`;
-
-const ButtonContainer = styled.View`
-  padding-vertical: ${(props) => props.theme.spacing.xl}px;
-  width: 100%;
-  align-items: center;
-`;
-
-const ProfileButton = styled(Button)`
-  margin-bottom: 24px;
-  padding: 10px 32px;
-  background-color: ${(props) =>
-    props.variant === "secondary" ? "#5856D6" : "#007AFF"};
-  border-radius: 3px;
-  elevation: 5;
-  shadow-color: #000;
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.25;
-  shadow-radius: 3.84px;
-  align-items: center;
-  justify-content: center;
-`;
-
-const ProfileButtonText = styled(ButtonText)`
-  font-size: ${(props) => props.theme.fontSizes.large}px;
-  color: white;
-  font-weight: bold;
-  text-transform: uppercase;
-`;
-
-const MainButtonsContainer = styled.View`
-  margin-bottom: ${(props) => props.theme.spacing.xl * 8}px;
-`;
-
-const SecondaryButtonsContainer = styled.View`
-  margin-top: ${(props) => props.theme.spacing.xl * 2}px;
-`;
-
-const AvatarContainer = styled.View`
-  width: 100px;
-  height: 100px;
-  border-radius: 50px;
-  background-color: ${(props) => props.theme.colors.secondary};
-  justify-content: center;
-  align-items: center;
-  margin-bottom: ${(props) => props.theme.spacing.md}px;
-`;
-
-const AvatarText = styled.Text`
-  font-size: ${(props) => props.theme.fontSizes.xlarge}px;
-  color: white;
-  font-weight: bold;
-`;
-
-const UserEmail = styled.Text`
-  font-size: ${(props) => props.theme.fontSizes.medium}px;
-  color: ${(props) => props.theme.colors.textSecondary};
-  margin-top: ${(props) => props.theme.spacing.xs}px;
+const EditAvatarIcon = styled(TouchableOpacity)`
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background-color: ${({ theme }) => theme.colors.primary};
+  border-radius: 20px;
+  padding: 8px;
 `;
 
 const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
+  const theme = useTheme();
+  const { t } = useTranslation();
+  const profile = useSelector(selectProfile);
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
-  const { t } = useTranslation();
   const [signOut, { isLoading }] = useSignOutMutation();
 
-  const username = user?.username || t("profile.anonymous");
-  console.log("username", username);
+  const username = profile?.username || t("profile.anonymous");
+  const email = user?.email;
+
   const handleSignOut = async () => {
     try {
       await signOut({}).unwrap();
+      dispatch(
+        addToast({ message: t("profile.signOutSuccess"), type: "success" })
+      );
     } catch (error) {
       dispatch(
         addToast({ message: t("profile.error.signOut"), type: "error" })
@@ -108,54 +56,76 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   };
 
   return (
-    <ProfileContainer>
-      <UserInfo>
+    <CenteredContainer>
+      <Container>
         <AvatarContainer>
-          <AvatarText>{username[0].toUpperCase() || "?"}</AvatarText>
+          {profile?.avatarUrl ? (
+            <AvatarImage
+              source={{
+                uri: profile.avatarUrl,
+                priority: FastImage.priority.high,
+              }}
+              resizeMode={FastImage.resizeMode.cover}
+            />
+          ) : (
+            <AvatarPlaceholder>
+              <AvatarText>{username[0].toUpperCase()}</AvatarText>
+            </AvatarPlaceholder>
+          )}
+          <EditAvatarIcon onPress={() => navigation.navigate("AvatarManager")}>
+            <Ionicons name="create-outline" size={26} color="white" />
+          </EditAvatarIcon>
         </AvatarContainer>
-        <UserName>{username}</UserName>
-        <UserEmail>{user?.email || t("profile.emailNotAvailable")}</UserEmail>
-      </UserInfo>
-      <ButtonContainer>
-        <MainButtonsContainer>
-          <ProfileButton
-            onPress={() => navigation.navigate("EditProfilePicture")}
-          >
-            <ProfileButtonText>
-              {t("profile.editProfilePicture")}
-            </ProfileButtonText>
-          </ProfileButton>
-          <ProfileButton onPress={() => navigation.navigate("ChangeEmail")}>
-            <ProfileButtonText>{t("profile.changeEmail")}</ProfileButtonText>
-          </ProfileButton>
-          <ProfileButton onPress={() => navigation.navigate("EditPassword")}>
-            <ProfileButtonText>{t("profile.editPassword")}</ProfileButtonText>
-          </ProfileButton>
-          <ProfileButton
-            onPress={() => navigation.navigate("NotificationSettings")}
-          >
-            <ProfileButtonText>
-              {t("profile.notificationSettings")}
-            </ProfileButtonText>
-          </ProfileButton>
-        </MainButtonsContainer>
-        <SecondaryButtonsContainer>
-          <ProfileButton
-            variant="secondary"
-            onPress={() => navigation.navigate("DeleteAccount")}
-          >
-            <ProfileButtonText>{t("profile.deleteAccount")}</ProfileButtonText>
-          </ProfileButton>
-          <ProfileButton
-            variant="secondary"
-            onPress={handleSignOut}
-            disabled={isLoading}
-          >
-            <ProfileButtonText>{t("profile.signOut")}</ProfileButtonText>
-          </ProfileButton>
-        </SecondaryButtonsContainer>
-      </ButtonContainer>
-    </ProfileContainer>
+        {/* Display username and email under the avatar */}
+        <CardText>{username}</CardText>
+        {email && <CardText>{email}</CardText>}
+
+        <Card onPress={() => navigation.navigate("ChangeEmail")}>
+          <Ionicons
+            name="mail-outline"
+            size={24}
+            color={theme.colors.primary}
+          />
+          <CardText>{t("profile.changeEmail")}</CardText>
+        </Card>
+
+        <Card onPress={() => navigation.navigate("EditPassword")}>
+          <Ionicons
+            name="lock-closed-outline"
+            size={24}
+            color={theme.colors.primary}
+          />
+          <CardText>{t("profile.editPassword")}</CardText>
+        </Card>
+
+        <Card onPress={() => navigation.navigate("NotificationSettings")}>
+          <Ionicons
+            name="notifications-outline"
+            size={24}
+            color={theme.colors.primary}
+          />
+          <CardText>{t("profile.notificationSettings")}</CardText>
+        </Card>
+
+        <Card onPress={() => navigation.navigate("DeleteAccount")}>
+          <Ionicons name="trash-outline" size={24} color={theme.colors.error} />
+          <CardText>{t("profile.deleteAccount")}</CardText>
+        </Card>
+
+        <Card onPress={handleSignOut} disabled={isLoading}>
+          {isLoading ? (
+            <ActivityIndicator size="small" color={theme.colors.primary} />
+          ) : (
+            <Ionicons
+              name="log-out-outline"
+              size={24}
+              color={theme.colors.primary}
+            />
+          )}
+          <CardText>{t("profile.signOut")}</CardText>
+        </Card>
+      </Container>
+    </CenteredContainer>
   );
 };
 

@@ -9,4 +9,5 @@ declare module '@env' {
     export const SENTRY_DSN: string;
     export const EXPO_TUNNEL_SUBDOMAIN: string;
     export const PROJECT_ID: string;
+    export const DATABASE_URL: string;
   }

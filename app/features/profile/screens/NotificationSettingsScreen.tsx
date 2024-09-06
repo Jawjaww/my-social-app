@@ -1,52 +1,23 @@
 import React, { useState } from 'react';
 import { Switch } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import styled from '@emotion/native';
 import Toast from '../../../components/Toast';
 import { updateNotificationSettings } from '../../../notifications/notificationServices';
 import { handleAndLogError, AppError } from '../../../services/errorService';
 import { useTranslation } from 'react-i18next';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectNotificationSettings, setNotificationSettings, NotificationSettings } from '../../../notifications/notificationSlice';
-
-const Container = styled.View`
-  flex: 1;
-  padding: 20px;
-`;
-
-const Header = styled.Text`
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 20px;
-`;
-
-const SettingItem = styled.View`
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-`;
-
-const SettingLabel = styled.Text`
-  font-size: 16px;
-`;
-
-const SaveButton = styled.TouchableOpacity`
-  background-color: #007AFF;
-  padding: 10px;
-  border-radius: 5px;
-  align-items: center;
-`;
-
-const SaveButtonText = styled.Text`
-  color: white;
-  font-size: 16px;
-`;
-
-const ErrorText = styled.Text`
-  color: red;
-  margin-bottom: 10px;
-`;
+import {
+  CenteredContainer,
+  Container,
+  Button,
+  ButtonText,
+  ErrorText,
+  Card,
+  CardText
+} from '../../../components/StyledComponents';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '@emotion/react';
 
 const NotificationSettingsScreen: React.FC = () => {
   const notificationSettings = useSelector(selectNotificationSettings);
@@ -54,6 +25,7 @@ const NotificationSettingsScreen: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigation = useNavigation();
   const { t } = useTranslation();
+  const theme = useTheme();
 
   const handleToggle = (setting: keyof NotificationSettings) => {
     dispatch(setNotificationSettings({
@@ -75,28 +47,36 @@ const NotificationSettingsScreen: React.FC = () => {
   };
 
   return (
-    <Container>
-      <Header>{t('notification.title')}</Header>
-      {error && <ErrorText>{error}</ErrorText>}
+    <CenteredContainer>
+      <Container>
+        {error && <ErrorText>{error}</ErrorText>}
 
-      <SettingItem>
-        <SettingLabel>{t('notification.pushNotifications')}</SettingLabel>
-        <Switch
-          value={notificationSettings.pushNotifications}
-          onValueChange={() => handleToggle('pushNotifications')}
-        />
-      </SettingItem>
-      <SettingItem>
-        <SettingLabel>{t('notification.emailNotifications')}</SettingLabel>
-        <Switch
-          value={notificationSettings.emailNotifications}
-          onValueChange={() => handleToggle('emailNotifications')}
-        />
-      </SettingItem>
-      <SaveButton onPress={handleSave}>
-        <SaveButtonText>{t('notification.saveButton')}</SaveButtonText>
-      </SaveButton>
-    </Container>
+        <Card>
+          <CardText>{t('notification.pushNotifications')}</CardText>
+          <Switch
+            value={notificationSettings.pushNotifications}
+            onValueChange={() => handleToggle('pushNotifications')}
+          />
+        </Card>
+
+        <Card>
+          <CardText>{t('notification.emailNotifications')}</CardText>
+          <Switch
+            value={notificationSettings.emailNotifications}
+            onValueChange={() => handleToggle('emailNotifications')}
+          />
+        </Card>
+
+        <Button onPress={handleSave}>
+          <ButtonText>{t('notification.saveButton')}</ButtonText>
+        </Button>
+
+        <Card onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color={theme.colors.primary} />
+          <CardText>{t('common.buttons.back')}</CardText>
+        </Card>
+      </Container>
+    </CenteredContainer>
   );
 };
 

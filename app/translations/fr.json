@@ -38,6 +38,8 @@
       "noAccount": "Pas encore de compte ?",
       "createAccount": "Créer un compte",
       "errors": {
+        "emailAlreadyInUse": "Cette adresse e-mail est déjà utilisée.",
+        "signUpFailed": "Une erreur s'est produite lors de l'inscription. Veuillez vérifier vos informations de connexion.",
         "invalidCredentials": "Identifiants invalides. Veuillez vérifier votre email et mot de passe."
       }
     },
@@ -67,6 +69,20 @@
       "success": "Votre e-mail a été vérifié avec succès"
     }
   },
+  "username": {
+    "choose": "Choisissez un nom d'utilisateur",
+    "placeholder": "Entrez votre nom d'utilisateur",
+    "available": "Le nom d'utilisateur {username} est disponible",
+    "taken": "Le nom d'utilisateur {username} est déjà pris",
+    "loading": "Vérification de la disponibilité...",
+    "required": "Le nom d'utilisateur est requis",
+    "tooShort": "Le nom d'utilisateur est trop court",
+    "tooLong": "Le nom d'utilisateur est trop long",
+    "invalidCharacters": "Le nom d'utilisateur contient des caractères invalides",
+    "noSpaces": "Le nom d'utilisateur ne doit pas contenir d'espaces",
+    "success": "Nom d'utilisateur mis à jour avec succès",
+    "error": "Erreur lors de la mise à jour du nom d'utilisateur"
+  },
   "errors": {
     "auth/invalid-email": "L'adresse e-mail est invalide.",
     "auth/user-disabled": "Ce compte utilisateur a été désactivé.",
@@ -93,7 +109,6 @@
     "success": "Votre compte a été supprimé avec succès.",
     "title": "Supprimer le compte",
     "passwordPlaceholder": "Entrez votre mot de passe pour confirmer"
-
   },
   "editusername": {
     "error": {
@@ -124,6 +139,13 @@
     "title": "Modifier l'adresse e-mail",
     "updateButton": "Mettre à jour l'adresse e-mail"
   },
+  "confirmEmailChange": {
+    "title": "Confirmation du changement d'email",
+    "verifying": "Un e-mail de vérification a été envoyé à votre nouvelle adresse e-mail. Veuillez vérifier votre boîte de réception et cliquer sur le lien pour vérifier votre adresse e-mail.",
+    "success": "Adresse e-mail mise à jour avec succès. Veuillez vérifier votre nouvelle adresse e-mail.",
+    "error": "Erreur lors de la confirmation du changement d'email",
+    "tokenExpired": "Votre email a bien été modifié. Veuillez vous reconnecter pour finaliser le changement d'email."
+  },
   "editPassword": {
     "confirmPassword": "Confirmer le nouveau mot de passe",
     "currentPassword": "Mot de passe actuel",
@@ -143,18 +165,22 @@
     "saveButton": "Enregistrer les modifications",
     "title": "Modifier le profil"
   },
-  "editProfilePicture": {
-    "chooseFromLibrary": "Choisir depuis la galerie",
+  "avatarManager": {
+    "gallery": "Choisir depuis la galerie",
+    "camera": "Prendre une photo",
+    "delete": "Supprimer la photo",
+    "save": "Enregistrer",
     "confirmMessage": "Êtes-vous sûr de vouloir utiliser cette photo comme photo de profil ?",
     "confirmTitle": "Confirmer la mise à jour",
+    "permissions": {
+      "mediaLibrary": "L'autorisation d'accès à la bibliothèque multimédia est nécessaire.",
+      "mediaLibraryNeeded": "L'autorisation d'accès à la bibliothèque multimédia est nécessaire pour gérer votre avatar."
+    },
     "error": {
       "generic": "Une erreur s'est produite lors de la mise à jour de la photo de profil",
       "upload": "Erreur lors du téléchargement de l'image"
     },
-    "saveButton": "Enregistrer",
-    "success": "Photo de profil mise à jour avec succès",
-    "takePhoto": "Prendre une photo",
-    "title": "Modifier la photo de profil"
+    "success": "Photo de profil mise à jour avec succès"
   },
   "error": {
     "generic": "Une erreur s'est produite."
@@ -199,13 +225,14 @@
     "editusername": "Modifier le nom d'affichage",
     "editEmail": "Modifier l'adresse e-mail",
     "editPassword": "Modifier le mot de passe",
-    "editProfilePicture": "Modifier la photo de profil",
+    "avatarManager": "Modifier la photo de profil",
     "error": {
       "signOut": "Erreur lors de la déconnexion"
     },
     "notificationSettings": "Paramètres de notification",
     "deleteAccount": "Supprimer mon compte",
     "signOut": "Déconnexion",
+    "changeEmail": "Modifier l'adresse e-mail",
     "title": "Profil"
   },
   "resetPassword": {

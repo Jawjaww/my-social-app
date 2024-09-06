@@ -1,13 +1,11 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { AppUser } from "../../types/sharedTypes";
-
 interface AuthState {
   user: AppUser | null;
   isAuthenticated: boolean;
   isEmailVerified: boolean;
   loading: boolean;
   error: string | null;
-  isAwaitingEmailVerification: boolean;
 }
 
 const initialState: AuthState = {
@@ -16,7 +14,6 @@ const initialState: AuthState = {
   isEmailVerified: false,
   loading: false,
   error: null,
-  isAwaitingEmailVerification: false,
 };
 
 const authSlice = createSlice({
@@ -34,9 +31,6 @@ const authSlice = createSlice({
         state.user.emailVerified = action.payload;
       }
     },
-    setIsAwaitingEmailVerification: (state, action: PayloadAction<boolean>) => {
-      state.isAwaitingEmailVerification = action.payload;
-    },
     setLoading: (state: AuthState, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
@@ -51,8 +45,6 @@ export const {
   setIsEmailVerified, 
   setLoading, 
   setError, 
-  setIsAwaitingEmailVerification 
 } = authSlice.actions;
-
 
 export default authSlice.reducer;

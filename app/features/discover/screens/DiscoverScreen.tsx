@@ -75,8 +75,8 @@ const DiscoverScreen = () => {
             user={{
               id: item.uid,
               username: item.username || '',              avatar:
-                item.photoURL ||
-                item.avatar ||
+                item.avatarUrl ||
+                // item.avatar ||
                 "https://via.placeholder.com/150",
             }}
             onPress={() => handleUserPress(item.uid)}

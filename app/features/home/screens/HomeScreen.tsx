@@ -11,6 +11,7 @@ import {
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { selectUser } from "../../authentication/authSelectors";
+import { selectUsername } from "../../profile/profileSelectors";
 import {
   useGetContactActivitiesQuery,
   useGetUnreadMessagesCountQuery,
@@ -26,6 +27,7 @@ type RenderItemData = Activity | null;
 const HomeScreen: React.FC = () => {
   const { t } = useTranslation();
   const user = useSelector(selectUser);
+  const username = useSelector(selectUsername);
   const [isLoading, setIsLoading] = useState(true);
   const { data: activities = [] } = useGetContactActivitiesQuery();
   const { data: unreadCount } = useGetUnreadMessagesCountQuery();
@@ -40,7 +42,7 @@ const HomeScreen: React.FC = () => {
   }, [user]);
 
   {
-    user?.username ? `Bienvenue, ${user.username}!` : "Bienvenue !";
+    username ? `Bienvenue, ${username}!` : "Bienvenue !";
   }
   const renderItem: ListRenderItem<RenderItemData> = ({ item, index }) => {
     if (index === 0) {
@@ -48,7 +50,7 @@ const HomeScreen: React.FC = () => {
         <View style={styles.header}>
           <Text style={styles.welcomeText}>
             {t("home.welcomeUser", {
-              name: user?.username || t("home.anonymousUser"),
+              name: username || t("home.anonymousUser"),
             })}
           </Text>
           {activities.length > 0 && (

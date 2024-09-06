@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TextInput, Button, Alert } from "react-native";
+import { Alert, ActivityIndicator } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useDeleteAccountMutation } from "../../../services/api";
 import Toast from "../../../components/Toast";
@@ -16,6 +16,19 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { handleAndLogError, AppError } from "../../../services/errorService";
+import {
+  CenteredContainer,
+  Container,
+  Input,
+  Button,
+  ButtonText,
+  ErrorText,
+  Card,
+  CardText
+} from "../../../components/StyledComponents";
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from "@emotion/react";
+import { useNavigation } from "@react-navigation/native";
 
 const schema = yup.object().shape({
   password: yup.string().required(() => "deleteAccount.emptyPassword"),
@@ -26,6 +39,7 @@ const DeleteAccountScreen: React.FC = () => {
   const [deleteAccount, { isLoading }] = useDeleteAccountMutation();
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
+  const theme = useTheme();
   const {
     control,
     handleSubmit,
@@ -33,6 +47,7 @@ const DeleteAccountScreen: React.FC = () => {
   } = useForm({
     resolver: yupResolver(schema),
   });
+  const navigation = useNavigation();
 
   const onSubmit = async (data: { password: string }) => {
     Alert.alert(
@@ -79,42 +94,43 @@ const DeleteAccountScreen: React.FC = () => {
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", padding: 20 }}>
-      <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 20 }}>
-        {t("deleteAccount.title")}
-      </Text>
-      <Controller
-        control={control}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <TextInput
-            placeholder={t("deleteAccount.passwordPlaceholder")}
-            onBlur={onBlur}
-            onChangeText={onChange}
-            value={value}
-            secureTextEntry
-            style={{
-              borderWidth: 1,
-              borderColor: "gray",
-              padding: 10,
-              marginBottom: 20,
-            }}
-          />
+    <CenteredContainer>
+      <Container>
+        <Controller
+          control={control}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <Input
+              placeholder={t("deleteAccount.passwordPlaceholder")}
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+              secureTextEntry
+            />
+          )}
+          name="password"
+          defaultValue=""
+        />
+        {errors.password && (
+          <ErrorText>
+            {t(errors.password.message as string)}
+          </ErrorText>
         )}
-        name="password"
-        defaultValue=""
-      />
-      {errors.password && (
-        <Text style={{ color: "red" }}>
-          {t(errors.password.message as string)}
-        </Text>
-      )}
-      <Button
-        title={t("deleteAccount.button")}
-        onPress={handleSubmit(onSubmit)}
-        disabled={isLoading}
-        color="red"
-      />
-    </View>
+        <Button
+          onPress={handleSubmit(onSubmit)}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator size="small" color={theme.colors.buttonText} />
+          ) : (
+            <ButtonText>{t("deleteAccount.button")}</ButtonText>
+          )}
+        </Button>
+        <Card onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color={theme.colors.primary} />
+          <CardText>{t('common.buttons.back')}</CardText>
+        </Card>
+      </Container>
+    </CenteredContainer>
   );
 };
 

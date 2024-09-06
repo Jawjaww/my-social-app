@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { View, Text, Button, ActivityIndicator } from "react-native";
+import { ActivityIndicator } from "react-native";
 import { useTranslation } from "react-i18next";
 import {
   useRoute,
   RouteProp,
   useNavigation,
-  NavigationProp,
 } from "@react-navigation/native";
 import { useSelector, useDispatch } from "react-redux";
 import { selectUser, selectIsEmailVerified } from "../authSelectors";
@@ -14,31 +13,32 @@ import {
   useSendVerificationEmailMutation,
   useVerifyEmailMutation,
 } from "../../../services/api";
-import { RootStackParamList, AuthStackParamList } from "../../../types/sharedTypes";
-import styled from "@emotion/native";
+import {
+  CenteredContainer,
+  Container,
+  Button,
+  ButtonText,
+  Card,
+  CardText,
+} from "../../../components/StyledComponents";
+import { Ionicons } from "@expo/vector-icons";
+import { theme } from "../../../styles/theme";
+import {
+  AuthStackParamList,
+  RootStackParamList,
+} from "../../../types/sharedTypes";
+import { CompositeNavigationProp } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
-const Container = styled.View`
-  flex: 1;
-  justify-content: center;
-  padding: 20px;
-`;
-
-const Heading = styled.Text`
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 20px;
-`;
-
-const MessageText = styled.Text`
-  font-size: 16px;
-  margin-bottom: 20px;
-  text-align: center;
-`;
+type VerifyEmailScreenNavigationProp = CompositeNavigationProp<
+  NativeStackNavigationProp<RootStackParamList>,
+  NativeStackNavigationProp<AuthStackParamList>
+>;
 
 const VerifyEmailScreen: React.FC = () => {
   const { t } = useTranslation();
   const route = useRoute<RouteProp<AuthStackParamList, "VerifyEmail">>();
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<VerifyEmailScreenNavigationProp>();
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const isEmailVerified = useSelector(selectIsEmailVerified);
@@ -78,11 +78,9 @@ const VerifyEmailScreen: React.FC = () => {
           setTimeout(() => {
             navigation.reset({
               index: 0,
-              routes: [{ name: "Main" }],
+              routes: [{ name: "ChooseUsername" }],
             });
           }, 2000);
-        } else {
-          throw new Error("Verification failed");
         }
       } catch (error: any) {
         if (error.code === "auth/invalid-action-code") {
@@ -127,23 +125,45 @@ const VerifyEmailScreen: React.FC = () => {
     );
   }
 
+  const buttonStyle = {
+    backgroundColor:
+      countdown > 0 ? theme.colors.disabled : theme.colors.primary,
+  };
+
   return (
-    <Container>
-      <Heading>{t("verifyEmail.title")}</Heading>
-      <MessageText>{message}</MessageText>
-      {!isEmailVerified && user && (
-        <Button
-          title={
-            countdown > 0
-              ? `${t("verifyEmail.resendButton")} (${countdown}s)`
-              : t("verifyEmail.resendButton")
-          }
-          onPress={handleResendEmail}
-          disabled={countdown > 0 || isResending}
-        />
-      )}
-      <Button title={t("common.cancel")} onPress={handleCancel} />
-    </Container>
+    <CenteredContainer>
+      <Container>
+        <Card>
+          <Ionicons name="mail" size={24} color={theme.colors.primary} />
+          <CardText>{t("verifyEmail.title")}</CardText>
+        </Card>
+        <CardText>{message}</CardText>
+        {!isEmailVerified && user && (
+          <Button
+            onPress={handleResendEmail}
+            disabled={countdown > 0 || isResending}
+            style={buttonStyle}
+          >
+            <ButtonText
+              style={{
+                color:
+                  countdown > 0
+                    ? theme.colors.buttonText
+                    : theme.colors.buttonText,
+              }}
+            >
+              {countdown > 0
+                ? `${t("verifyEmail.resendButton")} (${countdown}s)`
+                : t("verifyEmail.resendButton")}
+            </ButtonText>
+          </Button>
+        )}
+        <Button onPress={handleCancel}>
+          <Ionicons name="arrow-back" size={24} color={theme.colors.primary} />
+          <ButtonText>{t("common.cancel")}</ButtonText>
+        </Button>
+      </Container>
+    </CenteredContainer>
   );
 };
 

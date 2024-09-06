@@ -5,77 +5,95 @@ import { useDispatch } from "react-redux";
 import { useNavigation, RouteProp } from "@react-navigation/native";
 import { addToast } from "../../../features/toast/toastSlice";
 import { ProfileStackParamList } from "../../../types/sharedTypes";
-import { View, Text, ActivityIndicator } from "react-native";
+import { ActivityIndicator } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { getAuth } from "firebase/auth";
-import { useSelector } from "react-redux";
-import { selectUser } from "../../../features/authentication/authSelectors";
-import { AppUser } from "../../../types/sharedTypes";
 import { setUser } from "../../../features/authentication/authSlice";
+import {
+  CenteredContainer,
+  Container,
+} from "../../../components/StyledComponents";
+import styled from "@emotion/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+// import { CompositeNavigationProp } from "@react-navigation/native";
+// import { RootStackParamList } from "../../../types/sharedTypes";
 
+const StyledText = styled.Text`
+  font-size: 16px;
+  margin-top: 10px;
+`;
 
-type ConfirmEmailChangeScreenRouteProp = RouteProp<
-  ProfileStackParamList,
-  "ConfirmEmailChange"
->;
+// type ConfirmEmailChangeScreenNavigationProp = CompositeNavigationProp<
+//   NativeStackNavigationProp<ProfileStackParamList>,
+//   NativeStackNavigationProp<RootStackParamList>
+// >;
 
 type Props = {
-  route: ConfirmEmailChangeScreenRouteProp;
+  route: RouteProp<ProfileStackParamList, 'ConfirmEmailChange'>;
 };
 
 const ConfirmEmailChangeScreen: React.FC<Props> = ({ route }) => {
-    const { oobCode } = route.params;
-    const { t } = useTranslation();
-    const dispatch = useDispatch();
-    const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParamList>>();
-    const [applyEmailVerificationCode, { isLoading }] = useApplyEmailVerificationCodeMutation();
-    const user = useSelector(selectUser);
-  
-    console.log("ConfirmEmailChangeScreen monté, oobCode:", oobCode);
-  
-    useEffect(() => {
-      console.log("useEffect déclenché, oobCode:", oobCode);
-      if (oobCode) {
-        handleConfirmEmailChange();
+  const { oobCode } = route.params;
+  const { t } = useTranslation();
+  const dispatch = useDispatch();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<ProfileStackParamList>>();
+  const [applyEmailVerificationCode, { isLoading }] =
+    useApplyEmailVerificationCodeMutation();
+
+  useEffect(() => {
+    if (oobCode) {
+      handleConfirmEmailChange();
+    }
+  }, [oobCode]);
+
+  const handleConfirmEmailChange = async () => {
+    try {
+      const result = await applyEmailVerificationCode(oobCode).unwrap();
+      console.log("Résultat de applyEmailVerificationCode:", result);
+      if (result.success && result.user) {
+        dispatch(setUser(result.user));
+        await AsyncStorage.setItem("user", JSON.stringify(result.user));
+        
+        dispatch(
+          addToast({
+            type: "success",
+            message: t("confirmEmailChange.success"),
+          })
+        );
+        navigation.navigate("ProfileHome");
+      } else {
+        throw new Error("Email change confirmation failed");
       }
-    }, [oobCode]);
-  
-    const handleConfirmEmailChange = async () => {
-        try {
-          console.log("Début de handleConfirmEmailChange");
-          const result = await applyEmailVerificationCode(oobCode).unwrap();
-          console.log("Résultat de applyEmailVerificationCode:", result);
-          if (result.success) {
-            console.log("Email changé avec succès, mise à jour de l'utilisateur");
-            const auth = getAuth();
-            const firebaseUser = auth.currentUser;
-            if (firebaseUser) {
-              console.log("Rechargement de l'utilisateur Firebase");
-              await firebaseUser.reload();
-              const updatedAppUser: AppUser = {
-                ...user,
-                uid: user?.uid || firebaseUser.uid, 
-                email: firebaseUser.email || "",
-                emailVerified: firebaseUser.emailVerified,
-                username: user?.username || null,
-                photoURL: user?.photoURL || null,
-                isAuthenticated: true,
-                isAwaitingEmailVerification: false,
-              };
-              dispatch(setUser(updatedAppUser));
-              console.log("AppUser mis à jour dans le store Redux");
-            }
-          }
-        } catch (error) {
-          console.error("Erreur lors de la confirmation du changement d'email:", error);
-        }
-      };
+    } catch (error) {
+      console.error("Erreur lors de la confirmation du changement d'email:", error);
+      if (error instanceof Error && error.message.includes("auth/user-token-expired")) {
+        dispatch(
+          addToast({
+            type: "info",
+            message: t("confirmEmailChange.tokenExpired"),
+          })
+        );
+        // Disconnect the user
+        dispatch(setUser(null));
+        await AsyncStorage.removeItem("user");
+      } else {
+        dispatch(
+          addToast({
+            type: "error",
+            message: t("confirmEmailChange.error"),
+          })
+        );
+      }
+    }
+  };
 
   return (
-    <View>
-      <ActivityIndicator animating={isLoading} />
-      <Text>{t("Verifying your email...")}</Text>
-    </View>
+    <CenteredContainer>
+      <Container>
+        <ActivityIndicator animating={isLoading} size="large" />
+        <StyledText>{t("confirmEmailChange.verifying")}</StyledText>
+      </Container>
+    </CenteredContainer>
   );
 };
 

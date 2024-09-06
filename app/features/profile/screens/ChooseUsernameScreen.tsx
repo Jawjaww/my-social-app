@@ -1,54 +1,181 @@
-import React, { useState } from "react";
-import { Button } from "react-native";
+import React, { useState, useEffect } from "react";
+import { ActivityIndicator, Text } from "react-native";
 import { useTranslation } from "react-i18next";
-import styled from "@emotion/native";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addToast } from "../../toast/toastSlice";
-import { setUser } from "../../authentication/authSlice";
-import { useUpdateUsernameMutation } from "../../../services/api";
+import { setProfile } from "../../profile/profileSlice";
+import {
+  useUpdateUsernameMutation,
+  useCheckUsernameAvailabilityMutation,
+} from "../../../services/api";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import {
+  CenteredContainer,
+  Container,
+  Input,
+  Button,
+  ButtonText,
+  ErrorText,
+  CardText,
+} from "../../../components/StyledComponents";
+import { useTheme } from "@emotion/react";
+import { useNavigation } from "@react-navigation/native";
+import { selectProfile } from "../../profile/profileSelectors";
+import { selectUser } from "../../authentication/authSelectors";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const Container = styled.View`
-  flex: 1;
-  padding: 20px;
-  justify-content: center;
-  align-items: center;
-`;
-
-const Input = styled.TextInput`
-  height: 40px;
-  border-color: gray;
-  border-width: 1px;
-  margin-bottom: 20px;
-  padding-horizontal: 10px;
-  width: 100%;
-`;
+const schema = yup.object().shape({
+  username: yup
+    .string()
+    .required("username.required")
+    .min(3, "username.tooShort") // Minimum 3 characters
+    .max(20, "username.tooLong") // Maximum 20 characters
+    .matches(/^[a-zA-Z0-9_]+$/, "username.invalidCharacters") // Only letters, numbers and underscores
+    .test("no-spaces", "username.noSpaces", (value) => !/\s/.test(value)), // No spaces
+});
 
 function ChooseUsernameScreen() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const [username, setUsername] = useState<string>("");
-  const [updateUsername] = useUpdateUsernameMutation();
+  const [updateUsername, { isLoading }] = useUpdateUsernameMutation();
+  const [checkUsernameAvailability] = useCheckUsernameAvailabilityMutation();
+  const theme = useTheme();
+  const navigation = useNavigation();
+  const profile = useSelector(selectProfile);
+  const user = useSelector(selectUser);
+  const [usernameStatus, setUsernameStatus] = useState<
+    "available" | "taken" | "loading" | null
+  >(null);
+  const [currentUsername, setCurrentUsername] = useState<string>("");
+  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(
+    null
+  );
 
-  const handleChooseUsername = async () => {
+  useEffect(() => {
+    console.log("ChooseUsernameScreen mounted:", { profile, user });
+  }, [profile, user]);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    setError,
+  } = useForm({
+    resolver: yupResolver(schema),
+  });
+
+  const handleUsernameChange = async (username: string) => {
+    setCurrentUsername(username);
+    if (typingTimeout) {
+      clearTimeout(typingTimeout);
+    }
+
+    // Validate username with yup schema
     try {
-      const result = await updateUsername(username).unwrap();
-      dispatch(setUser(result.user));
+      await schema.validate({ username });
+    } catch (validationError) {
+      setUsernameStatus(null);
+      return;
+    }
+
+    setTypingTimeout(
+      setTimeout(async () => {
+        try {
+          const availabilityResult = await checkUsernameAvailability(
+            username.trim()
+          ).unwrap();
+          setUsernameStatus(
+            availabilityResult.available ? "available" : "taken"
+          );
+        } catch (error) {
+          console.error("Error checking username availability:", error);
+        }
+      }, 1000)
+    );
+  };
+
+  const onSubmit = async (data: { username: string }) => {
+    try {
+      const uid = user?.uid;
+      if (!uid) {
+        console.error("UID is missing:", user, uid);
+        throw new Error("UID is missing");
+      }
+
+      // Verify username availability
+      const availabilityResult = await checkUsernameAvailability(
+        data.username.trim()
+      ).unwrap();
+      if (!availabilityResult.available) {
+        setError("username", { type: "manual", message: t("username.taken") });
+        return;
+      }
+
+      // Update username in Firebase with mutation
+      const result = await updateUsername({
+        uid,
+        username: data.username.trim(),
+      }).unwrap();
+      dispatch(setProfile(result));
+      console.log("Profile updated:", result);
+      console.log("AsyncStorage profile:", JSON.stringify(result));
+      await AsyncStorage.setItem("profile", JSON.stringify(result)); // Save profile to AsyncStorage
       dispatch(addToast({ message: t("username.success"), type: "success" }));
-      // Navigate to the home screen or another appropriate screen
     } catch (error) {
+      console.error("Error in onSubmit:", error);
       dispatch(addToast({ message: t("username.error"), type: "error" }));
     }
   };
 
   return (
-    <Container>
-      <Input
-        placeholder={t("username.placeholder")}
-        value={username}
-        onChangeText={setUsername}
-      />
-      <Button title={t("username.button")} onPress={handleChooseUsername} />
-    </Container>
+    <CenteredContainer>
+      <Container>
+        <CardText>{t("username.choose")}</CardText>
+        <Controller
+          control={control}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <>
+              <Input
+                onBlur={onBlur}
+                onChangeText={(text) => {
+                  onChange(text);
+                  handleUsernameChange(text);
+                }}
+                value={value}
+                placeholder={t("username.placeholder")}
+              />
+              {usernameStatus === "available" && (
+                <Text style={{ color: "green" }}>
+                  {t("username.available", { username: currentUsername })}
+                </Text>
+              )}
+              {usernameStatus === "taken" && (
+                <Text style={{ color: "red" }}>
+                  {t("username.taken", { username: currentUsername })}
+                </Text>
+              )}
+              {usernameStatus === "loading" && (
+                <Text style={{ color: "blue" }}>{t("username.loading")}</Text>
+              )}
+            </>
+          )}
+          name="username"
+          defaultValue=""
+        />
+        {errors.username && (
+          <ErrorText>{t(errors.username.message as string)}</ErrorText>
+        )}
+        <Button onPress={handleSubmit(onSubmit)} disabled={isLoading}>
+          {isLoading ? (
+            <ActivityIndicator size="small" color={theme.colors.background} />
+          ) : (
+            <ButtonText>{t("common.save")}</ButtonText>
+          )}
+        </Button>
+      </Container>
+    </CenteredContainer>
   );
 }
 

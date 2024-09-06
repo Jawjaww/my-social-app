@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+// import { Platform } from 'react-native';
 
 // Determine path of translation files based on the platform in english
 const getTranslationFilePath = (locale: string) => {

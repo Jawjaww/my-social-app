@@ -7,6 +7,7 @@ import { RootState } from "../../../store/store";
 import MessageListItem from "../components/MessageListItem";
 import { MessageListScreenProps, MessagesStackParamList } from "../../../types/sharedTypes";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { CenteredContainer, Container } from "../../../components/StyledComponents";
 
 const MessageListScreen: React.FC<MessageListScreenProps> = () => {
   const navigation =
@@ -23,9 +24,11 @@ const MessageListScreen: React.FC<MessageListScreenProps> = () => {
   );
 
   const renderEmptyComponent = () => (
-    <View style={styles.emptyContainer}>
+    <CenteredContainer>
+      <Container>
       <Text style={styles.emptyText}>Aucun message reçu</Text>
-    </View>
+      </Container>
+    </CenteredContainer>
   );
 
   return (

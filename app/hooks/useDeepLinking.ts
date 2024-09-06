@@ -9,7 +9,7 @@ import {
 } from "../services/api";
 import {
   setUser,
-  setIsAwaitingEmailVerification,
+  // setIsAwaitingEmailVerification,
 } from "../features/authentication/authSlice";
 import { addToast } from "../features/toast/toastSlice";
 import { useTranslation } from "react-i18next";

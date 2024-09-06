@@ -1,35 +1,43 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { ActivityIndicator } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@emotion/react";
 import { useNavigation } from "@react-navigation/native";
 import { useSignInMutation } from "../../../services/api";
-import { NavigationProp } from "@react-navigation/native";
 import { handleAndLogError, AppError } from "../../../services/errorService";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import {
-  AuthStackParamList,
-  RootStackParamList,
-} from "../../../types/sharedTypes";
 import { useDispatch } from "react-redux";
 import { addToast } from "../../../features/toast/toastSlice";
 import { useForm, Controller } from "react-hook-form";
 import {
-  FormContainer,
-  FormInput,
-  FormButton,
-  FormButtonText,
-  FormLinkText,
-  FormErrorText,
-} from "../../../styles/formStyles";
-import styled from "@emotion/native";
+  CenteredContainer,
+  Container,
+  Input,
+  Button,
+  ButtonText,
+  ErrorText,
+  Card,
+  CardText,
+} from "../../../components/StyledComponents";
+import { Ionicons } from "@expo/vector-icons";
+import { RouteProp } from "@react-navigation/native";
+import { useSelector } from "react-redux";
+import { selectProfile } from "../../../features/profile/profileSelectors";
+import { CompositeNavigationProp } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { AuthStackParamList, RootStackParamList } from "../../../types/sharedTypes";
 
-type SignInScreenNavigationProp = NavigationProp<
-  AuthStackParamList & RootStackParamList
+type SignInScreenNavigationProp = CompositeNavigationProp<
+  NativeStackNavigationProp<AuthStackParamList>,
+  NativeStackNavigationProp<RootStackParamList>
 >;
 
-console.log("SignInScreen module loaded");
+type SignInScreenRouteProp = RouteProp<AuthStackParamList, 'SignIn'>;
+
+type Props = {
+  route: SignInScreenRouteProp;
+};
 
 const schema = yup.object().shape({
   email: yup
@@ -39,16 +47,23 @@ const schema = yup.object().shape({
   password: yup.string().required("common.errors.required"),
 });
 
-const SignInScreen: React.FC = (props) => {
-  console.log("SignInScreen component rendering");
-  console.log("SignInScreen props:", props);
+const SignInScreen: React.FC<Props> = ({ route }) => {
+  const emailChanged = route.params?.emailChanged;
   const { t } = useTranslation();
   const theme = useTheme();
   const navigation = useNavigation<SignInScreenNavigationProp>();
   const [signIn, { isLoading }] = useSignInMutation();
+  const profile = useSelector(selectProfile);
   const dispatch = useDispatch();
 
-  console.log("SignInScreen hooks initialized");
+  useEffect(() => {
+    if (emailChanged) {
+      dispatch(addToast({
+        type: "info",
+        message: t("signIn.emailChanged"),
+      }));
+    }
+  }, [emailChanged]);
 
   const {
     control,
@@ -62,11 +77,17 @@ const SignInScreen: React.FC = (props) => {
   const onSubmit = async (data: { email: string; password: string }) => {
     try {
       const result = await signIn(data).unwrap();
-      if (result.isAuthenticated)  {
-        dispatch(addToast({ message: t("auth.signIn.success"), type: "success" }));
-        navigation.navigate("Main", { screen: "Home" });
+      if (result.isAuthenticated) {
+        dispatch(
+          addToast({ message: t("auth.signIn.success"), type: "success" })
+        );
+        if (!profile?.username) {
+          navigation.navigate("ChooseUsername");
+        } else {
+          navigation.navigate("Main", { screen: "Home" });
+        }
       } else {
-        throw new Error("User creation failed");
+        throw new Error("Authentication failed");
       }
     } catch (err: any) {
       const { message, code } = handleAndLogError(err as AppError, t);
@@ -94,60 +115,75 @@ const SignInScreen: React.FC = (props) => {
       }
     }
   };
-
+  
   console.log("Rendering SignInScreen components");
   console.log("SignInScreen state:", { isLoading });
 
   return (
-      <FormContainer>
-        <Controller
-          control={control}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <FormInput
-              placeholder={t("common.placeholders.email")}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
+      <CenteredContainer>
+        <Container>
+          <Controller
+            control={control}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <Input
+                placeholder={t("common.placeholders.email")}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            )}
+            name="email"
+          />
+          {errors.email && (
+            <ErrorText>{t(errors.email.message as string)}</ErrorText>
           )}
-          name="email"
-        />
-        {errors.email && (
-          <FormErrorText>{t(errors.email.message as string)}</FormErrorText>
-        )}
 
-        <Controller
-          control={control}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <FormInput
-              placeholder={t("common.placeholders.password")}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
-              secureTextEntry
-            />
+          <Controller
+            control={control}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <Input
+                placeholder={t("common.placeholders.password")}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                secureTextEntry
+              />
+            )}
+            name="password"
+          />
+          {errors.password && (
+            <ErrorText>{t(errors.password.message as string)}</ErrorText>
           )}
-          name="password"
-        />
-        {errors.password && (
-          <FormErrorText>{t(errors.password.message as string)}</FormErrorText>
-        )}
 
-        <FormButton onPress={handleSubmit(onSubmit)} disabled={isLoading}>
-          <FormButtonText>{t("auth.signIn.button")}</FormButtonText>
-        </FormButton>
-        {isLoading && <ActivityIndicator color={theme.colors.primary} />}
+          <Button onPress={handleSubmit(onSubmit)} disabled={isLoading}>
+            {isLoading ? (
+              <ActivityIndicator color={theme.colors.buttonText} />
+            ) : (
+              <ButtonText>{t("auth.signIn.button")}</ButtonText>
+            )}
+          </Button>
 
-        <FormLinkText onPress={() => navigation.navigate("ForgotPassword")}>
-          {t("auth.signIn.forgotPassword")}
-        </FormLinkText>
+          <Card onPress={() => navigation.navigate("ForgotPassword")}>
+            <Ionicons
+              name="key-outline"
+              size={24}
+              color={theme.colors.primary}
+            />
+            <CardText>{t("auth.signIn.forgotPassword")}</CardText>
+          </Card>
 
-        <FormLinkText onPress={() => navigation.navigate("SignUp")}>
-          {t("auth.signIn.noAccount")}
-        </FormLinkText>
-      </FormContainer>
+          <Card onPress={() => navigation.navigate("SignUp")}>
+            <Ionicons
+              name="person-add-outline"
+              size={24}
+              color={theme.colors.primary}
+            />
+            <CardText>{t("auth.signIn.noAccount")}</CardText>
+          </Card>
+        </Container>
+      </CenteredContainer>
   );
 };
 

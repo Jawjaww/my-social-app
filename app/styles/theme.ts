@@ -1,6 +1,6 @@
 import '@emotion/react';
-
-console.log("Theme module loaded");
+import { ViewStyle } from 'react-native';
+import { ElementType } from 'react';
 
 // Extend Emotion's Theme interface to define our custom theme properties
 declare module '@emotion/react' {
@@ -17,6 +17,11 @@ declare module '@emotion/react' {
       border: string;
       buttonBackground: string;
       buttonText: string;
+      disabled: string;
+      card: string;
+      cardBackground: string;
+      inputBackground: string;
+      shadow: string;
     };
     spacing: {
       xs: number;
@@ -38,6 +43,23 @@ declare module '@emotion/react' {
       small: number;
       medium: number;
       large: number;
+      circular: number;
+    };
+    shadows: {
+      small: {
+        shadowColor: string;
+        shadowOffset: { width: number; height: number };
+        shadowOpacity: number;
+        shadowRadius: number;
+        elevation: number;
+      };
+      medium: {
+        shadowColor: string;
+        shadowOffset: { width: number; height: number };
+        shadowOpacity: number;
+        shadowRadius: number;
+        elevation: number;
+      };
     };
     inputHeight: number;
   }
@@ -46,17 +68,22 @@ declare module '@emotion/react' {
 // Define a global theme object for consistent styling across the app
 export const theme = {
   colors: {
-    primary: '#007AFF',        // Main primary color
-    secondary: '#5856D6',      // Secondary accent color
-    background: '#F2F2F7',     // Background color
-    text: '#000000',           // Primary text color
-    textSecondary: '#8E8E93',  // Secondary text color
-    error: '#FF3B30',          // Error messages
-    success: '#34C759',        // Success messages
-    link: '#007AFF',           // Link text color
-    border: '#C7C7CC',         // Border color for input fields, etc.
-    buttonBackground: '#007AFF', // Button background color
-    buttonText: '#FFFFFF',     // Button text color
+    primary: '#007AFF',
+    secondary: '#5856D6',
+    background: '#F2F2F7',
+    text: '#000000',
+    textSecondary: '#8E8E93',
+    error: '#FF3B30',
+    success: '#34C759',
+    link: '#007AFF',
+    border: '#C7C7CC',
+    buttonBackground: '#007AFF',
+    buttonText: '#FFFFFF',
+    disabled: '#8E8E93',
+    card: '#FFFFFF',
+    cardBackground: '#F2F2F7',
+    inputBackground: '#FFFFFF',
+    shadow: '#000000',
   },
   spacing: {
     xs: 4,
@@ -72,16 +99,32 @@ export const theme = {
     large: 20,
     xlarge: 24,
     xxlarge: 28,
-    link: 16,   // Link text size
+    xxxlarge: 80,
+    link: 16,
   },
   borderRadius: {
     small: 4,
     medium: 8,
     large: 16,
+    circular: 100,
   },
-  inputHeight: 44, // Standard input height
+  shadows: {
+    small: {
+      shadowColor: '#000000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 5,
+    },
+    medium: {
+      shadowColor: '#000000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 5,
+    },
+  },
+  inputHeight: 44,
 };
 
-console.log("Theme object:", theme);
-
-export type AppTheme = typeof theme; // Export the type of the theme for type safety
+export type AppTheme = typeof theme;
