@@ -52,7 +52,7 @@ const ConfirmEmailChangeScreen: React.FC<Props> = ({ route }) => {
       console.log("Résultat de applyEmailVerificationCode:", result);
       if (result.success && result.user) {
         dispatch(setUser(result.user));
-        await AsyncStorage.setItem("user", JSON.stringify(result.user));
+        // await AsyncStorage.setItem("user", JSON.stringify(result.user));
         
         dispatch(
           addToast({
@@ -75,7 +75,7 @@ const ConfirmEmailChangeScreen: React.FC<Props> = ({ route }) => {
         );
         // Disconnect the user
         dispatch(setUser(null));
-        await AsyncStorage.removeItem("user");
+        // await AsyncStorage.removeItem("user");
       } else {
         dispatch(
           addToast({

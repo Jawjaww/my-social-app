@@ -1,4 +1,6 @@
 import React from "react";
+import store, { persistor } from "./app/store/store.ts";
+import { PersistGate } from "redux-persist/integration/react";
 import * as SplashScreen from 'expo-splash-screen';
 import ErrorBoundary from "./app/components/ErrorBoundary";
 import "./env.d.ts";
@@ -9,7 +11,6 @@ import { SENTRY_DSN } from "@env";
 import "intl-pluralrules";
 import { I18nextProvider } from "react-i18next";
 import i18n from "./app/i18n/i18n";
-import store from "./app/store/store.ts";
 import AppNavigation from "./app/navigation/AppNavigation";
 import { ThemeProvider } from "@emotion/react";
 import { theme } from "./app/styles/theme";
@@ -61,12 +62,12 @@ const SafeContainer = styled(SafeAreaView)`
   flex: 1;
   background-color: ${({ theme }) => theme.colors.background};
 `;
-
-const App: React.FC = () => {
+const App = () => {
   return (
     <ErrorBoundary>
       <Provider store={store}>
-        <I18nextProvider i18n={i18n}>
+        <PersistGate loading={null} persistor={persistor}>
+          <I18nextProvider i18n={i18n}>
           <ThemeProvider theme={theme}>
             <SafeAreaProvider>
               <SafeContainer>
@@ -79,6 +80,7 @@ const App: React.FC = () => {
             </SafeAreaProvider>
           </ThemeProvider>
         </I18nextProvider>
+      </PersistGate>
       </Provider>
     </ErrorBoundary>
   );

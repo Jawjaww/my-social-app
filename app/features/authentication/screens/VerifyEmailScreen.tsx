@@ -158,10 +158,10 @@ const VerifyEmailScreen: React.FC = () => {
             </ButtonText>
           </Button>
         )}
-        <Button onPress={handleCancel}>
+        <Card onPress={handleCancel}>
           <Ionicons name="arrow-back" size={24} color={theme.colors.primary} />
-          <ButtonText>{t("common.cancel")}</ButtonText>
-        </Button>
+          <CardText>{t("common.cancel")}</CardText>
+        </Card>
       </Container>
     </CenteredContainer>
   );

@@ -76,7 +76,8 @@ function SignUpScreen() {
       if (result.appUser && result.profileUser) {
         dispatch(setUser(result.appUser));
         dispatch(setProfile(result.profileUser));
-        await AsyncStorage.setItem("profile", JSON.stringify(result.profileUser));        await sendVerificationEmail().unwrap();
+        // await AsyncStorage.setItem("profile", JSON.stringify(result.profileUser));        
+        await sendVerificationEmail().unwrap();
         navigation.navigate("VerifyEmail", { email: data.email });
       } else {
         throw new Error("User creation failed");

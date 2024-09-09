@@ -10,6 +10,6 @@ export const selectProfile = createSelector(
 );
 
 export const selectUsername = createSelector(
-    [selectProfile],
-    (profile): string | null => profile?.username ?? null
-  );
+  [selectProfile],
+  (profile): string | null => profile?.username ?? null
+);

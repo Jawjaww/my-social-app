@@ -24,7 +24,8 @@ import { useTheme } from "@emotion/react";
 import { useNavigation } from "@react-navigation/native";
 import { selectProfile } from "../../profile/profileSelectors";
 import { selectUser } from "../../authentication/authSelectors";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+
+
 
 const schema = yup.object().shape({
   username: yup
@@ -72,7 +73,6 @@ function ChooseUsernameScreen() {
       clearTimeout(typingTimeout);
     }
 
-    // Validate username with yup schema
     try {
       await schema.validate({ username });
     } catch (validationError) {
@@ -86,9 +86,7 @@ function ChooseUsernameScreen() {
           const availabilityResult = await checkUsernameAvailability(
             username.trim()
           ).unwrap();
-          setUsernameStatus(
-            availabilityResult.available ? "available" : "taken"
-          );
+          setUsernameStatus(availabilityResult.available ? "available" : "taken");
         } catch (error) {
           console.error("Error checking username availability:", error);
         }
@@ -103,8 +101,7 @@ function ChooseUsernameScreen() {
         console.error("UID is missing:", user, uid);
         throw new Error("UID is missing");
       }
-
-      // Verify username availability
+  
       const availabilityResult = await checkUsernameAvailability(
         data.username.trim()
       ).unwrap();
@@ -112,23 +109,28 @@ function ChooseUsernameScreen() {
         setError("username", { type: "manual", message: t("username.taken") });
         return;
       }
-
-      // Update username in Firebase with mutation
+  
+      // Update the username in the database
       const result = await updateUsername({
         uid,
         username: data.username.trim(),
       }).unwrap();
-      dispatch(setProfile(result));
-      console.log("Profile updated:", result);
-      console.log("AsyncStorage profile:", JSON.stringify(result));
-      await AsyncStorage.setItem("profile", JSON.stringify(result)); // Save profile to AsyncStorage
+  
+      // Update the username in the store
+      dispatch(setProfile({
+        ...profile,
+        uid,
+        username: data.username.trim()
+      }));
+      console.log("Username updated in store:", result);
       dispatch(addToast({ message: t("username.success"), type: "success" }));
+      // Don't need to redirect because appnavigation automatically redirect user
     } catch (error) {
       console.error("Error in onSubmit:", error);
       dispatch(addToast({ message: t("username.error"), type: "error" }));
     }
   };
-
+  
   return (
     <CenteredContainer>
       <Container>

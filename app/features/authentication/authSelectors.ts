@@ -10,3 +10,4 @@ export const selectAuthLoading = (state: RootState): boolean =>
   state.auth.loading;
 export const selectAuthError = (state: RootState): string | null =>
   state.auth.error;
+

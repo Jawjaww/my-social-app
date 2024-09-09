@@ -1,7 +1,11 @@
 import React, { useEffect, useState, useRef, lazy } from "react";
 import * as SplashScreen from "expo-splash-screen";
+import { useFirebaseAuth } from "../hooks/useFirebaseAuth";
 import { ActivityIndicator, Linking } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
+import { selectProfile } from "../features/profile/profileSelectors";
+import { selectUser } from "../features/authentication/authSelectors";
+import { setProfile } from "../features/profile/profileSlice";
 import { useNavigation } from "@react-navigation/native";
 import { useDeepLinking } from "../hooks/useDeepLinking";
 import {
@@ -29,14 +33,13 @@ import {
   AppUser,
   ProfileUser,
 } from "../types/sharedTypes";
-import { selectProfile } from "../features/profile/profileSelectors";
-import { setProfile } from "../features/profile/profileSlice";
 import { NavigationContainerRef } from "@react-navigation/native";
 
 // Screens
 import HomeScreen from "../features/home/screens/HomeScreen";
 import ProfileScreen from "../features/profile/screens/ProfileScreen";
 import SignInScreen from "../features/authentication/screens/SignInScreen";
+import { use } from "i18next";
 // Lazy load screens
 const ChooseUsernameScreen = lazy(
   () => import("../features/profile/screens/ChooseUsernameScreen")
@@ -176,6 +179,7 @@ const MainTabNavigator = () => (
 const AppNavigation: React.FC = () => {
   const dispatch = useDispatch();
   const profile = useSelector(selectProfile);
+  const user = useSelector(selectUser)
   const username = profile?.username;
   const loading = useSelector((state: RootState) => state.auth.loading);
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -187,67 +191,39 @@ const AppNavigation: React.FC = () => {
   const navigationRef =
     useRef<NavigationContainerRef<RootStackParamList>>(null);
 
-  useEffect(() => {
-    const initializeApp = async () => {
-      const startTime = Date.now();
-      try {
-        const user = await AsyncStorage.getItem("user");
-        const profile = await AsyncStorage.getItem("profile");
-        if (user) {
-          dispatch(setUser(JSON.parse(user)));
+    useFirebaseAuth();
+
+    useEffect(() => {
+      const initializeApp = async () => {
+        const startTime = Date.now();
+        try {
+          // No need to manually dispatch user and profile
+        } catch (error) {
+          console.error("Error initializing app:", error);
+        } finally {
+          dispatch(setLoading(false));
+          const elapsedTime = Date.now() - startTime;
+          const remainingTime = Math.max(500 - elapsedTime, 0);
+          setTimeout(() => {
+            setIsInitializing(false);
+          }, remainingTime);
         }
-        if (profile) {
-          dispatch(setProfile(JSON.parse(profile)));
-        }
-      } catch (error) {
-        console.error("Error initializing app:", error);
-      } finally {
-        dispatch(setLoading(false));
-        const elapsedTime = Date.now() - startTime;
-        const remainingTime = Math.max(500 - elapsedTime, 0);
-        setTimeout(() => {
-          setIsInitializing(false);
-        }, remainingTime);
-      }
-    };
+      };
+  
+      initializeApp();
+    }, [dispatch]);
 
-    initializeApp();
-
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        const appUser: AppUser = {
-          uid: firebaseUser.uid,
-          email: firebaseUser.email || "",
-          emailVerified: firebaseUser.emailVerified,
-          isAuthenticated: true,
-        };
-        const profileUser: ProfileUser = {
-          uid: firebaseUser.uid,
-          username: null,
-          avatarUrl: null,
-          bio: null,
-        };
-        dispatch(setUser(appUser));
-        dispatch(setProfile(profileUser));
-        AsyncStorage.setItem("user", JSON.stringify(appUser));
-        AsyncStorage.setItem("profile", JSON.stringify(profileUser));
-      } else {
-        dispatch(setUser(null));
-        dispatch(setProfile(null));
-        AsyncStorage.removeItem("user");
-        AsyncStorage.removeItem("profile");
-      }
-      dispatch(setLoading(false));
-    });
-
-    return () => unsubscribe();
-  }, [dispatch]);
+    useEffect(() => {
+      console.log("AppNavigation - Current profile state:", profile);
+    }, [profile]);
 
   useEffect(() => {
     if (!loading && !isInitializing) {
       SplashScreen.hideAsync();
     }
   }, [loading, isInitializing]);
+
+  
 
   // handleUrl use useDeepLinking hook to handle different deep link types
   const handleUrl = async ({ url }: { url: string }) => {
@@ -309,6 +285,17 @@ const AppNavigation: React.FC = () => {
       subscription.remove();
     };
   }, []);
+
+  // Log the state of the store
+  // useEffect(() => {
+  //   console.log("Store state on app launch:", {
+  //     isAuthenticated,
+  //     isEmailVerified,
+  //     profile,
+  //     user,
+  //   });
+  // }, [isAuthenticated, isEmailVerified, profile, user]);
+
 
   // Redirect to ChooseUsernameScreen if the user has no username
   // useEffect(() => {

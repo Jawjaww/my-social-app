@@ -15,7 +15,7 @@ import {
   applyActionCode,
   updateEmail,
 } from "firebase/auth";
-import { ref, set, get, update } from "firebase/database";
+import { ref, set, get, update, query, orderByChild, equalTo } from "firebase/database";
 import { FirebaseError } from "firebase/app";
 import {
   ref as storageRef,
@@ -37,6 +37,7 @@ import {
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
 import { SerializedError } from "@reduxjs/toolkit";
+
 
 export type AppError = FetchBaseQueryError | SerializedError;
 
@@ -78,35 +79,38 @@ export const api = createApi({
       string
     >({
       queryFn: async (oobCode) => {
-        console.log("Début de applyEmailVerificationCode avec oobCode:", oobCode);
+        console.log(
+          "Début de applyEmailVerificationCode avec oobCode:",
+          oobCode
+        );
         try {
           const auth = getAuth();
           const checkResult = await checkActionCode(auth, oobCode);
           const newEmail = checkResult.data.email;
-      
+
           console.log("Résultat de checkActionCode:", checkResult);
           console.log("Nouvel email obtenu:", newEmail);
-      
+
           if (!newEmail) {
             console.log("Nouvel email non trouvé dans le code d'action");
             throw new Error("Nouvel email non trouvé dans le code d'action");
           }
-      
+
           await applyActionCode(auth, oobCode);
           console.log("Code d'action appliqué avec succès");
-      
+
           const user = auth.currentUser;
           console.log("Utilisateur actuel:", user);
-      
+
           if (user) {
             // Update the user's email
             await updateEmail(user, newEmail);
             console.log("Email mis à jour avec succès:", newEmail);
-      
+
             // Reload the user to get the latest information
             await user.reload();
             console.log("Utilisateur rechargé:", user);
-      
+
             const updatedUser: AppUser = {
               uid: user.uid,
               email: user.email,
@@ -121,7 +125,10 @@ export const api = createApi({
           console.log("Aucun utilisateur trouvé");
           return { data: { success: true, user: null, newEmail: null } };
         } catch (error: unknown) {
-          console.error("Erreur dans la mutation applyEmailVerificationCode:", error);
+          console.error(
+            "Erreur dans la mutation applyEmailVerificationCode:",
+            error
+          );
           if (error instanceof Error) {
             return { error: { status: "CUSTOM_ERROR", error: error.message } };
           } else {
@@ -152,8 +159,8 @@ export const api = createApi({
     createProfileUser: builder.mutation<ProfileUser, ProfileUser>({
       queryFn: async (profileUser) => {
         try {
-          const userRef = ref(realtimeDb, `users/${profileUser.uid}`);
-          await set(userRef, profileUser);
+          const userProfileRef = ref(realtimeDb, `userProfiles/${profileUser.uid}`);
+          await set(userProfileRef, profileUser);
           return { data: profileUser };
         } catch (error) {
           console.error("Error creating user profile:", error);
@@ -407,33 +414,33 @@ export const api = createApi({
             password
           );
           const firebaseUser = userCredential?.user;
-      
+
           if (!firebaseUser) {
             throw new Error("Failed to create user");
           }
-      
+
           const appUser: AppUser = {
             uid: firebaseUser.uid,
             email: firebaseUser.email || "",
             emailVerified: firebaseUser.emailVerified,
             isAuthenticated: true,
           };
-      
+
           const profileUser: ProfileUser = {
             uid: firebaseUser.uid,
             username: null,
             avatarUrl: null,
             bio: null,
           };
-      
+
           console.log("Creating profile user:", profileUser);
-      
+
           await dispatch(
             api.endpoints.createProfileUser.initiate(profileUser)
           ).unwrap();
-      
+
           console.log("Profile user created successfully");
-      
+
           return { data: { appUser, profileUser } };
         } catch (error: any) {
           console.error("Erreur lors de l'inscription:", error);
@@ -445,7 +452,7 @@ export const api = createApi({
             },
           };
         }
-      }
+      },
     }),
     updateAvatar: builder.mutation<string, { uri: string; userId: string }>({
       queryFn: async ({ uri, userId }) => {
@@ -472,29 +479,34 @@ export const api = createApi({
       },
     }),
 
-    updateUsername: builder.mutation<
-      ProfileUser,
-      { uid: string; username: string }
-    >({
+    updateUsername: builder.mutation<ProfileUser, { uid: string; username: string }>({
       queryFn: async ({ uid, username }) => {
         try {
-          const userRef = ref(realtimeDb, `users/${uid}`);
-          const usernameRef = ref(realtimeDb, `usernames/${username}`);
-
-          // Verify username availability again
-          const snapshot = await get(usernameRef);
-          if (snapshot.exists()) {
+          const userProfileRef = ref(realtimeDb, `userProfiles/${uid}`);
+    
+          // Get the current profile
+          const currentProfileSnapshot = await get(userProfileRef);
+          const currentProfile = currentProfileSnapshot.val() as ProfileUser;
+    
+          if (!currentProfile) {
+            throw new Error("User profile not found");
+          }
+    
+          // Check if the new username is already taken
+          const usernameQuery = query(ref(realtimeDb, 'userProfiles'), orderByChild('username'), equalTo(username));
+          const usernameSnapshot = await get(usernameQuery);
+    
+          if (usernameSnapshot.exists()) {
             throw new Error("Username is already taken");
           }
-
-          // Update user profile and book username
-          await update(userRef, { username });
-          await set(usernameRef, uid);
-
+    
+          // Update the username in the user profile
+          await update(userProfileRef, { username });
+    
           // Get the updated profile
-          const updatedProfileSnapshot = await get(userRef);
+          const updatedProfileSnapshot = await get(userProfileRef);
           const updatedProfile = updatedProfileSnapshot.val() as ProfileUser;
-
+    
           return { data: updatedProfile };
         } catch (error) {
           console.error("Error updating username:", error);
@@ -502,6 +514,7 @@ export const api = createApi({
         }
       },
     }),
+
     updatePassword: builder.mutation<
       { success: boolean },
       { currentPassword: string; newPassword: string }
@@ -599,7 +612,7 @@ export const {
   useAddContactMutation,
   useApplyEmailVerificationCodeMutation,
   useCheckUsernameAvailabilityMutation,
-  useCreateProfileUserMutation,
+  // useCreateProfileUserMutation,
   useDeleteAccountMutation,
   useDeleteMessageMutation,
   useGetContactActivitiesQuery,
