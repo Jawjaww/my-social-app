@@ -75,7 +75,7 @@ const DiscoverScreen = () => {
             user={{
               id: item.uid,
               username: item.username || '',              avatar:
-                item.avatarUrl ||
+                item.avatarUri ||
                 // item.avatar ||
                 "https://via.placeholder.com/150",
             }}

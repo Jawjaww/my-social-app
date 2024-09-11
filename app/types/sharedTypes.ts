@@ -34,7 +34,7 @@ export interface User {
   id: string;
   email: string | null;
   username: string | null;
-  avatarUrl: string | null;
+  avatarUri: string | null;
   emailVerified: boolean;
 }
 
@@ -49,7 +49,7 @@ export interface AppUser {
 export interface ProfileUser {
   uid: string;
   username: string | null;
-  avatarUrl?: string | null;
+  avatarUri?: string | null;
   bio?: string | null;
   // Add other profile specific fields here
 };

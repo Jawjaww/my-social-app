@@ -24,7 +24,7 @@ export const useFirebaseAuth = () => {
         const profileUser: ProfileUser = {
             uid: firebaseUser.uid,
             username: existingProfile?.username || null,
-            avatarUrl: existingProfile?.avatarUrl || null,
+            avatarUri: existingProfile?.avatarUri || null,
             bio: existingProfile?.bio || null,
           };
         console.log("Firebase user authenticated:", appUser);

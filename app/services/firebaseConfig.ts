@@ -48,7 +48,7 @@ const storage = getStorage(app);
 //   // Update user profile in realtime database
 //   await set(userRef, {
 //     username: user.username,
-//     avatarUrl: user.avatarUrl,
+//     avatarUri: user.avatarUri,
 //   });
 
 //   await set(usernameRef, user.uid);
@@ -58,7 +58,7 @@ const storage = getStorage(app);
 //   if (authUser) {
 //     await updateProfile(authUser, {
 //       displayName: user.username || undefined,
-//       photoURL: user.avatarUrl || undefined,
+//       photoURL: user.avatarUri || undefined,
 //     });
 //   }
 // };

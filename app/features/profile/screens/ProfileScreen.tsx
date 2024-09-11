@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { ActivityIndicator, TouchableOpacity } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
@@ -21,11 +21,12 @@ import {
   Card,
   CardText,
 } from "../../../components/StyledComponents";
+import AvatarPhoto from "../../../components/AvatarPhoto";
 
 const EditAvatarIcon = styled(TouchableOpacity)`
   position: absolute;
-  bottom: 20px;
-  right: 20px;
+  bottom: 1px;
+  right: 75px;
   background-color: ${({ theme }) => theme.colors.primary};
   border-radius: 20px;
   padding: 8px;
@@ -38,7 +39,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
   const [signOut, { isLoading }] = useSignOutMutation();
-
+  const [image, setImage] = useState<string | null>(null);
   const username = profile?.username || t("profile.anonymous");
   const email = user?.email;
 
@@ -59,19 +60,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
     <CenteredContainer>
       <Container>
         <AvatarContainer>
-          {profile?.avatarUrl ? (
-            <AvatarImage
-              source={{
-                uri: profile.avatarUrl,
-                priority: FastImage.priority.high,
-              }}
-              resizeMode={FastImage.resizeMode.cover}
-            />
-          ) : (
-            <AvatarPlaceholder>
-              <AvatarText>{username[0].toUpperCase()}</AvatarText>
-            </AvatarPlaceholder>
-          )}
+        <AvatarPhoto size={200} uri={image} username={profile?.username} />
           <EditAvatarIcon onPress={() => navigation.navigate("AvatarManager")}>
             <Ionicons name="create-outline" size={26} color="white" />
           </EditAvatarIcon>

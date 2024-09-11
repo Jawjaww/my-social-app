@@ -34,6 +34,7 @@ import {
   ProfileUser,
 } from "../types/sharedTypes";
 import { NavigationContainerRef } from "@react-navigation/native";
+import AvatarPhoto from "../components/AvatarPhoto";
 
 // Screens
 import HomeScreen from "../features/home/screens/HomeScreen";
@@ -151,14 +152,14 @@ const MessagesNavigator = () => (
 const MainTabNavigator = () => (
   <MainTab.Navigator
     screenOptions={({ route }) => ({
-      tabBarIcon: ({ color, size }) => {
+      tabBarIcon: ({ color, size, focused }) => {
         let iconName: keyof typeof Ionicons.glyphMap = "home";
         if (route.name === "Home") {
           iconName = "home";
         } else if (route.name === "Discover") {
           iconName = "search";
         } else if (route.name === "Profile") {
-          iconName = "person";
+          return <AvatarPhoto size={size} isActive={focused} />;
         } else if (route.name === "Contacts") {
           iconName = "people";
         } else if (route.name === "Messages") {
@@ -169,10 +170,10 @@ const MainTabNavigator = () => (
     })}
   >
     <MainTab.Screen name="Home" component={HomeScreen} />
-    <MainTab.Screen name="Discover" component={DiscoverScreen} />
-    <MainTab.Screen name="Profile" component={ProfileNavigator} />
+    <MainTab.Screen name="Discover" component={DiscoverScreen} />  
     <MainTab.Screen name="Contacts" component={ContactsNavigator} />
     <MainTab.Screen name="Messages" component={MessagesNavigator} />
+    <MainTab.Screen name="Profile" component={ProfileNavigator} />
   </MainTab.Navigator>
 );
 

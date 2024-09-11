@@ -429,7 +429,7 @@ export const api = createApi({
           const profileUser: ProfileUser = {
             uid: firebaseUser.uid,
             username: null,
-            avatarUrl: null,
+            avatarUri: null,
             bio: null,
           };
 
@@ -454,20 +454,12 @@ export const api = createApi({
         }
       },
     }),
-    updateAvatar: builder.mutation<string, { uri: string; userId: string }>({
-      queryFn: async ({ uri, userId }) => {
+    updateAvatarUri: builder.mutation<string | null, { userId: string; avatarUri: string | null }>({
+      queryFn: async ({ userId, avatarUri }) => {
         try {
-          const response = await fetch(uri);
-          const blob = await response.blob();
-
-          const avatarRef = storageRef(storage, `avatars/${userId}.jpg`);
-          await uploadBytes(avatarRef, blob);
-          const downloadURL = await getDownloadURL(avatarRef);
-
           const userRef = ref(realtimeDb, `users/${userId}`);
-          await update(userRef, { avatarUrl: downloadURL });
-
-          return { data: downloadURL };
+          await update(userRef, { avatarUri: avatarUri });
+          return { data: avatarUri };
         } catch (error: any) {
           return {
             error: {
@@ -557,7 +549,7 @@ export const api = createApi({
           const updatedProfileUser: ProfileUser = {
             uid,
             username: profileData.username ?? null,
-            avatarUrl: profileData.avatarUrl ?? null,
+            avatarUri: profileData.avatarUri ?? null,
             bio: profileData.bio ?? null,
           };
 
@@ -631,7 +623,7 @@ export const {
   useSignInWithGoogleMutation,
   useSignOutMutation,
   useSignUpMutation,
-  useUpdateAvatarMutation,
+  useUpdateAvatarUriMutation,
   useUpdateUsernameMutation,
   useUpdatePasswordMutation,
   useUpdateUserProfileMutation,

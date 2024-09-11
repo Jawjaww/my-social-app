@@ -86,7 +86,7 @@ const MessagesScreen: React.FC<Props> = ({ navigation, route }) => {
       user={{
         _id: user.uid,
         name: user.username || 'User',
-        avatar: user.avatarUrl || 'https://placeimg.com/140/140/any',
+        avatar: user.avatarUri || 'https://placeimg.com/140/140/any',
       }}
     />
   );

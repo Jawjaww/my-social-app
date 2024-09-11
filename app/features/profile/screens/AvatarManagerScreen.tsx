@@ -11,23 +11,19 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useTheme } from "@emotion/react";
 import { useTranslation } from "react-i18next";
-import FastImage from "react-native-fast-image";
 import { Ionicons } from "@expo/vector-icons";
 import { addToast } from "../../toast/toastSlice";
-import { ProfileStackParamList } from "../../../types/sharedTypes";
+import { ProfileStackParamList, ProfileUser } from "../../../types/sharedTypes";
 import {
   CenteredContainer,
   Container,
-  AvatarContainer,
-  AvatarImage,
-  AvatarPlaceholder,
-  AvatarText,
   Card,
   CardText,
 } from "../../../components/StyledComponents";
 import { setProfile } from "../../profile/profileSlice";
 import { selectProfile } from "../../profile/profileSelectors";
-import { ProfileUser } from "../../../types/sharedTypes";
+import { useUpdateAvatarUriMutation } from "../../../services/api";
+import AvatarPhoto from "../../../components/AvatarPhoto";
 
 const AvatarManagerScreen: React.FC = () => {
   const theme = useTheme();
@@ -36,10 +32,10 @@ const AvatarManagerScreen: React.FC = () => {
   const dispatch = useDispatch();
   const navigation =
     useNavigation<NativeStackNavigationProp<ProfileStackParamList>>();
-  const profileUser = useSelector(selectProfile);
-  const [image, setImage] = useState<string | null>(profileUser?.avatarUrl || null);
+  const [image, setImage] = useState<string | null>(profile?.avatarUri || null);
   const [isLoading, setIsLoading] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
+  const [updateAvatarUri] = useUpdateAvatarUriMutation();
 
   useEffect(() => {
     (async () => {
@@ -57,21 +53,28 @@ const AvatarManagerScreen: React.FC = () => {
     if (!hasPermission) {
       throw new Error("No permission to save avatar");
     }
-
     try {
-      const asset = await MediaLibrary.createAssetAsync(imageUri);
-      const album = await MediaLibrary.getAlbumAsync("AppAvatars");
-      if (album === null) {
-        await MediaLibrary.createAlbumAsync("AppAvatars", asset, false);
-      } else {
-        await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+      const picturesDir = FileSystem.documentDirectory + "Pictures/";
+      const appDir = picturesDir + "mysocialapp/";
+      const avatarDir = appDir + "appavatar/";
+
+      // Create the directories if they don't exist
+      await FileSystem.makeDirectoryAsync(picturesDir, { intermediates: true });
+      await FileSystem.makeDirectoryAsync(appDir, { intermediates: true });
+      await FileSystem.makeDirectoryAsync(avatarDir, { intermediates: true });
+
+      // Delete all files in the avatar directory
+      const files = await FileSystem.readDirectoryAsync(avatarDir);
+      for (const file of files) {
+        await FileSystem.deleteAsync(avatarDir + file, { idempotent: true });
       }
 
-      const fileName = `avatar_${profileUser?.uid}.jpg`;
-      const filePath = `${FileSystem.documentDirectory}${fileName}`;
+      const fileName = `avatar_${profile?.uid}_${Date.now()}.jpg`;
+      const filePath = avatarDir + fileName;
 
+      // Copy the new avatar
       await FileSystem.copyAsync({
-        from: asset.uri,
+        from: imageUri,
         to: filePath,
       });
 
@@ -111,23 +114,47 @@ const AvatarManagerScreen: React.FC = () => {
         if (result.path) {
           const localPath = await saveAvatarLocally(result.path);
           setImage(localPath);
+
+          if (profile) {
+            const response = await updateAvatarUri({
+              userId: profile.uid,
+              avatarUri: localPath,
+            });
+
+            if ('error' in response) {
+              throw new Error(JSON.stringify(response.error));
+            }
+            // Reset navigation stack and navigate to ProfileHome
+            navigation.reset({
+              index: 0,
+              routes: [{ name: "ProfileHome" }],
+            });
+
+            const updatedProfile: ProfileUser = {
+              ...profile,
+              avatarUri: localPath,
+            };
+            dispatch(setProfile(updatedProfile));
+            
+            dispatch(
+              addToast({
+                message: t("editProfilePicture.success"),
+                type: "success",
+              })
+            );
+          }
         }
       } catch (error: unknown) {
-        if (
-          error instanceof Error &&
-          error.message !== "User cancelled image selection"
-        ) {
-          console.error("Error picking image:", error);
-          dispatch(
-            addToast({
-              message: t("editProfilePicture.error.picker"),
-              type: "error",
-            })
-          );
-        }
+        console.error("Error picking image:", error);
+        dispatch(
+          addToast({
+            message: t("editProfilePicture.error.picker"),
+            type: "error",
+          })
+        );
       }
     },
-    [hasPermission, t, profileUser, dispatch]
+    [hasPermission, t, profile, dispatch, updateAvatarUri, saveAvatarLocally]
   );
 
   const handleSave = useCallback(async () => {
@@ -135,12 +162,6 @@ const AvatarManagerScreen: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const localUri = await saveAvatarLocally(image);
-      const updatedProfile: ProfileUser = {
-        ...profile,
-        avatarUrl: localUri,
-      };
-      dispatch(setProfile(updatedProfile));
       dispatch(
         addToast({
           message: t("editProfilePicture.success"),
@@ -170,15 +191,23 @@ const AvatarManagerScreen: React.FC = () => {
         {
           text: t("common.confirm"),
           onPress: async () => {
-            if (profile && profile.avatarUrl) {
-              await FileSystem.deleteAsync(profile.avatarUrl, {
+            if (profile && profile.avatarUri) {
+              await FileSystem.deleteAsync(profile.avatarUri, {
                 idempotent: true,
               });
               const updatedProfile: ProfileUser = {
                 ...profile,
-                avatarUrl: null,
+                avatarUri: null,
               };
               dispatch(setProfile(updatedProfile));
+              const response = await updateAvatarUri({
+                userId: profile.uid,
+                avatarUri: null,
+              });
+
+              if ('error' in response) {
+                throw new Error(JSON.stringify(response.error));
+              }
             }
             setImage(null);
             dispatch(
@@ -192,7 +221,7 @@ const AvatarManagerScreen: React.FC = () => {
         },
       ]
     );
-  }, [profile, dispatch, t]);
+  }, [profile, dispatch, t, updateAvatarUri]);
 
   if (!hasPermission) {
     return (
@@ -207,20 +236,7 @@ const AvatarManagerScreen: React.FC = () => {
   return (
     <CenteredContainer>
       <Container>
-        <AvatarContainer>
-          {image ? (
-            <AvatarImage
-              source={{ uri: image, priority: FastImage.priority.high }}
-              resizeMode={FastImage.resizeMode.cover}
-            />
-          ) : (
-            <AvatarPlaceholder>
-              <AvatarText>
-                {profile?.username?.[0].toUpperCase() || "?"}
-              </AvatarText>
-            </AvatarPlaceholder>
-          )}
-        </AvatarContainer>
+        <AvatarPhoto size={220} uri={image} username={profile?.username} />
 
         <Card onPress={() => pickImage("library")}>
           <Ionicons
