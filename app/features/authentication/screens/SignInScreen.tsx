@@ -81,11 +81,11 @@ const SignInScreen: React.FC<Props> = ({ route }) => {
         dispatch(
           addToast({ message: t("auth.signIn.success"), type: "success" })
         );
-        if (!profile?.username) {
-          navigation.navigate("ChooseUsername");
-        } else {
-          navigation.navigate("Main", { screen: "Home" });
-        }
+        // if (!profile?.username) {
+        //   navigation.navigate("ChooseUsername");
+        // } else {
+        //   navigation.navigate("Main", { screen: "Home" });
+        // }
       } else {
         throw new Error("Authentication failed");
       }

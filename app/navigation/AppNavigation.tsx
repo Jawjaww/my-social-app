@@ -287,32 +287,6 @@ const AppNavigation: React.FC = () => {
     };
   }, []);
 
-  // Log the state of the store
-  // useEffect(() => {
-  //   console.log("Store state on app launch:", {
-  //     isAuthenticated,
-  //     isEmailVerified,
-  //     profile,
-  //     user,
-  //   });
-  // }, [isAuthenticated, isEmailVerified, profile, user]);
-
-
-  // Redirect to ChooseUsernameScreen if the user has no username
-  // useEffect(() => {
-  //   console.log("Checking redirection conditions:", {
-  //     isAuthenticated,
-  //     isEmailVerified,
-  //     profile,
-  //   });
-  //   if (isAuthenticated && isEmailVerified && !profile?.username) {
-  //     setTimeout(() => {
-  //       console.log("Navigating to ChooseUsername");
-  //       navigationRef.current?.navigate("ChooseUsername");
-  //     }, 2000);
-  //   }
-  // }, [isAuthenticated, isEmailVerified, profile]);
-
   // Render splash screen while initializing
   if (isInitializing || loading) {
     return null; // SplashScreen still visible

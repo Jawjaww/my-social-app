@@ -156,6 +156,7 @@ export const api = createApi({
         },
       }
     ),
+    // Used in SignUp mutation to create a new user profile in the database
     createProfileUser: builder.mutation<ProfileUser, ProfileUser>({
       queryFn: async (profileUser) => {
         try {
@@ -211,6 +212,23 @@ export const api = createApi({
     }),
     getMessages: builder.query<IMessage[], string>({
       query: (userId) => `messages/${userId}`,
+    }),
+    getProfile: builder.mutation<ProfileUser, string>({
+      queryFn: async (uid) => {
+        try {
+          const userProfileRef = ref(realtimeDb, `userProfiles/${uid}`);
+          const snapshot = await get(userProfileRef);
+          if (snapshot.exists()) {
+            const profile = snapshot.val() as ProfileUser;
+            return { data: profile };
+          } else {
+            throw new Error("User profile not found");
+          }
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+          return { error: { status: 500, data: (error as Error).message } };
+        }
+      },
     }),
     getRecentChats: builder.query<Contact[], void>({
       query: () => "recentChats",
@@ -612,6 +630,7 @@ export const {
   useGetContactsQuery,
   useGetDiscoverUsersQuery,
   useGetMessagesQuery,
+  useGetProfileMutation,
   useGetRecentChatsQuery,
   useGetUnreadMessagesCountQuery,
   useRemoveContactMutation,

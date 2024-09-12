@@ -5,12 +5,11 @@ import { setUser } from "../features/authentication/authSlice";
 import { setProfile } from "../features/profile/profileSlice";
 import { auth } from "../services/firebaseConfig";
 import { AppUser, ProfileUser } from "../types/sharedTypes";
-import { selectProfile } from "../features/profile/profileSelectors";
-import { useSelector } from "react-redux";
+import { useGetProfileMutation } from "../services/api";
 
 export const useFirebaseAuth = () => {
   const dispatch = useDispatch();
-  const existingProfile = useSelector(selectProfile);
+  const [getProfile] = useGetProfileMutation();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -21,12 +20,26 @@ export const useFirebaseAuth = () => {
           emailVerified: firebaseUser.emailVerified,
           isAuthenticated: true,
         };
-        const profileUser: ProfileUser = {
-            uid: firebaseUser.uid,
-            username: existingProfile?.username || null,
-            avatarUri: existingProfile?.avatarUri || null,
-            bio: existingProfile?.bio || null,
+
+        let profileUser: ProfileUser = {
+          uid: firebaseUser.uid,
+          username: null,
+          avatarUri: null,
+          bio: null,
+        };
+
+        try {
+          const result = await getProfile(firebaseUser.uid).unwrap();
+          profileUser = {
+            ...profileUser,
+            username: result.username,
+            avatarUri: result.avatarUri,
+            bio: result.bio,
           };
+        } catch (error) {
+          console.error("Error fetching profile from Firebase:", error);
+        }
+
         console.log("Firebase user authenticated:", appUser);
         console.log("Profile user state before dispatch:", profileUser);
         dispatch(setUser(appUser));
@@ -39,5 +52,5 @@ export const useFirebaseAuth = () => {
     });
 
     return () => unsubscribe();
-  }, [dispatch]);
+  }, [dispatch, getProfile]);
 };

@@ -21,11 +21,8 @@ import {
   CardText,
 } from "../../../components/StyledComponents";
 import { useTheme } from "@emotion/react";
-import { useNavigation } from "@react-navigation/native";
 import { selectProfile } from "../../profile/profileSelectors";
 import { selectUser } from "../../authentication/authSelectors";
-
-
 
 const schema = yup.object().shape({
   username: yup
@@ -43,7 +40,6 @@ function ChooseUsernameScreen() {
   const [updateUsername, { isLoading }] = useUpdateUsernameMutation();
   const [checkUsernameAvailability] = useCheckUsernameAvailabilityMutation();
   const theme = useTheme();
-  const navigation = useNavigation();
   const profile = useSelector(selectProfile);
   const user = useSelector(selectUser);
   const [usernameStatus, setUsernameStatus] = useState<

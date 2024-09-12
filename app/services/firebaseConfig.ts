@@ -1,5 +1,4 @@
 import { initializeApp } from "firebase/app";
-// import { getFirestore } from 'firebase/firestore';
 import { getDatabase } from "firebase/database";
 import {
   initializeAuth,
@@ -18,7 +17,6 @@ import {
   DATABASE_URL,
 } from "@env";
 import { getStorage } from "firebase/storage";
-import { ref, set, get } from "firebase/database";
 
 const firebaseConfig = {
   apiKey: API_KEY,
@@ -39,28 +37,5 @@ const auth = initializeAuth(app, {
 });
 const realtimeDb = getDatabase(app);
 const storage = getStorage(app);
-
-// Update user profile in realtime database and Firebase Authentication
-// export const updateUserProfile = async (user: ProfileUser) => {
-//   const userRef = ref(realtimeDb, `users/${user.uid}`);
-//   const usernameRef = ref(realtimeDb, `usernames/${user.username}`);
-
-//   // Update user profile in realtime database
-//   await set(userRef, {
-//     username: user.username,
-//     avatarUri: user.avatarUri,
-//   });
-
-//   await set(usernameRef, user.uid);
-
-//   // Update user profile in Firebase Authentication
-//   const authUser = auth.currentUser;
-//   if (authUser) {
-//     await updateProfile(authUser, {
-//       displayName: user.username || undefined,
-//       photoURL: user.avatarUri || undefined,
-//     });
-//   }
-// };
 
 export { app, auth, realtimeDb, storage };
