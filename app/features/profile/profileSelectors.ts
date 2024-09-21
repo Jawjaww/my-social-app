@@ -13,3 +13,8 @@ export const selectUsername = createSelector(
   [selectProfile],
   (profile): string | null => profile?.username ?? null
 );
+
+export const selectAvatarUri = createSelector(
+  [selectProfile],
+  (profile): string | null => profile?.avatarUri ?? null
+);

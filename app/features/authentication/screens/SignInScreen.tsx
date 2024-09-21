@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import { ActivityIndicator } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@emotion/react";
 import { useNavigation } from "@react-navigation/native";
@@ -19,6 +18,7 @@ import {
   ErrorText,
   Card,
   CardText,
+  StyledActivityIndicator,
 } from "../../../components/StyledComponents";
 import { Ionicons } from "@expo/vector-icons";
 import { RouteProp } from "@react-navigation/native";
@@ -159,7 +159,7 @@ const SignInScreen: React.FC<Props> = ({ route }) => {
 
           <Button onPress={handleSubmit(onSubmit)} disabled={isLoading}>
             {isLoading ? (
-              <ActivityIndicator color={theme.colors.buttonText} />
+              <StyledActivityIndicator color={theme.colors.buttonText} />
             ) : (
               <ButtonText>{t("auth.signIn.button")}</ButtonText>
             )}

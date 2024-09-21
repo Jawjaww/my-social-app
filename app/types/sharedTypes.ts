@@ -59,6 +59,7 @@ export type RootStackParamList = {
   Auth: NavigatorScreenParams<AuthStackParamList>;
   Main: NavigatorScreenParams<MainTabParamList>;
   ChooseUsername: undefined;
+  Permissions: undefined;
 };
 
 export type AuthStackParamList = {
@@ -110,6 +111,12 @@ export type ProfileScreenProps = NativeStackScreenProps<
   "ProfileHome"
 >;
 
+export interface AvatarPhotoProps {
+  size?: number;
+  isActive?: boolean;
+  uri?: string | null;
+  username?: string | null;
+}
 export interface MessageListScreenProps {
   navigation: NativeStackNavigationProp<MessagesStackParamList, "MessageList">;
 }

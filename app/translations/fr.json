@@ -221,6 +221,18 @@
     },
     "title": "Paramètres de notification"
   },
+  "permissions": {
+    "camera": {
+      "title": "Permission de la caméra",
+      "message": "Cette application a besoin d'accéder à votre caméra pour prendre des photos.",
+      "denied": "La permission d'accès à la caméra a été refusée. Veuillez l'activer dans les paramètres de votre appareil."
+    },
+    "mediaLibrary": {
+      "title": "Permission de la bibliothèque photo",
+      "message": "Cette application a besoin d'accéder à votre bibliothèque photo pour sélectionner des images.",
+      "denied": "La permission d'accès à la bibliothèque photo a été refusée. Veuillez l'activer dans les paramètres de votre appareil."
+    }
+  },
   "profile": {
     "editusername": "Modifier le nom d'affichage",
     "editEmail": "Modifier l'adresse e-mail",

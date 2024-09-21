@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { ActivityIndicator } from "react-native";
 import { useTranslation } from "react-i18next";
 import {
   useRoute,
@@ -20,6 +19,7 @@ import {
   ButtonText,
   Card,
   CardText,
+  StyledActivityIndicator,
 } from "../../../components/StyledComponents";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "../../../styles/theme";
@@ -120,7 +120,7 @@ const VerifyEmailScreen: React.FC = () => {
   if (loading) {
     return (
       <Container>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <StyledActivityIndicator size="large" color="#0000ff" />
       </Container>
     );
   }

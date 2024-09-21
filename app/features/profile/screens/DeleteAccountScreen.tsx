@@ -1,5 +1,5 @@
 import React from "react";
-import { Alert, ActivityIndicator } from "react-native";
+import { Alert } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useDeleteAccountMutation } from "../../../services/api";
 import Toast from "../../../components/Toast";
@@ -24,7 +24,8 @@ import {
   ButtonText,
   ErrorText,
   Card,
-  CardText
+  CardText,
+  StyledActivityIndicator,
 } from "../../../components/StyledComponents";
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from "@emotion/react";
@@ -120,7 +121,7 @@ const DeleteAccountScreen: React.FC = () => {
           disabled={isLoading}
         >
           {isLoading ? (
-            <ActivityIndicator size="small" color={theme.colors.buttonText} />
+            <StyledActivityIndicator size="small" color={theme.colors.buttonText} />
           ) : (
             <ButtonText>{t("deleteAccount.button")}</ButtonText>
           )}

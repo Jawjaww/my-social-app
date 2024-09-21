@@ -7,10 +7,10 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
-         "image": "./assets/splash.png",
-         "resizeMode": "contain",
-         "backgroundColor": "#dedee4"
-       },
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#dedee4"
+    },
     "userInterfaceStyle": "light",
     "updates": {
       "enabled": true,

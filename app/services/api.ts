@@ -17,11 +17,6 @@ import {
 } from "firebase/auth";
 import { ref, set, get, update, query, orderByChild, equalTo } from "firebase/database";
 import { FirebaseError } from "firebase/app";
-import {
-  ref as storageRef,
-  uploadBytes,
-  getDownloadURL,
-} from "firebase/storage";
 import { auth, realtimeDb, storage } from "./firebaseConfig";
 import { IMessage } from "react-native-gifted-chat";
 import {
@@ -217,13 +212,30 @@ export const api = createApi({
       queryFn: async (uid) => {
         try {
           const userProfileRef = ref(realtimeDb, `userProfiles/${uid}`);
-          const snapshot = await get(userProfileRef);
-          if (snapshot.exists()) {
-            const profile = snapshot.val() as ProfileUser;
-            return { data: profile };
-          } else {
+          const userRef = ref(realtimeDb, `users/${uid}`);
+          
+          const [userProfileSnapshot, userSnapshot] = await Promise.all([
+            get(userProfileRef),
+            get(userRef)
+          ]);
+    
+          if (!userProfileSnapshot.exists() && !userSnapshot.exists()) {
             throw new Error("User profile not found");
           }
+    
+          const userProfileData = userProfileSnapshot.val() || {};
+          const userData = userSnapshot.val() || {};
+    
+          const profile: ProfileUser = {
+            uid,
+            username: userProfileData.username || null,
+            avatarUri: userData.avatarUri || null,
+            bio: userProfileData.bio || null,
+          };
+    
+          console.log("Profile fetched from Firebase:", profile);
+    
+          return { data: profile };
         } catch (error) {
           console.error("Error fetching user profile:", error);
           return { error: { status: 500, data: (error as Error).message } };
@@ -475,10 +487,13 @@ export const api = createApi({
     updateAvatarUri: builder.mutation<string | null, { userId: string; avatarUri: string | null }>({
       queryFn: async ({ userId, avatarUri }) => {
         try {
+          console.log("Updating avatar URI in Firebase:", { userId, avatarUri });
           const userRef = ref(realtimeDb, `users/${userId}`);
           await update(userRef, { avatarUri: avatarUri });
+          console.log("Avatar URI updated successfully:", avatarUri);
           return { data: avatarUri };
         } catch (error: any) {
+          console.error("Error updating avatar URI:", error);
           return {
             error: {
               status: "CUSTOM_ERROR",

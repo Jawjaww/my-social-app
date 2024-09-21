@@ -1,5 +1,4 @@
 import React from 'react';
-import { ActivityIndicator } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -19,7 +18,8 @@ import {
   ButtonText,
   ErrorText,
   Card,
-  CardText
+  CardText,
+  StyledActivityIndicator
 } from '../../../components/StyledComponents';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -108,7 +108,7 @@ const ChangeEmailScreen: React.FC = () => {
 
         <Button onPress={handleSubmit(onSubmit)} disabled={isLoading}>
           {isLoading ? (
-            <ActivityIndicator size="small" color={theme.colors.buttonText} />
+            <StyledActivityIndicator size="small" color={theme.colors.buttonText} />
           ) : (
             <ButtonText>{t('changeEmail.updateButton')}</ButtonText>
           )}

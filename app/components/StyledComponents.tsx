@@ -1,4 +1,5 @@
 import styled from "@emotion/native";
+import { ActivityIndicator } from "react-native";
 import FastImage from "react-native-fast-image";
 
 export const CenteredContainer = styled.View`
@@ -53,6 +54,19 @@ export const Button = styled.TouchableOpacity<{
   margin-vertical: 8px;
   width: 100%;
   ${({ theme }) => theme.shadows.small};
+`;
+
+export const ButtonContent = styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+`;
+
+export const StyledActivityIndicator = styled(ActivityIndicator)`
+  padding: 2px;
+  margin-vertical: 2px;
+  align-items: center;
+  justify-content: center;
 `;
 
 export const ButtonText = styled.Text`

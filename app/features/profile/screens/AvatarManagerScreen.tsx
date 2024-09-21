@@ -112,6 +112,7 @@ const AvatarManagerScreen: React.FC = () => {
         }
 
         if (result.path) {
+          setIsLoading(true);
           const localPath = await saveAvatarLocally(result.path);
           setImage(localPath);
 
@@ -121,117 +122,81 @@ const AvatarManagerScreen: React.FC = () => {
               avatarUri: localPath,
             });
 
-            if ('error' in response) {
+            if ("error" in response) {
               throw new Error(JSON.stringify(response.error));
             }
-            // Reset navigation stack and navigate to ProfileHome
-            navigation.reset({
-              index: 0,
-              routes: [{ name: "ProfileHome" }],
-            });
 
             const updatedProfile: ProfileUser = {
               ...profile,
               avatarUri: localPath,
             };
             dispatch(setProfile(updatedProfile));
-            
+
             dispatch(
               addToast({
                 message: t("editProfilePicture.success"),
                 type: "success",
               })
             );
+
+            navigation.reset({
+              index: 0,
+              routes: [{ name: "ProfileHome" }],
+            });
           }
         }
-      } catch (error: unknown) {
+      } catch (error) {
         console.error("Error picking image:", error);
         dispatch(
-          addToast({
-            message: t("editProfilePicture.error.picker"),
-            type: "error",
-          })
+          addToast({ message: t("editProfilePicture.error"), type: "error" })
         );
+      } finally {
+        setIsLoading(false);
       }
     },
-    [hasPermission, t, profile, dispatch, updateAvatarUri, saveAvatarLocally]
+    [profile, dispatch, t, updateAvatarUri, hasPermission, saveAvatarLocally, navigation]
   );
 
-  const handleSave = useCallback(async () => {
-    if (!image || !profile) return;
+  const handleDelete = useCallback(async () => {
+    if (!profile) return;
 
-    setIsLoading(true);
     try {
+      setIsLoading(true);
+      const response = await updateAvatarUri({
+        userId: profile.uid,
+        avatarUri: null,
+      });
+
+      if ("error" in response) {
+        throw new Error(JSON.stringify(response.error));
+      }
+
+      const updatedProfile: ProfileUser = {
+        ...profile,
+        avatarUri: null,
+      };
+      dispatch(setProfile(updatedProfile));
+
       dispatch(
         addToast({
-          message: t("editProfilePicture.success"),
+          message: t("editProfilePicture.deleteSuccess"),
           type: "success",
         })
       );
-      navigation.goBack();
+
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "ProfileHome" }],
+      });
     } catch (error) {
-      console.error("Error saving avatar:", error);
+      console.error("Error deleting avatar:", error);
       dispatch(
-        addToast({
-          message: t("editProfilePicture.error"),
-          type: "error",
-        })
+        addToast({ message: t("editProfilePicture.deleteError"), type: "error" })
       );
     } finally {
       setIsLoading(false);
     }
-  }, [image, profile, dispatch, t, navigation]);
-
-  const handleDelete = useCallback(() => {
-    Alert.alert(
-      t("editProfilePicture.deleteTitle"),
-      t("editProfilePicture.deleteMessage"),
-      [
-        { text: t("common.cancel"), style: "cancel" },
-        {
-          text: t("common.confirm"),
-          onPress: async () => {
-            if (profile && profile.avatarUri) {
-              await FileSystem.deleteAsync(profile.avatarUri, {
-                idempotent: true,
-              });
-              const updatedProfile: ProfileUser = {
-                ...profile,
-                avatarUri: null,
-              };
-              dispatch(setProfile(updatedProfile));
-              const response = await updateAvatarUri({
-                userId: profile.uid,
-                avatarUri: null,
-              });
-
-              if ('error' in response) {
-                throw new Error(JSON.stringify(response.error));
-              }
-            }
-            setImage(null);
-            dispatch(
-              addToast({
-                message: t("editProfilePicture.deleteSuccess"),
-                type: "success",
-              })
-            );
-          },
-          style: "destructive",
-        },
-      ]
-    );
-  }, [profile, dispatch, t, updateAvatarUri]);
-
-  if (!hasPermission) {
-    return (
-      <CenteredContainer>
-        <Container>
-          <CardText>{t("permissions.mediaLibraryNeeded")}</CardText>
-        </Container>
-      </CenteredContainer>
-    );
-  }
+  }, [profile, dispatch, t, updateAvatarUri, navigation]);
 
   return (
     <CenteredContainer>
@@ -261,18 +226,9 @@ const AvatarManagerScreen: React.FC = () => {
           <CardText>{t("avatarManager.delete")}</CardText>
         </Card>
 
-        <Card onPress={handleSave} disabled={isLoading}>
-          {isLoading ? (
-            <ActivityIndicator size="small" color={theme.colors.primary} />
-          ) : (
-            <Ionicons
-              name="save-outline"
-              size={30}
-              color={theme.colors.primary}
-            />
-          )}
-          <CardText>{t("avatarManager.save")}</CardText>
-        </Card>
+        {isLoading && (
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+        )}
       </Container>
     </CenteredContainer>
   );

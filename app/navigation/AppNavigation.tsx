@@ -1,11 +1,9 @@
-import React, { useEffect, useState, useRef, lazy } from "react";
+import React, { useEffect, useState, lazy } from "react";
 import * as SplashScreen from "expo-splash-screen";
 import { useFirebaseAuth } from "../hooks/useFirebaseAuth";
-import { ActivityIndicator, Linking } from "react-native";
+import { Linking } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { selectProfile } from "../features/profile/profileSelectors";
-import { selectUser } from "../features/authentication/authSelectors";
-import { setProfile } from "../features/profile/profileSlice";
 import { useNavigation } from "@react-navigation/native";
 import { useDeepLinking } from "../hooks/useDeepLinking";
 import {
@@ -14,15 +12,12 @@ import {
 } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../services/firebaseConfig";
 import { setUser, setLoading } from "../features/authentication/authSlice";
 import { RootState } from "../store/store";
 import {
   selectIsAuthenticated,
   selectIsEmailVerified,
 } from "../features/authentication/authSelectors";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   RootStackParamList,
   AuthStackParamList,
@@ -30,17 +25,14 @@ import {
   ProfileStackParamList,
   ContactsStackParamList,
   MessagesStackParamList,
-  AppUser,
-  ProfileUser,
 } from "../types/sharedTypes";
-import { NavigationContainerRef } from "@react-navigation/native";
 import AvatarPhoto from "../components/AvatarPhoto";
 
 // Screens
 import HomeScreen from "../features/home/screens/HomeScreen";
 import ProfileScreen from "../features/profile/screens/ProfileScreen";
 import SignInScreen from "../features/authentication/screens/SignInScreen";
-import { use } from "i18next";
+
 // Lazy load screens
 const ChooseUsernameScreen = lazy(
   () => import("../features/profile/screens/ChooseUsernameScreen")
@@ -180,43 +172,46 @@ const MainTabNavigator = () => (
 const AppNavigation: React.FC = () => {
   const dispatch = useDispatch();
   const profile = useSelector(selectProfile);
-  const user = useSelector(selectUser)
   const username = profile?.username;
   const loading = useSelector((state: RootState) => state.auth.loading);
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const isEmailVerified = useSelector(selectIsEmailVerified);
   const [isInitializing, setIsInitializing] = useState(true);
   const { handleVerifyEmail, handleResetPassword } = useDeepLinking();
+  
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const navigationRef =
-    useRef<NavigationContainerRef<RootStackParamList>>(null);
+  // const navigationRef =
+  //   useRef<NavigationContainerRef<RootStackParamList>>(null);
 
-    useFirebaseAuth();
+  useFirebaseAuth();
 
-    useEffect(() => {
-      const initializeApp = async () => {
-        const startTime = Date.now();
-        try {
-          // No need to manually dispatch user and profile
-        } catch (error) {
-          console.error("Error initializing app:", error);
-        } finally {
-          dispatch(setLoading(false));
-          const elapsedTime = Date.now() - startTime;
-          const remainingTime = Math.max(500 - elapsedTime, 0);
-          setTimeout(() => {
-            setIsInitializing(false);
-          }, remainingTime);
-        }
-      };
-  
-      initializeApp();
-    }, [dispatch]);
+  useEffect(() => {
+    const initializeApp = async () => {
+      const startTime = Date.now();
+      try {
+        // No need to manually dispatch user and profile
+      } catch (error) {
+        console.error("Error initializing app:", error);
+      } finally {
+        dispatch(setLoading(false));
+        const elapsedTime = Date.now() - startTime;
+        const remainingTime = Math.max(500 - elapsedTime, 0);
+        setTimeout(() => {
+          setIsInitializing(false);
+        }, remainingTime);
+      }
+    };
 
-    useEffect(() => {
-      console.log("AppNavigation - Current profile state:", profile);
-    }, [profile]);
+    initializeApp();
+  }, [dispatch]);
+
+  // useEffect(() => {
+  //   //on dois recuperer l'avataruri dans selectprofile qui etais persisté
+  //   // 
+  //   const avatarUri = profile?.avatarUri;
+  //   console.log("AppNavigation - Current profile state:", profile);
+  // }, [profile]);
 
   useEffect(() => {
     if (!loading && !isInitializing) {
@@ -224,16 +219,12 @@ const AppNavigation: React.FC = () => {
     }
   }, [loading, isInitializing]);
 
-  
-
   // handleUrl use useDeepLinking hook to handle different deep link types
   const handleUrl = async ({ url }: { url: string }) => {
     console.log("Deep link detected:", url);
     const parsedUrl = new URL(url);
     const mode = parsedUrl.searchParams.get("mode");
     const oobCode: string | null = parsedUrl.searchParams.get("oobCode");
-
-    console.log("Parsed URL parameters:", { mode, oobCode });
 
     if (oobCode) {
       console.log("oobCode found:", oobCode);
@@ -270,7 +261,6 @@ const AppNavigation: React.FC = () => {
   // Configure deep link listener and call handleUrl function
   useEffect(() => {
     const subscription = Linking.addEventListener("url", handleUrl);
-    console.log("Deep link listener added");
 
     Linking.getInitialURL().then((url) => {
       if (url) {
@@ -282,7 +272,6 @@ const AppNavigation: React.FC = () => {
     });
 
     return () => {
-      console.log("Removing deep link listener");
       subscription.remove();
     };
   }, []);

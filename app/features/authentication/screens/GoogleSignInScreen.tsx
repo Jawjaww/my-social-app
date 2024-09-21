@@ -1,5 +1,4 @@
 import React, { useEffect, useCallback } from 'react';
-import { ActivityIndicator } from 'react-native';
 import * as Google from 'expo-auth-session/providers/google';
 import { makeRedirectUri, ResponseType } from 'expo-auth-session';
 import { GOOGLE_CLIENT_ID } from '@env';
@@ -14,7 +13,8 @@ import {
   Button,
   ButtonText,
   Card,
-  CardText
+  CardText,
+  StyledActivityIndicator,
 } from "../../../components/StyledComponents";
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from "../../../styles/theme";
@@ -60,7 +60,7 @@ const GoogleSignIn: React.FC = () => {
             disabled={!request || isLoading}
           >
             {isLoading ? (
-              <ActivityIndicator color={theme.colors.buttonText} />
+              <StyledActivityIndicator color={theme.colors.buttonText} />
             ) : (
               <ButtonText>{t('googleSignIn.button')}</ButtonText>
             )}

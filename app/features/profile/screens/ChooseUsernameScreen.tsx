@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ActivityIndicator, Text } from "react-native";
+import { Text } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { addToast } from "../../toast/toastSlice";
@@ -19,6 +19,7 @@ import {
   ButtonText,
   ErrorText,
   CardText,
+  StyledActivityIndicator,
 } from "../../../components/StyledComponents";
 import { useTheme } from "@emotion/react";
 import { selectProfile } from "../../profile/profileSelectors";
@@ -167,7 +168,7 @@ function ChooseUsernameScreen() {
         )}
         <Button onPress={handleSubmit(onSubmit)} disabled={isLoading}>
           {isLoading ? (
-            <ActivityIndicator size="small" color={theme.colors.background} />
+            <StyledActivityIndicator size="small" color={theme.colors.background} />
           ) : (
             <ButtonText>{t("common.save")}</ButtonText>
           )}
