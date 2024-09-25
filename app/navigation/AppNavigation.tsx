@@ -27,6 +27,8 @@ import {
   MessagesStackParamList,
 } from "../types/sharedTypes";
 import AvatarPhoto from "../components/AvatarPhoto";
+import { useAppInitialization } from '../hooks/useAppInitialization';
+import { Persistor } from 'redux-persist';
 
 // Screens
 import HomeScreen from "../features/home/screens/HomeScreen";
@@ -151,7 +153,7 @@ const MainTabNavigator = () => (
         } else if (route.name === "Discover") {
           iconName = "search";
         } else if (route.name === "Profile") {
-          return <AvatarPhoto size={size} isActive={focused} />;
+          return <AvatarPhoto size={size} />;
         } else if (route.name === "Contacts") {
           iconName = "people";
         } else if (route.name === "Messages") {
@@ -267,7 +269,7 @@ const AppNavigation: React.FC = () => {
         console.log("Initial URL:", url);
         handleUrl({ url });
       } else {
-        console.log("No initial URL found");
+        console.log("No initial linkingURL found");
       }
     });
 

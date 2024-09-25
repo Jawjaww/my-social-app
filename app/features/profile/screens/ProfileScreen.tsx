@@ -60,7 +60,12 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
     <CenteredContainer>
       <Container>
         <AvatarContainer>
-        <AvatarPhoto size={200} uri={image} username={profile?.username} />
+          <AvatarPhoto
+            size={220}
+            uri={profile?.avatarUri}
+            uid={profile?.uid}
+            username={profile?.username}
+          />
           <EditAvatarIcon onPress={() => navigation.navigate("AvatarManager")}>
             <Ionicons name="create-outline" size={26} color="white" />
           </EditAvatarIcon>

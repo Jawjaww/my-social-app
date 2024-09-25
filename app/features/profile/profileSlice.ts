@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ProfileUser } from "../../types/sharedTypes";
-import { RootState } from "../../store/store";
 
 interface ProfileState {
   profile: ProfileUser | null;

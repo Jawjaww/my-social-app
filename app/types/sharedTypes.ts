@@ -50,6 +50,7 @@ export interface ProfileUser {
   uid: string;
   username: string | null;
   avatarUri?: string | null;
+  avatarUrl?: string | null;
   bio?: string | null;
   // Add other profile specific fields here
 };
@@ -115,7 +116,9 @@ export interface AvatarPhotoProps {
   size?: number;
   isActive?: boolean;
   uri?: string | null;
+  url?: string | null;
   username?: string | null;
+  uid?: string | null;
 }
 export interface MessageListScreenProps {
   navigation: NativeStackNavigationProp<MessagesStackParamList, "MessageList">;

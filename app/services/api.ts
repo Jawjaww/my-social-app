@@ -10,14 +10,13 @@ import {
   updatePassword,
   verifyBeforeUpdateEmail,
   sendPasswordResetEmail,
-  updateProfile,
   checkActionCode,
   applyActionCode,
   updateEmail,
 } from "firebase/auth";
 import { ref, set, get, update, query, orderByChild, equalTo } from "firebase/database";
 import { FirebaseError } from "firebase/app";
-import { auth, realtimeDb, storage } from "./firebaseConfig";
+import { auth, realtimeDb } from "./firebaseConfig";
 import { IMessage } from "react-native-gifted-chat";
 import {
   Activity,
@@ -32,7 +31,7 @@ import {
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
 import { SerializedError } from "@reduxjs/toolkit";
-
+import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET } from "@env";
 
 export type AppError = FetchBaseQueryError | SerializedError;
 
@@ -193,6 +192,22 @@ export const api = createApi({
         method: "DELETE",
       }),
     }),
+    downloadAvatar: builder.mutation<string, { avatarUrl: string }>({
+      queryFn: async ({ avatarUrl }) => {
+        try {
+          // Here, we simply return the URL because React Native handles display via URI
+          return { data: avatarUrl };
+        } catch (error: any) {
+          console.error("Error downloading avatar:", error);
+          return {
+            error: {
+              status: 'CUSTOM_ERROR',
+              error: error.message || 'Failed to download avatar',
+            },
+          };
+        }
+      },
+    }),
     getContactActivities: builder.query<Activity[], void>({
       query: () => "contactActivities",
     }),
@@ -230,6 +245,7 @@ export const api = createApi({
             uid,
             username: userProfileData.username || null,
             avatarUri: userData.avatarUri || null,
+            avatarUrl: userData.avatarUrl || null,
             bio: userProfileData.bio || null,
           };
     
@@ -503,6 +519,25 @@ export const api = createApi({
         }
       },
     }),
+    updateAvatarUrl: builder.mutation<string | null, { userId: string; avatarUrl: string | null }>({
+      queryFn: async ({ userId, avatarUrl }) => {
+        try {
+          console.log("Updating avatar URL in Firebase:", { userId, avatarUrl });
+          const userRef = ref(realtimeDb, `users/${userId}`);
+          await update(userRef, { avatarUrl: avatarUrl });
+          console.log("Avatar URL updated successfully:", avatarUrl);
+          return { data: avatarUrl };
+        } catch (error: any) {
+          console.error("Error updating avatar URL:", error);
+          return {
+            error: {
+              status: "CUSTOM_ERROR",
+              error: error.message || "An unknown error occurred",
+            },
+          };
+        }
+      },
+    }),
 
     updateUsername: builder.mutation<ProfileUser, { uid: string; username: string }>({
       queryFn: async ({ uid, username }) => {
@@ -583,6 +618,7 @@ export const api = createApi({
             uid,
             username: profileData.username ?? null,
             avatarUri: profileData.avatarUri ?? null,
+            avatarUrl: profileData.avatarUrl ?? null,
             bio: profileData.bio ?? null,
           };
 
@@ -593,7 +629,50 @@ export const api = createApi({
         }
       },
     }),
-
+    uploadAvatar: builder.mutation<string, { imageUri: string; uid: string }>({
+      async queryFn({ imageUri, uid }) {
+        try {
+          const formData = new FormData();
+          formData.append('file', {
+            uri: imageUri.startsWith('file://') ? imageUri : 'file://' + imageUri,
+            type: 'image/jpeg',
+            name: 'avatar.jpg',
+          } as any);
+          formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+          formData.append('public_id', `avatars/${uid}/avatar`);
+    
+          const response = await fetch(
+            `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+            {
+              method: 'POST',
+              body: formData,
+            }
+          );
+    
+          const result = await response.json();
+    
+          if (response.ok && result.secure_url) {
+            return { data: result.secure_url };
+          } else {
+            console.error('Cloudinary upload error:', result);
+            return {
+              error: {
+                status: 'CUSTOM_ERROR',
+                error: result.error?.message || 'Upload failed',
+              },
+            };
+          }
+        } catch (error: any) {
+          console.error('Network or other error:', error);
+          return {
+            error: {
+              status: 'CUSTOM_ERROR',
+              error: error.message || 'An unknown error occurred',
+            },
+          };
+        }
+      },
+    }),
     verifyEmail: builder.mutation<
       { success: boolean; user: AppUser | null; newEmail: string | null },
       string
@@ -640,6 +719,7 @@ export const {
   // useCreateProfileUserMutation,
   useDeleteAccountMutation,
   useDeleteMessageMutation,
+  useDownloadAvatarMutation,
   useGetContactActivitiesQuery,
   useGetContactSuggestionsQuery,
   useGetContactsQuery,
@@ -658,9 +738,11 @@ export const {
   useSignOutMutation,
   useSignUpMutation,
   useUpdateAvatarUriMutation,
+  useUpdateAvatarUrlMutation,
   useUpdateUsernameMutation,
   useUpdatePasswordMutation,
   useUpdateUserProfileMutation,
+  useUploadAvatarMutation,
   useReauthenticateAndUpdateEmailMutation,
   useVerifyEmailMutation,
 } = api;

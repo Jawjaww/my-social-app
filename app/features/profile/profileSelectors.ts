@@ -18,3 +18,8 @@ export const selectAvatarUri = createSelector(
   [selectProfile],
   (profile): string | null => profile?.avatarUri ?? null
 );
+
+export const selectAvatarUrl = createSelector(
+  [selectProfile],
+  (profile): string | null => profile?.avatarUrl ?? null
+);

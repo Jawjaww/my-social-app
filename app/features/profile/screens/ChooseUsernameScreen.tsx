@@ -51,9 +51,9 @@ function ChooseUsernameScreen() {
     null
   );
 
-  useEffect(() => {
-    console.log("ChooseUsernameScreen mounted:", { profile, user });
-  }, [profile, user]);
+  // useEffect(() => {
+  //   console.log("ChooseUsernameScreen mounted:", { profile, user });
+  // }, [profile, user]);
 
   const {
     control,

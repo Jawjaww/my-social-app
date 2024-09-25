@@ -9,7 +9,7 @@ import { ThunkAction, Action } from "@reduxjs/toolkit";
 const persistConfig = {
   key: "root",
   storage: AsyncStorage,
-  whitelist: ["auth", "profile, permissions"], // Add other slices you want to persist
+  whitelist: ["auth", "profile", "permissions"], // Add other slices you want to persist
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

@@ -1,9 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { ActivityIndicator, Alert } from "react-native";
-import ImagePicker, {
-  Image as ImagePickerImage,
-  Options as ImagePickerOptions,
-} from "react-native-image-crop-picker";
+import { ActivityIndicator } from "react-native";
+import ImagePicker, { Image as ImagePickerImage, Options as ImagePickerOptions } from "react-native-image-crop-picker";
 import * as MediaLibrary from "expo-media-library";
 import * as FileSystem from "expo-file-system";
 import { useSelector, useDispatch } from "react-redux";
@@ -14,15 +11,10 @@ import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import { addToast } from "../../toast/toastSlice";
 import { ProfileStackParamList, ProfileUser } from "../../../types/sharedTypes";
-import {
-  CenteredContainer,
-  Container,
-  Card,
-  CardText,
-} from "../../../components/StyledComponents";
-import { setProfile } from "../../profile/profileSlice";
-import { selectProfile } from "../../profile/profileSelectors";
-import { useUpdateAvatarUriMutation } from "../../../services/api";
+import { CenteredContainer, Container, Card, CardText } from "../../../components/StyledComponents";
+import { setProfile } from "../profileSlice";
+import { selectProfile } from "../profileSelectors";
+import { useUpdateAvatarUrlMutation, useUploadAvatarMutation } from "../../../services/api";
 import AvatarPhoto from "../../../components/AvatarPhoto";
 
 const AvatarManagerScreen: React.FC = () => {
@@ -30,12 +22,12 @@ const AvatarManagerScreen: React.FC = () => {
   const { t } = useTranslation();
   const profile = useSelector(selectProfile);
   const dispatch = useDispatch();
-  const navigation =
-    useNavigation<NativeStackNavigationProp<ProfileStackParamList>>();
-  const [image, setImage] = useState<string | null>(profile?.avatarUri || null);
+  const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParamList>>();
+  const [imageUri, setImageUri] = useState<string | null>(profile?.avatarUri || null);
   const [isLoading, setIsLoading] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
-  const [updateAvatarUri] = useUpdateAvatarUriMutation();
+  const [updateAvatarUrl] = useUpdateAvatarUrlMutation();
+  const [uploadAvatar] = useUploadAvatarMutation();
 
   useEffect(() => {
     (async () => {
@@ -49,32 +41,26 @@ const AvatarManagerScreen: React.FC = () => {
     })();
   }, [dispatch, t]);
 
-  const saveAvatarLocally = async (imageUri: string): Promise<string> => {
-    if (!hasPermission) {
-      throw new Error("No permission to save avatar");
-    }
+  const saveAvatarLocally = async (sourceUri: string): Promise<string> => {
     try {
-      const picturesDir = FileSystem.documentDirectory + "Pictures/";
-      const appDir = picturesDir + "mysocialapp/";
-      const avatarDir = appDir + "appavatar/";
+      const avatarDir = FileSystem.documentDirectory + "avatars/";
+      const userAvatarDir = avatarDir + `${profile?.uid}/`;
 
-      // Create the directories if they don't exist
-      await FileSystem.makeDirectoryAsync(picturesDir, { intermediates: true });
-      await FileSystem.makeDirectoryAsync(appDir, { intermediates: true });
-      await FileSystem.makeDirectoryAsync(avatarDir, { intermediates: true });
+      // Create avatar repertory if it doesn't exist
+      await FileSystem.makeDirectoryAsync(userAvatarDir, { intermediates: true });
 
-      // Delete all files in the avatar directory
-      const files = await FileSystem.readDirectoryAsync(avatarDir);
+      // Delete existing avatar files for the user
+      const files = await FileSystem.readDirectoryAsync(userAvatarDir);
       for (const file of files) {
-        await FileSystem.deleteAsync(avatarDir + file, { idempotent: true });
+        await FileSystem.deleteAsync(userAvatarDir + file, { idempotent: true });
       }
 
-      const fileName = `avatar_${profile?.uid}_${Date.now()}.jpg`;
-      const filePath = avatarDir + fileName;
+      const fileName = `avatar_${Date.now()}.jpg`;
+      const filePath = userAvatarDir + fileName;
 
-      // Copy the new avatar
+      // Copy the new avatar into the user's directory
       await FileSystem.copyAsync({
-        from: imageUri,
+        from: sourceUri,
         to: filePath,
       });
 
@@ -85,123 +71,138 @@ const AvatarManagerScreen: React.FC = () => {
     }
   };
 
-  const pickImage = useCallback(
-    async (sourceType: "library" | "camera") => {
-      if (!hasPermission) {
-        dispatch(
-          addToast({ message: t("permissions.mediaLibrary"), type: "error" })
-        );
-        return;
+  const pickImage = useCallback(async (sourceType: "library" | "camera") => {
+    if (!hasPermission) {
+      dispatch(
+        addToast({ message: t("permissions.mediaLibrary"), type: "error" })
+      );
+      return;
+    }
+
+    try {
+      const options: ImagePickerOptions = {
+        width: 300,
+        height: 300,
+        cropping: true,
+        cropperCircleOverlay: true,
+        mediaType: "photo",
+        compressImageQuality: 0.8,
+      };
+
+      let result: ImagePickerImage;
+      if (sourceType === "library") {
+        result = await ImagePicker.openPicker(options);
+      } else {
+        result = await ImagePicker.openCamera(options);
       }
 
-      try {
-        const options: ImagePickerOptions = {
-          width: 300,
-          height: 300,
-          cropping: true,
-          cropperCircleOverlay: true,
-          mediaType: "photo" as const,
-          compressImageQuality: 0.8,
-        };
+      if (result.path && profile) {
+        setIsLoading(true);
 
-        let result: ImagePickerImage;
-        if (sourceType === "library") {
-          result = await ImagePicker.openPicker(options);
-        } else {
-          result = await ImagePicker.openCamera(options);
+        try {
+          // Upload the image to Cloudinary
+          const cloudinaryUrl = await uploadAvatar({
+            imageUri: result.path,
+            uid: profile.uid,
+          }).unwrap();
+
+          // Save the avatar locally
+          const localAvatarPath = await saveAvatarLocally(result.path);
+
+          // Update the profile with the new avatar
+          const updatedProfile: ProfileUser = {
+            ...profile,
+            avatarUri: localAvatarPath, // URI local
+            avatarUrl: cloudinaryUrl,   // URL Cloudinary
+          };
+          dispatch(setProfile(updatedProfile));
+          setImageUri(localAvatarPath);
+
+          // Update the avatar URL in Firebase
+          await updateAvatarUrl({
+            userId: profile.uid,
+            avatarUrl: cloudinaryUrl, 
+          }).unwrap();
+
+          // Success message
+          dispatch(
+            addToast({
+              message: t("avatarManager.success"),
+              type: "success",
+            })
+          );
+
+          navigation.goBack();
+        } catch (error) {
+          console.error("Error uploading avatar:", error);
+          dispatch(
+            addToast({
+              message: t("avatarManager.error"),
+              type: "error",
+            })
+          );
+        } finally {
+          setIsLoading(false);
         }
-
-        if (result.path) {
-          setIsLoading(true);
-          const localPath = await saveAvatarLocally(result.path);
-          setImage(localPath);
-
-          if (profile) {
-            const response = await updateAvatarUri({
-              userId: profile.uid,
-              avatarUri: localPath,
-            });
-
-            if ("error" in response) {
-              throw new Error(JSON.stringify(response.error));
-            }
-
-            const updatedProfile: ProfileUser = {
-              ...profile,
-              avatarUri: localPath,
-            };
-            dispatch(setProfile(updatedProfile));
-
-            dispatch(
-              addToast({
-                message: t("editProfilePicture.success"),
-                type: "success",
-              })
-            );
-
-            navigation.reset({
-              index: 0,
-              routes: [{ name: "ProfileHome" }],
-            });
-          }
-        }
-      } catch (error) {
-        console.error("Error picking image:", error);
-        dispatch(
-          addToast({ message: t("editProfilePicture.error"), type: "error" })
-        );
-      } finally {
-        setIsLoading(false);
       }
-    },
-    [profile, dispatch, t, updateAvatarUri, hasPermission, saveAvatarLocally, navigation]
-  );
+    } catch (error) {
+      console.error("Error picking image:", error);
+      dispatch(
+        addToast({
+          message: t("avatarManager.pickError"),
+          type: "error",
+        })
+      );
+    }
+  }, [hasPermission, dispatch, t, profile, uploadAvatar, saveAvatarLocally, updateAvatarUrl, navigation]);
 
   const handleDelete = useCallback(async () => {
     if (!profile) return;
 
+    setIsLoading(true);
+
     try {
-      setIsLoading(true);
-      const response = await updateAvatarUri({
-        userId: profile.uid,
-        avatarUri: null,
-      });
+      // Delete the avatar locally
+      const avatarDir = FileSystem.documentDirectory + "avatars/";
+      const userAvatarDir = avatarDir + `${profile.uid}/`;
 
-      if ("error" in response) {
-        throw new Error(JSON.stringify(response.error));
-      }
+      await FileSystem.deleteAsync(userAvatarDir, { idempotent: true });
 
+      // Update the profile
       const updatedProfile: ProfileUser = {
         ...profile,
         avatarUri: null,
+        avatarUrl: null,
       };
       dispatch(setProfile(updatedProfile));
+      setImageUri(null);
 
+      // Update the avatar URL in Firebase
+      await updateAvatarUrl({
+        userId: profile.uid,
+        avatarUrl: null,
+      }).unwrap();
+
+      // Success message
       dispatch(
-        addToast({
-          message: t("editProfilePicture.deleteSuccess"),
-          type: "success",
-        })
+        addToast({ message: t("avatarManager.deleteSuccess"), type: "success" })
       );
 
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "ProfileHome" }],
-      });
+      navigation.goBack();
     } catch (error) {
       console.error("Error deleting avatar:", error);
       dispatch(
-        addToast({ message: t("editProfilePicture.deleteError"), type: "error" })
+        addToast({ message: t("avatarManager.deleteError"), type: "error" })
       );
     } finally {
       setIsLoading(false);
     }
-  }, [profile, dispatch, t, updateAvatarUri, navigation]);
+  }, [profile, dispatch, t, updateAvatarUrl, navigation]);
 
   return (
     <CenteredContainer>
       <Container>
-        <AvatarPhoto size={220} uri={image} username={profile?.username} />
+        <AvatarPhoto size={220} />
 
         <Card onPress={() => pickImage("library")}>
           <Ionicons
