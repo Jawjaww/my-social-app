@@ -5,14 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="49634295-8eaa-4b23-bea5-9c5831f6089f" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/App.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/features/authentication/screens/SignUpScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/features/authentication/screens/SignUpScreen.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/features/profile/screens/ChooseUsernameScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/features/profile/screens/ChooseUsernameScreen.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/features/profile/screens/ConfirmEmailChangeScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/features/profile/screens/ConfirmEmailChangeScreen.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/hooks/useAppInitialization.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/hooks/useAppInitialization.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/hooks/useFirebaseAuth.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/hooks/useFirebaseAuth.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/navigation/AppNavigation.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/navigation/AppNavigation.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/services/firebaseConfig.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/services/firebaseConfig.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/store/Rootstack.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/store/store.ts" beforeDir="false" afterPath="$PROJECT_DIR$/app/store/store.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

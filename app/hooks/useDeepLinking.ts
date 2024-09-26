@@ -13,8 +13,6 @@ import {
 } from "../features/authentication/authSlice";
 import { addToast } from "../features/toast/toastSlice";
 import { useTranslation } from "react-i18next";
-import { applyActionCode, } from "firebase/auth";
-
 
 export const useDeepLinking = () => {
   const dispatch = useDispatch();

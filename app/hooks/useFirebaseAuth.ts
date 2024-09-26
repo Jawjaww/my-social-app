@@ -92,4 +92,4 @@ export const useFirebaseAuth = () => {
   }, [dispatch, fetchAndUpdateProfile, isInitialized, profile]);
 
   return { isInitialized };
-};
+}

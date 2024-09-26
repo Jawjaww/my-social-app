@@ -25,7 +25,7 @@ import { ActivityIndicator } from "react-native";
 type RenderItemData = Activity | null;
 
 const HomeScreen: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const user = useSelector(selectUser);
   const username = useSelector(selectUsername);
   const [isLoading, setIsLoading] = useState(true);
@@ -89,6 +89,9 @@ const HomeScreen: React.FC = () => {
   }
 
   const data: RenderItemData[] = [null, ...activities, null];
+  console.log('Current language in HomeScreen:', i18n.language);
+  console.log('Translation test in HomeScreen:', t('home.welcomeUser', { name: 'Test' }));
+  
 
   return (
     <View style={styles.container}>

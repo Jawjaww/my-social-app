@@ -1,7 +1,7 @@
 import React from "react";
 import store, { persistor } from "./app/store/store.ts";
 import { PersistGate } from "redux-persist/integration/react";
-import * as SplashScreen from 'expo-splash-screen';
+import * as SplashScreen from "expo-splash-screen";
 import ErrorBoundary from "./app/components/ErrorBoundary";
 import "./env.d.ts";
 import { Provider } from "react-redux";
@@ -19,6 +19,7 @@ import { NavigationContainer, LinkingOptions } from "@react-navigation/native";
 import { RootStackParamList } from "./app/types/sharedTypes.ts";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import styled from "@emotion/native";
+import { useState, useEffect } from "react";
 
 // Prevent the splash screen from automatically hiding
 SplashScreen.preventAutoHideAsync();
@@ -31,25 +32,25 @@ Sentry.init({
 });
 
 const linking: LinkingOptions<RootStackParamList> = {
-  prefixes: ['https://mysocialapp.expo.dev', 'mysocialapp://'],
+  prefixes: ["https://mysocialapp.expo.dev", "mysocialapp://"],
   config: {
     screens: {
       Auth: {
-        path: 'auth',
+        path: "auth",
         parse: {
           mode: (mode: string) => mode,
           oobCode: (oobCode: string) => oobCode,
         },
         screens: {
-          VerifyEmail: 'verify-email',
-          ResetPassword: 'reset-password',
+          VerifyEmail: "verify-email",
+          ResetPassword: "reset-password",
         },
       },
       Main: {
         screens: {
           Profile: {
             screens: {
-              VerifyNewEmail: 'verify-new-email',
+              VerifyNewEmail: "verify-new-email",
             },
           },
         },
@@ -62,25 +63,40 @@ const SafeContainer = styled(SafeAreaView)`
   flex: 1;
   background-color: ${({ theme }) => theme.colors.background};
 `;
-const App = () => {
+
+const App: React.FC = () => {
+  const [isI18nInitialized, setIsI18nInitialized] = useState(false);
+
+  useEffect(() => {
+    const initI18n = async () => {
+      await i18n.init();
+      setIsI18nInitialized(true);
+    };
+    initI18n();
+  }, []);
+
+  if (!isI18nInitialized) {
+    return null; 
+  }
+
   return (
     <ErrorBoundary>
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
-          <I18nextProvider i18n={i18n}>
           <ThemeProvider theme={theme}>
             <SafeAreaProvider>
               <SafeContainer>
-                <ToastProvider>
-                  <NavigationContainer linking={linking}>
-                    <AppNavigation />
-                  </NavigationContainer>
-                </ToastProvider>
+                <I18nextProvider i18n={i18n}>
+                  <ToastProvider>
+                    <NavigationContainer linking={linking}>
+                      <AppNavigation />
+                    </NavigationContainer>
+                  </ToastProvider>
+                </I18nextProvider>
               </SafeContainer>
             </SafeAreaProvider>
           </ThemeProvider>
-        </I18nextProvider>
-      </PersistGate>
+        </PersistGate>
       </Provider>
     </ErrorBoundary>
   );

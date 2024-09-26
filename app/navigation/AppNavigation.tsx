@@ -1,4 +1,4 @@
-import React, { useEffect, useState, lazy } from "react";
+import React, { useEffect, useState, lazy, Suspense } from "react";
 import * as SplashScreen from "expo-splash-screen";
 import { useFirebaseAuth } from "../hooks/useFirebaseAuth";
 import { Linking } from "react-native";
@@ -27,8 +27,6 @@ import {
   MessagesStackParamList,
 } from "../types/sharedTypes";
 import AvatarPhoto from "../components/AvatarPhoto";
-import { useAppInitialization } from '../hooks/useAppInitialization';
-import { Persistor } from 'redux-persist';
 
 // Screens
 import HomeScreen from "../features/home/screens/HomeScreen";
@@ -164,7 +162,7 @@ const MainTabNavigator = () => (
     })}
   >
     <MainTab.Screen name="Home" component={HomeScreen} />
-    <MainTab.Screen name="Discover" component={DiscoverScreen} />  
+    <MainTab.Screen name="Discover" component={DiscoverScreen} />
     <MainTab.Screen name="Contacts" component={ContactsNavigator} />
     <MainTab.Screen name="Messages" component={MessagesNavigator} />
     <MainTab.Screen name="Profile" component={ProfileNavigator} />
@@ -180,7 +178,7 @@ const AppNavigation: React.FC = () => {
   const isEmailVerified = useSelector(selectIsEmailVerified);
   const [isInitializing, setIsInitializing] = useState(true);
   const { handleVerifyEmail, handleResetPassword } = useDeepLinking();
-  
+
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   // const navigationRef =
@@ -190,30 +188,19 @@ const AppNavigation: React.FC = () => {
 
   useEffect(() => {
     const initializeApp = async () => {
-      const startTime = Date.now();
       try {
-        // No need to manually dispatch user and profile
+        await SplashScreen.preventAutoHideAsync();
+        // Add any additional initialization logic here
       } catch (error) {
         console.error("Error initializing app:", error);
       } finally {
         dispatch(setLoading(false));
-        const elapsedTime = Date.now() - startTime;
-        const remainingTime = Math.max(500 - elapsedTime, 0);
-        setTimeout(() => {
-          setIsInitializing(false);
-        }, remainingTime);
+        setIsInitializing(false);
       }
     };
 
     initializeApp();
   }, [dispatch]);
-
-  // useEffect(() => {
-  //   //on dois recuperer l'avataruri dans selectprofile qui etais persisté
-  //   // 
-  //   const avatarUri = profile?.avatarUri;
-  //   console.log("AppNavigation - Current profile state:", profile);
-  // }, [profile]);
 
   useEffect(() => {
     if (!loading && !isInitializing) {
