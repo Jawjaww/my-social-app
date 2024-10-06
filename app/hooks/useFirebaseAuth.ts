@@ -5,30 +5,43 @@ import { auth } from "../services/firebaseConfig";
 import { setUser } from "../features/authentication/authSlice";
 import { setProfile } from "../features/profile/profileSlice";
 import { ProfileUser } from "../types/sharedTypes";
-import { useGetProfileMutation, useDownloadAvatarMutation } from "../services/api";
+import { useGetUserProfileQuery, useDownloadAvatarMutation } from "../services/api";
 import * as FileSystem from "expo-file-system";
 import { selectProfile } from "../features/profile/profileSelectors";
 import { RootState } from "../store/store";
 
 export const useFirebaseAuth = () => {
   const dispatch = useDispatch();
-  const [getProfile] = useGetProfileMutation();
   const [downloadAvatar] = useDownloadAvatarMutation();
   const [isInitialized, setIsInitialized] = useState(false);
   const profile = useSelector(selectProfile);
   const isPersisted = useSelector((state: RootState) => state._persist?.rehydrated ?? false);
+  const [currentUid, setCurrentUid] = useState<string | null>(null);
+
+  const { data: profileData, error } = useGetUserProfileQuery(currentUid || '', { skip: !currentUid });
 
   const fetchAndUpdateProfile = useCallback(
     async (uid: string) => {
-      try {
-        const result = await getProfile(uid).unwrap();
+      setCurrentUid(uid);
 
+      if (error) {
+        console.error("Error fetching profile from Firebase:", error);
+        return;
+      }
+
+      if (!profileData) {
+        console.log("No profile data found");
+        return;
+      }
+
+      try {
         let profileUser: ProfileUser = {
           uid,
-          username: result.username || null,
-          avatarUri: null, // URI local
-          avatarUrl: result.avatarUrl || null, // URL Cloudinary
-          bio: result.bio || null,
+          username: profileData.username || null,
+          avatarUri: null,
+          avatarUrl: profileData.avatarUrl || null,
+          bio: profileData.bio || null,
+          isSignUpComplete: profileData.isSignUpComplete || false,
         };
 
         // Paths for the user's avatar
@@ -55,10 +68,10 @@ export const useFirebaseAuth = () => {
 
         dispatch(setProfile(profileUser));
       } catch (error) {
-        console.error("Error fetching profile from Firebase:", error);
+        console.error("Error processing profile data:", error);
       }
     },
-    [dispatch, getProfile, downloadAvatar]
+    [dispatch, downloadAvatar, profileData, error]
   );
 
   useEffect(() => {
@@ -72,15 +85,15 @@ export const useFirebaseAuth = () => {
         };
 
         dispatch(setUser(appUser));
-        if (isPersisted && !profile) { // Fetch only if persisted and profile is not in the store
+        if (isPersisted && !profile) {
           console.log("Profile absent. Fetching from Firebase...");
-
-          await fetchAndUpdateProfile(firebaseUser.uid);
+          setCurrentUid(firebaseUser.uid);
         }
       } else {
         console.log("No Firebase user authenticated");
         dispatch(setUser(null));
         dispatch(setProfile(null));
+        setCurrentUid(null);
       }
       
       if (!isInitialized) {
@@ -89,7 +102,16 @@ export const useFirebaseAuth = () => {
     });
 
     return () => unsubscribe();
-  }, [dispatch, fetchAndUpdateProfile, isInitialized, profile]);
+  }, [dispatch, isInitialized, profile, isPersisted]);
+
+  useEffect(() => {
+    if (currentUid && !profile) {
+      console.log("Fetching profile for UID:", currentUid);
+      fetchAndUpdateProfile(currentUid);
+    } else if (profile) {
+      console.log("Profile loaded:", profile);
+    }
+  }, [currentUid, profile, fetchAndUpdateProfile]);
 
   return { isInitialized };
-}
+};

@@ -1,29 +1,43 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Contact } from '../../types/sharedTypes';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { Contact } from "../../types/sharedTypes";
+import { api } from "../../services/api";
 
 interface ContactsState {
-  list: Contact[];
+  [contactUid: string]: Contact;
 }
 
-const initialState: ContactsState = {
-  list: [],
-};
+const initialState: ContactsState = {};
 
 const contactsSlice = createSlice({
-  name: 'contacts',
+  name: "contacts",
   initialState,
   reducers: {
-    setContacts: (state, action: PayloadAction<Contact[]>) => {
-      state.list = action.payload;
-    },
-    addContact: (state, action: PayloadAction<Contact>) => {
-      state.list.push(action.payload);
-    },
-    removeContact: (state, action: PayloadAction<string>) => {
-      state.list = state.list.filter(contact => contact.id !== action.payload);
-    },
+    resetContacts: () => initialState,
+  },
+  extraReducers: (builder) => {
+    builder
+    .addMatcher(
+      api.endpoints.getContacts.matchFulfilled,
+      (state, action: PayloadAction<{ [key: string]: Contact } | undefined>) => {
+        if (action.payload) {
+          return { ...state, ...action.payload };
+        }
+        return state;
+        }
+      )
+      .addMatcher(
+        api.endpoints.addContact.matchFulfilled,
+        (state, action: PayloadAction<Contact>) => {
+          state[action.payload.contactUid] = action.payload;
+        })
+      .addMatcher(
+        api.endpoints.deleteContact.matchFulfilled,
+        (state, action: PayloadAction<string>) => {
+          delete state[action.payload];
+        }
+      );
   },
 });
 
-export const { setContacts, addContact, removeContact } = contactsSlice.actions;
+export const { resetContacts } = contactsSlice.actions;
 export default contactsSlice.reducer;

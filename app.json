@@ -24,7 +24,8 @@
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "L'autorisation d'accès à la bibliothèque multimédia est nécessaire pour gérer votre avatar.",
         "NSCameraUsageDescription": "L'autorisation d'accès à la caméra est nécessaire pour prendre une photo de profil.",
-        "NSMicrophoneUsageDescription": "L'autorisation d'accès au microphone est nécessaire pour utiliser la fonctionnalité de publication de vidéos."
+        "NSMicrophoneUsageDescription": "L'autorisation d'accès au microphone est nécessaire pour utiliser la fonctionnalité de publication de vidéos.",
+        "UIBackgroundModes": ["remote-notification"]
       },
       "associatedDomains": [
         "applinks:mysocialapp.expo.dev"
@@ -39,7 +40,10 @@
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
         "CAMERA",
-        "RECORD_AUDIO"
+        "RECORD_AUDIO",
+        "RECEIVE_BOOT_COMPLETED",
+        "SCHEDULE_EXACT_ALARM",
+        "POST_NOTIFICATIONS"
       ],
       "package": "com.brainsmosaique.MySocialApp",
       "intentFilters": [
@@ -58,7 +62,8 @@
             "DEFAULT"
           ]
         }
-      ]
+      ],
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -71,6 +76,7 @@
     "owner": "jawjaww",
     "plugins": [
       [
+        
         "@sentry/react-native/expo",
         {
           "organization": "brains-mosaic",
@@ -78,7 +84,17 @@
         }
       ],
       "@config-plugins/react-native-webrtc",
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#ffffff",
+          "sounds": [
+            "./assets/notification-sound.wav"
+          ]
+        }
+      ]
     ],
     "runtimeVersion": {
       "policy": "appVersion"

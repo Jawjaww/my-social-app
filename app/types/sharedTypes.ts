@@ -22,13 +22,6 @@ export interface Activity {
     [key: string]: any;
   };
 }
-
-export interface Contact {
-  id: string;
-  username: string;
-  avatar?: string;
-}
-
 export interface User {
   uid: string;
   id: string;
@@ -52,8 +45,23 @@ export interface ProfileUser {
   avatarUri?: string | null;
   avatarUrl?: string | null;
   bio?: string | null;
+  isSignUpComplete: boolean;
   // Add other profile specific fields here
 };
+
+export interface Contacts {
+  [contactUid: string]: Contact;
+}
+
+export interface Contact {
+  contactUid: string;
+  contactUsername: string;
+  contactAvatarUrl: string | null;
+  contactAvatarUri?: string | null;
+  lastInteraction: number;
+  bio?: string;
+  notificationToken?: string | null; // Ajout du notificationToken
+}
 
 // Navigation types
 export type RootStackParamList = {
@@ -90,12 +98,15 @@ export type ProfileStackParamList = {
 export type ContactsStackParamList = {
   ContactList: undefined;
   AddContact: undefined;
+  Chat: { contactUid: string };
+  ContactDetails: { contactUid: string };
 };
 
 export type MessagesStackParamList = {
-  MessageList: undefined;
-  Chat: { contactId: string };
+  Conversations: undefined;
+  Chat: { contactUid: string };
   NewChat: undefined;
+  GroupChat: { groupId: string };
 };
 
 export type MainTabParamList = {
@@ -115,13 +126,12 @@ export type ProfileScreenProps = NativeStackScreenProps<
 export interface AvatarPhotoProps {
   size?: number;
   isActive?: boolean;
-  uri?: string | null;
-  url?: string | null;
+  avatarSource?: string | null;
   username?: string | null;
-  uid?: string | null;
 }
-export interface MessageListScreenProps {
-  navigation: NativeStackNavigationProp<MessagesStackParamList, "MessageList">;
+
+export interface ConversationsScreenProps {
+  navigation: NativeStackNavigationProp<MessagesStackParamList, "Conversations">;
 }
 
 export interface ChatScreenProps {

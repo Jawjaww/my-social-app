@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { GiftedChat, IMessage } from 'react-native-gifted-chat';
+import { GiftedChat } from 'react-native-gifted-chat';
+import type { IMessage } from 'react-native-gifted-chat';
 import { RouteProp } from '@react-navigation/native';
-import { RootStackParamList } from '../navigation/RootStack';
+import { MessagesStackParamList } from '../../../types/sharedTypes';
 
-type GroupChatScreenRouteProp = RouteProp<RootStackParamList, 'GroupChat'>;
+type GroupChatScreenRouteProp = RouteProp<MessagesStackParamList, 'GroupChat'>;
 
 type Props = {
   route: GroupChatScreenRouteProp;

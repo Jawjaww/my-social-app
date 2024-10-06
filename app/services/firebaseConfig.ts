@@ -1,9 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
-import {
-  initializeAuth,
-  getReactNativePersistence,
-} from "firebase/auth";
+import { initializeAuth, getReactNativePersistence } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   API_KEY,
@@ -17,6 +14,8 @@ import {
   DATABASE_URL,
 } from "@env";
 import { getStorage } from "firebase/storage";
+import { getMessaging } from "firebase/messaging";
+import { Platform } from "react-native";
 
 const firebaseConfig = {
   apiKey: API_KEY,
@@ -37,5 +36,11 @@ const auth = initializeAuth(app, {
 });
 const realtimeDb = getDatabase(app);
 const storage = getStorage(app);
+
+// Initialiser messaging seulement si la plateforme le supporte
+// let messagingInstance;
+// if (Platform.OS !== 'web') {
+//   messagingInstance = getMessaging(app);
+// }
 
 export { app, auth, realtimeDb, storage };

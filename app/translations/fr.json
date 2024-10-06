@@ -24,7 +24,7 @@
       "required": "Ce champ est requis",
       "invalidEmail": "Adresse e-mail invalide",
       "passwordMismatch": "Les mots de passe ne correspondent pas",
-      "generic": "Une erreur s'est produite. Veuillez réessayer."
+      "generic": "Une erreur s'est produite."
     },
     "success": {
       "generic": "Opération réussie"
@@ -164,6 +164,23 @@
     "name": "Nom",
     "saveButton": "Enregistrer les modifications",
     "title": "Modifier le profil"
+  },
+  "contacts": {
+    "usernamePlaceholder": "Nom d'utilisateur",
+    "addButton": "Ajouter le contact",
+    "searching": "Recherche de l'utilisateur...",
+    "userNotFound": "Utilisateur non trouvé",
+    "userFound": "Utilisateur trouvé ! Cliquez sur le bouton pour l'ajouter.",
+    "addSuccess": "Contact ajouté avec succès !",
+    "addError": "Erreur lors de l'ajout du contact. Veuillez réessayer.",
+    "deleteConfirmTitle": "Supprimer le contact",
+    "deleteConfirmMessage": "Êtes-vous sûr de vouloir supprimer {name} de vos contacts ?",
+    "deleteErrorTitle": "Erreur de suppression",
+    "deleteErrorMessage": "Une erreur s'est produite lors de la suppression du contact.",
+    "noBio": "Pas de bio",
+    "searchPlaceholder": "Rechercher un contact...",
+    "noContacts": "Aucun contact trouvé",
+    "loadError": "Erreur lors du chargement des contacts"
   },
   "avatarManager": {
     "gallery": "Choisir depuis la galerie",

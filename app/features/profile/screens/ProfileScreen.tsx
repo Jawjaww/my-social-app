@@ -6,7 +6,6 @@ import { useSignOutMutation } from "../../../services/api";
 import { addToast } from "../../toast/toastSlice";
 import { selectProfile } from "../../profile/profileSelectors";
 import { selectUser } from "../../authentication/authSelectors"; // Importer selectUser
-import FastImage from "react-native-fast-image";
 import { Ionicons } from "@expo/vector-icons";
 import { ProfileScreenProps } from "../../../types/sharedTypes";
 import { useTheme } from "@emotion/react";
@@ -15,13 +14,11 @@ import {
   CenteredContainer,
   Container,
   AvatarContainer,
-  AvatarImage,
-  AvatarPlaceholder,
-  AvatarText,
   Card,
   CardText,
 } from "../../../components/StyledComponents";
 import AvatarPhoto from "../../../components/AvatarPhoto";
+import { useAuth } from '../../../hooks/useAuth';
 
 const EditAvatarIcon = styled(TouchableOpacity)`
   position: absolute;
@@ -39,31 +36,30 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
   const [signOut, { isLoading }] = useSignOutMutation();
-  const [image, setImage] = useState<string | null>(null);
   const username = profile?.username || t("profile.anonymous");
   const email = user?.email;
+  const { handleSignOut } = useAuth();
 
-  const handleSignOut = async () => {
-    try {
-      await signOut({}).unwrap();
-      dispatch(
-        addToast({ message: t("profile.signOutSuccess"), type: "success" })
-      );
-    } catch (error) {
-      dispatch(
-        addToast({ message: t("profile.error.signOut"), type: "error" })
-      );
-    }
-  };
+  // const handleSignOut = async () => {
+  //   try {
+  //     await signOut({}).unwrap();
+  //     dispatch(
+  //       addToast({ message: t("profile.signOutSuccess"), type: "success" })
+  //     );
+  //   } catch (error) {
+  //     dispatch(
+  //       addToast({ message: t("profile.error.signOut"), type: "error" })
+  //     );
+  //   }
+  // };
 
   return (
     <CenteredContainer>
       <Container>
         <AvatarContainer>
           <AvatarPhoto
-            size={220}
-            uri={profile?.avatarUri}
-            uid={profile?.uid}
+            size={200}
+            avatarSource={profile?.avatarUri || profile?.avatarUrl}
             username={profile?.username}
           />
           <EditAvatarIcon onPress={() => navigation.navigate("AvatarManager")}>

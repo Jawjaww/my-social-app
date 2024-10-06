@@ -1,192 +1,76 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  FlatList,
-  Text,
-  StyleSheet,
-  ListRenderItem,
-  Animated,
-  TouchableOpacity,
-} from "react-native";
-import { useSelector } from "react-redux";
-import { useTranslation } from "react-i18next";
-import { selectUser } from "../../authentication/authSelectors";
-import { selectUsername } from "../../profile/profileSelectors";
-import {
-  useGetContactActivitiesQuery,
-  useGetUnreadMessagesCountQuery,
-  useGetContactSuggestionsQuery,
-} from "../../../services/api";
-import ActivityItem from "../../../components/ActivityItem";
-import ContactSuggestion from "../../../components/ContactSuggestion";
-import { Activity, Contact } from "../../../types/sharedTypes";
-import { ActivityIndicator } from "react-native";
-
-type RenderItemData = Activity | null;
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+import { selectUser } from '../../authentication/authSelectors';
+import ContactSuggestion from '../../../components/ContactSuggestion';
+import { Contact } from '../../../types/sharedTypes';
 
 const HomeScreen: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const user = useSelector(selectUser);
-  const username = useSelector(selectUsername);
-  const [isLoading, setIsLoading] = useState(true);
-  const { data: activities = [] } = useGetContactActivitiesQuery();
-  const { data: unreadCount } = useGetUnreadMessagesCountQuery();
-  const { data: contactSuggestions = [] } = useGetContactSuggestionsQuery();
-  const scrollY = React.useRef(new Animated.Value(0)).current;
-  const headerHeight = 100;
 
-  useEffect(() => {
-    if (user) {
-      setIsLoading(false);
-    }
-  }, [user]);
+  // Ces données devraient idéalement venir d'une API ou d'un hook personnalisé
+  const contactSuggestions: Contact[] = [
+    { contactUid: '1', contactUsername: 'user1', contactAvatarUrl: null },
+    { contactUid: '2', contactUsername: 'user2', contactAvatarUrl: null },
+    { contactUid: '3', contactUsername: 'user3', contactAvatarUrl: null },
+  ];
 
-  {
-    username ? `Bienvenue, ${username}!` : "Bienvenue !";
-  }
-  const renderItem: ListRenderItem<RenderItemData> = ({ item, index }) => {
-    if (index === 0) {
-      return (
-        <View style={styles.header}>
-          <Text style={styles.welcomeText}>
-            {t("home.welcomeUser", {
-              name: username || t("home.anonymousUser"),
-            })}
-          </Text>
-          {activities.length > 0 && (
-            <TouchableOpacity style={styles.newActivitiesContainer}>
-              <Text style={styles.newActivitiesText}>
-                {t("home.newActivities", { count: activities.length })}
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      );
-    } else if (activities.length > 0 && index === 1) {
-      return (
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>{t("home.recentActivity")}</Text>
-        </View>
-      );
-    } else if (activities.length === 0 && index === 1) {
-      return (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>{t("home.noRecentActivity")}</Text>
-        </View>
-      );
-    } else if (item) {
-      return <ActivityItem activity={item} />;
-    }
-    return null;
-  };
-
-  if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
-    );
-  }
-
-  const data: RenderItemData[] = [null, ...activities, null];
-  console.log('Current language in HomeScreen:', i18n.language);
-  console.log('Translation test in HomeScreen:', t('home.welcomeUser', { name: 'Test' }));
-  
+  const recentActivities = [
+    { id: '1', description: 'Activity 1' },
+    { id: '2', description: 'Activity 2' },
+    { id: '3', description: 'Activity 3' },
+  ];
 
   return (
-    <View style={styles.container}>
-      <Animated.View style={[styles.animatedHeader, { height: headerHeight }]}>
-        <Text style={styles.headerTitle}>{t("home.title")}</Text>
-      </Animated.View>
-      <Animated.FlatList
-        style={styles.list}
-        contentContainerStyle={styles.listContent}
-        data={data}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => (item ? item.id : index.toString())}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: false }
-        )}
-        scrollEventThrottle={16}
-      />
-      {contactSuggestions.length > 0 && (
-        <View style={styles.contactSuggestionsContainer}>
-          {contactSuggestions.map((contact: Contact) => (
-            <ContactSuggestion key={contact.id} contact={contact} />
+    <ScrollView style={styles.container}>
+      <Text style={styles.welcomeText}>
+        {t('home.welcomeUser', { name: user?.email || 'Guest' })}
+      </Text>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{t('home.contactSuggestions')}</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {contactSuggestions.map((contact) => (
+            <ContactSuggestion key={contact.contactUid} contact={contact} />
           ))}
-        </View>
-      )}
-    </View>
+        </ScrollView>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{t('home.recentActivity')}</Text>
+        {recentActivities.map((activity) => (
+          <Text key={activity.id} style={styles.activityItem}>
+            {activity.description}
+          </Text>
+        ))}
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
-  },
-  animatedHeader: {
-    backgroundColor: "#007AFF",
-    justifyContent: "flex-end",
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#FFFFFF",
-  },
-  list: {
-    flex: 1,
-  },
-  listContent: {
-    paddingTop: 20,
-  },
-  header: {
-    padding: 20,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 10,
-    marginHorizontal: 20,
-    marginBottom: 20,
-    elevation: 3,
+    padding: 16,
   },
   welcomeText: {
-    fontSize: 18,
-    marginBottom: 20,
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 16,
   },
-  newActivitiesContainer: {
-    backgroundColor: "#007AFF",
-    padding: 10,
-    borderRadius: 5,
-  },
-  newActivitiesText: {
-    color: "#FFFFFF",
-    fontWeight: "bold",
-  },
-  sectionContainer: {
-    marginHorizontal: 20,
-    marginBottom: 10,
+  section: {
+    marginBottom: 24,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 10,
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8,
   },
-  contactSuggestionsContainer: {
-    marginTop: 20,
-    paddingHorizontal: 20,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  emptyText: {
+  activityItem: {
     fontSize: 16,
-    color: "#666",
-    textAlign: "center",
+    marginBottom: 4,
   },
 });
 

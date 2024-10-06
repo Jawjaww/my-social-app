@@ -1,4 +1,5 @@
 import React, { useEffect, useState, lazy, Suspense } from "react";
+import AppInitializer from "../AppInitializer";
 import * as SplashScreen from "expo-splash-screen";
 import { useFirebaseAuth } from "../hooks/useFirebaseAuth";
 import { Linking } from "react-native";
@@ -27,11 +28,13 @@ import {
   MessagesStackParamList,
 } from "../types/sharedTypes";
 import AvatarPhoto from "../components/AvatarPhoto";
+import { useRehydrateContacts } from "../hooks/useRehydrateContacts";
 
 // Screens
 import HomeScreen from "../features/home/screens/HomeScreen";
 import ProfileScreen from "../features/profile/screens/ProfileScreen";
 import SignInScreen from "../features/authentication/screens/SignInScreen";
+import ChatScreen from "../features/messages/screens/ChatScreen";
 
 // Lazy load screens
 const ChooseUsernameScreen = lazy(
@@ -73,14 +76,17 @@ const ContactListScreen = lazy(
 const AddContactScreen = lazy(
   () => import("../features/contacts/screens/AddContactScreen")
 );
-const MessageListScreen = lazy(
-  () => import("../features/messages/screens/MessageListScreen")
+const ContactDetailsScreen = lazy(
+  () => import("../features/contacts/screens/ContactDetailsScreen")
 );
-const ChatScreen = lazy(
-  () => import("../features/messages/screens/ChatScreen")
+const ConversationsScreen = lazy(
+  () => import("../features/messages/screens/ConversationsScreen")
 );
 const NewChatScreen = lazy(
   () => import("../features/messages/screens/NewChatScreen")
+);
+const GroupChatScreen = lazy(
+  () => import("../features/messages/screens/GroupChatScreen")
 );
 const ConfirmEmailChangeScreen = lazy(
   () => import("../features/profile/screens/ConfirmEmailChangeScreen")
@@ -127,15 +133,22 @@ const ProfileNavigator = () => (
 );
 
 const ContactsNavigator = () => (
-  <ContactsStack.Navigator screenOptions={{ headerShown: false }}>
+  <ContactsStack.Navigator>
     <ContactsStack.Screen name="ContactList" component={ContactListScreen} />
     <ContactsStack.Screen name="AddContact" component={AddContactScreen} />
+    <ContactsStack.Screen
+      name="ContactDetails"
+      component={ContactDetailsScreen}
+    />
   </ContactsStack.Navigator>
 );
 
 const MessagesNavigator = () => (
-  <MessagesStack.Navigator screenOptions={{ headerShown: false }}>
-    <MessagesStack.Screen name="MessageList" component={MessageListScreen} />
+  <MessagesStack.Navigator>
+    <MessagesStack.Screen
+      name="Conversations"
+      component={ConversationsScreen}
+    />
     <MessagesStack.Screen name="Chat" component={ChatScreen} />
     <MessagesStack.Screen name="NewChat" component={NewChatScreen} />
   </MessagesStack.Navigator>
@@ -172,7 +185,6 @@ const MainTabNavigator = () => (
 const AppNavigation: React.FC = () => {
   const dispatch = useDispatch();
   const profile = useSelector(selectProfile);
-  const username = profile?.username;
   const loading = useSelector((state: RootState) => state.auth.loading);
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const isEmailVerified = useSelector(selectIsEmailVerified);
@@ -181,10 +193,9 @@ const AppNavigation: React.FC = () => {
 
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  // const navigationRef =
-  //   useRef<NavigationContainerRef<RootStackParamList>>(null);
 
   useFirebaseAuth();
+  useRehydrateContacts();
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -271,18 +282,20 @@ const AppNavigation: React.FC = () => {
   }
 
   return (
-    <RootStack.Navigator screenOptions={{ headerShown: false }}>
-      {!isAuthenticated || !isEmailVerified ? (
-        <RootStack.Screen name="Auth" component={AuthNavigator} />
-      ) : !username ? (
-        <RootStack.Screen
-          name="ChooseUsername"
-          component={ChooseUsernameScreen}
-        />
-      ) : (
-        <RootStack.Screen name="Main" component={MainTabNavigator} />
-      )}
-    </RootStack.Navigator>
+    <AppInitializer>
+      <RootStack.Navigator screenOptions={{ headerShown: false }}>
+        {!isAuthenticated || !isEmailVerified ? (
+          <RootStack.Screen name="Auth" component={AuthNavigator} />
+        ) : !profile?.isSignUpComplete ? (
+          <RootStack.Screen
+            name="ChooseUsername"
+            component={ChooseUsernameScreen}
+          />
+        ) : (
+          <RootStack.Screen name="Main" component={MainTabNavigator} />
+        )}
+      </RootStack.Navigator>
+    </AppInitializer>
   );
 };
 

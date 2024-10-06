@@ -14,16 +14,27 @@ import {
   applyActionCode,
   updateEmail,
 } from "firebase/auth";
-import { ref, set, get, update, query, orderByChild, equalTo } from "firebase/database";
+import {
+  ref,
+  set,
+  get,
+  update,
+  query,
+  orderByChild,
+  equalTo,
+  child,
+  remove,
+} from "firebase/database";
 import { FirebaseError } from "firebase/app";
 import { auth, realtimeDb } from "./firebaseConfig";
-import { IMessage } from "react-native-gifted-chat";
+import type { IMessage } from 'react-native-gifted-chat';
 import {
   Activity,
   Contact,
   User,
   AppUser,
   ProfileUser,
+  Contacts,
 } from "../types/sharedTypes";
 import {
   createApi,
@@ -33,37 +44,43 @@ import {
 import { SerializedError } from "@reduxjs/toolkit";
 import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET } from "@env";
 
+
 export type AppError = FetchBaseQueryError | SerializedError;
+type DeleteContactResult = { success: true } | { success: false, error: string };
 
 export const api = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({ baseUrl: "/" }),
   endpoints: (builder) => ({
-    addContact: builder.mutation<void, { username: string }>({
-      queryFn: async ({ username }, { getState }) => {
+    addContact: builder.mutation<Contact, { uid: string; contactUid: string }>({
+      queryFn: async ({ uid, contactUid }) => {
         try {
-          const currentUser = auth.currentUser;
-          if (!currentUser) {
-            throw new Error("User not authenticated");
+          const contactRef = ref(realtimeDb, `contacts/${uid}/contactsList/${contactUid}`);
+          const userProfileRef = ref(realtimeDb, `userProfiles/${contactUid}`);
+          
+          const [contactSnapshot, userProfileSnapshot] = await Promise.all([
+            get(contactRef),
+            get(userProfileRef)
+          ]);
+
+          if (!userProfileSnapshot.exists()) {
+            throw new Error("User profile not found");
           }
 
-          const usernameRef = ref(realtimeDb, `usernames/${username}`);
-          const snapshot = await get(usernameRef);
+          const userProfileData = userProfileSnapshot.val();
+          const newContact: Contact = {
+            contactUid,
+            contactUsername: userProfileData.username,
+            contactAvatarUri: userProfileData.avatarUri || null,
+            contactAvatarUrl: userProfileData.avatarUrl || null,
+            lastInteraction: Date.now(),
+            bio: userProfileData.bio || '',
+          };
 
-          if (!snapshot.exists()) {
-            throw new Error("User not found");
-          }
-
-          const contactUid = snapshot.val();
-          const contactRef = ref(
-            realtimeDb,
-            `contacts/${currentUser.uid}/${contactUid}`
-          );
-          await set(contactRef, true);
-
-          return { data: undefined };
-        } catch (error: any) {
-          return { error: { status: "CUSTOM_ERROR", error: error.message } };
+          await set(contactRef, newContact);
+          return { data: newContact };
+        } catch (error) {
+          return { error: { status: 'CUSTOM_ERROR', error: String(error) } };
         }
       },
     }),
@@ -151,12 +168,16 @@ export const api = createApi({
       }
     ),
     // Used in SignUp mutation to create a new user profile in the database
-    createProfileUser: builder.mutation<ProfileUser, ProfileUser>({
+    createProfileUser: builder.mutation<ProfileUser, Partial<ProfileUser>>({
       queryFn: async (profileUser) => {
         try {
           const userProfileRef = ref(realtimeDb, `userProfiles/${profileUser.uid}`);
-          await set(userProfileRef, profileUser);
-          return { data: profileUser };
+          const newProfile = {
+            ...profileUser,
+            isSignUpComplete: false, // Need username to be set to true
+          };
+          await set(userProfileRef, newProfile);
+          return { data: newProfile as ProfileUser };
         } catch (error) {
           console.error("Error creating user profile:", error);
           return { error: { status: 500, data: (error as Error).message } };
@@ -186,6 +207,22 @@ export const api = createApi({
         },
       }
     ),
+    deleteContact: builder.mutation<string, { userUid: string; contactUid: string }>({
+      async queryFn({ userUid, contactUid }) {
+        try {
+          const contactRef = ref(realtimeDb, `contacts/${userUid}/contactsList/${contactUid}`);
+          await remove(contactRef);
+          return { data: contactUid };
+        } catch (error) {
+          return { 
+            error: {
+              status: 'CUSTOM_ERROR',
+              error: error instanceof Error ? error.message : 'An unknown error occurred',
+            } as FetchBaseQueryError
+          };
+        }
+      },
+    }),
     deleteMessage: builder.mutation<void, { messageId: string }>({
       query: ({ messageId }) => ({
         url: `/messages/${messageId}`,
@@ -201,8 +238,8 @@ export const api = createApi({
           console.error("Error downloading avatar:", error);
           return {
             error: {
-              status: 'CUSTOM_ERROR',
-              error: error.message || 'Failed to download avatar',
+              status: "CUSTOM_ERROR",
+              error: error.message || "Failed to download avatar",
             },
           };
         }
@@ -211,60 +248,110 @@ export const api = createApi({
     getContactActivities: builder.query<Activity[], void>({
       query: () => "contactActivities",
     }),
-    getContactSuggestions: builder.query<Contact[], void>({
+    getContactSuggestions: builder.query<Contacts[], void>({
       query: () => "contactSuggestions",
     }),
-    getContacts: builder.query<Contact[], void>({
-      query: () => "contacts",
+    getContacts: builder.query<{ [key: string]: Contact }, string>({
+      async queryFn(uid) {
+        try {
+          const dbRef = ref(realtimeDb);
+          const snapshot = await get(child(dbRef, `contacts/${uid}/contactsList`));
+          if (snapshot.exists()) {
+            const contactsData = snapshot.val();
+            const contacts: { [key: string]: Contact } = {};
+
+            for (const contactUid of Object.keys(contactsData)) {
+              const contactInfo = contactsData[contactUid];
+              const userRef = ref(realtimeDb, `userProfiles/${contactUid}`);
+              const userSnapshot = await get(userRef);
+              const userData = userSnapshot.val();
+
+              if (userData) {
+                contacts[contactUid] = {
+                  contactUid,
+                  contactUsername: userData.username || '',
+                  contactAvatarUrl: userData.avatarUrl || null,
+                  contactAvatarUri: userData.avatarUri || null,
+                  lastInteraction: contactInfo.lastInteraction || Date.now(),
+                  bio: userData.bio || '',
+                };
+              }
+            }
+
+            return { data: contacts };
+          } else {
+            return { data: {} };
+          }
+        } catch (error) {
+          console.error('Error fetching contacts:', error);
+          return { 
+            error: { 
+              status: 'FETCH_ERROR',
+              error: error instanceof Error ? error.message : 'An unknown error occurred'
+            } 
+          };
+        }
+      },
     }),
+    
     getDiscoverUsers: builder.query<User[], void>({
       query: () => "discoverUsers",
     }),
     getMessages: builder.query<IMessage[], string>({
       query: (userId) => `messages/${userId}`,
     }),
-    getProfile: builder.mutation<ProfileUser, string>({
+    
+    getRecentChats: builder.query<Contacts[], void>({
+      query: () => "recentChats",
+    }),
+    getUidByUsername: builder.query<{ exists: boolean; uid?: string }, string>({
+      queryFn: async (username) => {
+        try {
+          const userQuery = query(ref(realtimeDb, 'userProfiles'), orderByChild('username'), equalTo(username));
+          const snapshot = await get(userQuery);
+          if (snapshot.exists()) {
+            const data = snapshot.val();
+            const uid = Object.keys(data)[0];
+            return { data: { exists: true, uid } };
+          } else {
+            return { data: { exists: false } };
+          }
+        } catch (error) {
+          return { error: { status: 'FETCH_ERROR', error: String(error) } as FetchBaseQueryError };
+        }
+      },
+    }), 
+    getUnreadMessagesCount: builder.query<number, void>({
+      query: () => "unreadMessagesCount",
+    }),
+    getUserProfile: builder.query<ProfileUser, string>({
       queryFn: async (uid) => {
         try {
-          const userProfileRef = ref(realtimeDb, `userProfiles/${uid}`);
-          const userRef = ref(realtimeDb, `users/${uid}`);
-          
-          const [userProfileSnapshot, userSnapshot] = await Promise.all([
-            get(userProfileRef),
-            get(userRef)
-          ]);
+          const userRef = ref(realtimeDb, `userProfiles/${uid}`);
     
-          if (!userProfileSnapshot.exists() && !userSnapshot.exists()) {
-            throw new Error("User profile not found");
+          const userSnapshot = await get(userRef);
+    
+          if (!userSnapshot.exists()) {
+            return { error: { status: 'CUSTOM_ERROR', error: 'User profile not found' } };
           }
     
-          const userProfileData = userProfileSnapshot.val() || {};
           const userData = userSnapshot.val() || {};
     
           const profile: ProfileUser = {
             uid,
-            username: userProfileData.username || null,
+            username: userData.username || null,
             avatarUri: userData.avatarUri || null,
             avatarUrl: userData.avatarUrl || null,
-            bio: userProfileData.bio || null,
+            bio: userData.bio || null,
+            isSignUpComplete: userData.isSignUpComplete || false,
           };
-    
-          console.log("Profile fetched from Firebase:", profile);
     
           return { data: profile };
         } catch (error) {
-          console.error("Error fetching user profile:", error);
-          return { error: { status: 500, data: (error as Error).message } };
+          return { error: { status: 'CUSTOM_ERROR', error: (error as Error).message } };
         }
       },
     }),
-    getRecentChats: builder.query<Contact[], void>({
-      query: () => "recentChats",
-    }),
-    getUnreadMessagesCount: builder.query<number, void>({
-      query: () => "unreadMessagesCount",
-    }),
-
     reauthenticateAndUpdateEmail: builder.mutation<
       { success: boolean; emailSent: boolean },
       { newEmail: string; password: string }
@@ -477,6 +564,7 @@ export const api = createApi({
             username: null,
             avatarUri: null,
             bio: null,
+            isSignUpComplete: false,
           };
 
           console.log("Creating profile user:", profileUser);
@@ -500,11 +588,17 @@ export const api = createApi({
         }
       },
     }),
-    updateAvatarUri: builder.mutation<string | null, { userId: string; avatarUri: string | null }>({
+    updateAvatarUri: builder.mutation<
+      string | null,
+      { userId: string; avatarUri: string | null }
+    >({
       queryFn: async ({ userId, avatarUri }) => {
         try {
-          console.log("Updating avatar URI in Firebase:", { userId, avatarUri });
-          const userRef = ref(realtimeDb, `users/${userId}`);
+          console.log("Updating avatar URI in Firebase:", {
+            userId,
+            avatarUri,
+          });
+          const userRef = ref(realtimeDb, `userProfiles/${userId}`);
           await update(userRef, { avatarUri: avatarUri });
           console.log("Avatar URI updated successfully:", avatarUri);
           return { data: avatarUri };
@@ -519,11 +613,17 @@ export const api = createApi({
         }
       },
     }),
-    updateAvatarUrl: builder.mutation<string | null, { userId: string; avatarUrl: string | null }>({
+    updateAvatarUrl: builder.mutation<
+      string | null,
+      { userId: string; avatarUrl: string | null }
+    >({
       queryFn: async ({ userId, avatarUrl }) => {
         try {
-          console.log("Updating avatar URL in Firebase:", { userId, avatarUrl });
-          const userRef = ref(realtimeDb, `users/${userId}`);
+          console.log("Updating avatar URL in Firebase:", {
+            userId,
+            avatarUrl,
+          });
+          const userRef = ref(realtimeDb, `userProfiles/${userId}`);
           await update(userRef, { avatarUrl: avatarUrl });
           console.log("Avatar URL updated successfully:", avatarUrl);
           return { data: avatarUrl };
@@ -538,35 +638,48 @@ export const api = createApi({
         }
       },
     }),
-
-    updateUsername: builder.mutation<ProfileUser, { uid: string; username: string }>({
+    updateContactNotificationToken: builder.mutation<void, { contactUid: string; token: string }>({
+      query: ({ contactUid, token }) => ({
+        url: `contacts/${contactUid}/notificationToken`,
+        method: 'PUT',
+        body: { token },
+      }),
+    }),
+    updateUsername: builder.mutation<
+      ProfileUser,
+      { uid: string; username: string }
+    >({
       queryFn: async ({ uid, username }) => {
         try {
           const userProfileRef = ref(realtimeDb, `userProfiles/${uid}`);
-    
+
           // Get the current profile
           const currentProfileSnapshot = await get(userProfileRef);
           const currentProfile = currentProfileSnapshot.val() as ProfileUser;
-    
+
           if (!currentProfile) {
             throw new Error("User profile not found");
           }
-    
+
           // Check if the new username is already taken
-          const usernameQuery = query(ref(realtimeDb, 'userProfiles'), orderByChild('username'), equalTo(username));
+          const usernameQuery = query(
+            ref(realtimeDb, "userProfiles"),
+            orderByChild("username"),
+            equalTo(username)
+          );
           const usernameSnapshot = await get(usernameQuery);
-    
+
           if (usernameSnapshot.exists()) {
             throw new Error("Username is already taken");
           }
-    
+
           // Update the username in the user profile
-          await update(userProfileRef, { username });
-    
+          await update(userProfileRef, { username, isSignUpComplete: true });
+
           // Get the updated profile
           const updatedProfileSnapshot = await get(userProfileRef);
           const updatedProfile = updatedProfileSnapshot.val() as ProfileUser;
-    
+
           return { data: updatedProfile };
         } catch (error) {
           console.error("Error updating username:", error);
@@ -574,7 +687,13 @@ export const api = createApi({
         }
       },
     }),
-
+    updateUserNotificationToken: builder.mutation<void, { uid: string; token: string }>({
+      query: ({ uid, token }) => ({
+        url: `users/${uid}/notificationToken`,
+        method: 'PUT',
+        body: { token },
+      }),
+    }),
     updatePassword: builder.mutation<
       { success: boolean },
       { currentPassword: string; newPassword: string }
@@ -604,27 +723,32 @@ export const api = createApi({
         }
       },
     }),
-    updateUserProfile: builder.mutation<
-      ProfileUser,
-      Partial<ProfileUser> & { uid: string }
-    >({
-      queryFn: async (updatedProfile) => {
+    updateProfile: builder.mutation<ProfileUser, string>({
+      queryFn: async (uid) => {
         try {
-          const { uid, ...profileData } = updatedProfile;
-          const userRef = ref(realtimeDb, `users/${uid}`);
-          await update(userRef, profileData);
+          const userRef = ref(realtimeDb, `userProfiles/${uid}`);
+          const userSnapshot = await get(userRef);
 
-          const updatedProfileUser: ProfileUser = {
+          if (!userSnapshot.exists()) {
+            throw new Error("User profile not found");
+          }
+
+          const userData = userSnapshot.val() || {};
+
+          const profile: ProfileUser = {
             uid,
-            username: profileData.username ?? null,
-            avatarUri: profileData.avatarUri ?? null,
-            avatarUrl: profileData.avatarUrl ?? null,
-            bio: profileData.bio ?? null,
+            username: userData.username || null,
+            avatarUri: userData.avatarUri || null,
+            avatarUrl: userData.avatarUrl || null,
+            bio: userData.bio || null,
+            isSignUpComplete: userData.isSignUpComplete || false,
           };
 
-          return { data: updatedProfileUser };
+          console.log("Profile fetched from Firebase:", profile);
+
+          return { data: profile };
         } catch (error) {
-          console.error("Error updating user profile:", error);
+          console.error("Error fetching user profile:", error);
           return { error: { status: 500, data: (error as Error).message } };
         }
       },
@@ -633,41 +757,43 @@ export const api = createApi({
       async queryFn({ imageUri, uid }) {
         try {
           const formData = new FormData();
-          formData.append('file', {
-            uri: imageUri.startsWith('file://') ? imageUri : 'file://' + imageUri,
-            type: 'image/jpeg',
-            name: 'avatar.jpg',
+          formData.append("file", {
+            uri: imageUri.startsWith("file://")
+              ? imageUri
+              : "file://" + imageUri,
+            type: "image/jpeg",
+            name: "avatar.jpg",
           } as any);
-          formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-          formData.append('public_id', `avatars/${uid}/avatar`);
-    
+          formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+          formData.append("public_id", `avatars/${uid}/avatar`);
+
           const response = await fetch(
             `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
             {
-              method: 'POST',
+              method: "POST",
               body: formData,
             }
           );
-    
+
           const result = await response.json();
-    
+
           if (response.ok && result.secure_url) {
             return { data: result.secure_url };
           } else {
-            console.error('Cloudinary upload error:', result);
+            console.error("Cloudinary upload error:", result);
             return {
               error: {
-                status: 'CUSTOM_ERROR',
-                error: result.error?.message || 'Upload failed',
+                status: "CUSTOM_ERROR",
+                error: result.error?.message || "Upload failed",
               },
             };
           }
         } catch (error: any) {
-          console.error('Network or other error:', error);
+          console.error("Network or other error:", error);
           return {
             error: {
-              status: 'CUSTOM_ERROR',
-              error: error.message || 'An unknown error occurred',
+              status: "CUSTOM_ERROR",
+              error: error.message || "An unknown error occurred",
             },
           };
         }
@@ -709,6 +835,37 @@ export const api = createApi({
         }
       },
     }),
+    getContactProfile: builder.query<Contact, string>({
+      async queryFn(contactUid) {
+        try {
+          const userRef = ref(realtimeDb, `userProfiles/${contactUid}`);
+          const snapshot = await get(userRef);
+          if (snapshot.exists()) {
+            const data = snapshot.val();
+            return {
+              data: {
+                contactUid,
+                contactUsername: data.username || '',
+                contactAvatarUrl: data.avatarUrl || null,
+                contactAvatarUri: data.avatarUri || null,
+                lastInteraction: data.lastInteraction || Date.now(),
+                bio: data.bio || '',
+                notificationToken: data.notificationToken || null, // Inclusion du notificationToken
+              },
+            };
+          } else {
+            return { error: { status: 404, data: 'Contact profile not found' } };
+          }
+        } catch (error) {
+          return { 
+            error: { 
+              status: 'FETCH_ERROR',
+              error: error instanceof Error ? error.message : 'An unknown error occurred'
+            } 
+          };
+        }
+      },
+    }),
   }),
 });
 
@@ -718,16 +875,20 @@ export const {
   useCheckUsernameAvailabilityMutation,
   // useCreateProfileUserMutation,
   useDeleteAccountMutation,
+  useDeleteContactMutation,
   useDeleteMessageMutation,
   useDownloadAvatarMutation,
   useGetContactActivitiesQuery,
+  useGetContactProfileQuery,
   useGetContactSuggestionsQuery,
   useGetContactsQuery,
   useGetDiscoverUsersQuery,
   useGetMessagesQuery,
-  useGetProfileMutation,
+  // useGetProfileUserQuery,
   useGetRecentChatsQuery,
+  useGetUidByUsernameQuery,
   useGetUnreadMessagesCountQuery,
+  useGetUserProfileQuery,
   useRemoveContactMutation,
   useResetPasswordMutation,
   useSendMessageMutation,
@@ -739,9 +900,11 @@ export const {
   useSignUpMutation,
   useUpdateAvatarUriMutation,
   useUpdateAvatarUrlMutation,
+  useUpdateContactNotificationTokenMutation,
   useUpdateUsernameMutation,
+  useUpdateUserNotificationTokenMutation,
   useUpdatePasswordMutation,
-  useUpdateUserProfileMutation,
+  useUpdateProfileMutation,
   useUploadAvatarMutation,
   useReauthenticateAndUpdateEmailMutation,
   useVerifyEmailMutation,

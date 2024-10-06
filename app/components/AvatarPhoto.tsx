@@ -5,12 +5,14 @@ import { selectProfile } from '../features/profile/profileSelectors';
 import { useTheme } from '@emotion/react';
 import { AvatarPhotoProps } from '../types/sharedTypes';
 
-const AvatarPhoto: React.FC<AvatarPhotoProps> = ({ size = 50, isActive = false }) => {
+const AvatarPhoto: React.FC<AvatarPhotoProps> = ({ 
+  size = 50, 
+  isActive = false, 
+  avatarSource,
+  username 
+}) => {
   const theme = useTheme();
   const profile = useSelector(selectProfile);
-  const avatarUri = profile?.avatarUri;
-  const avatarUrl = profile?.avatarUrl;
-  const username = profile?.username;
 
   const styles = StyleSheet.create({
     container: {
@@ -33,27 +35,23 @@ const AvatarPhoto: React.FC<AvatarPhotoProps> = ({ size = 50, isActive = false }
     },
   });
 
-  if (avatarUri) {
+  const avatarToUse = avatarSource || profile?.avatarUri || profile?.avatarUrl;
+
+  if (avatarToUse) {
     return (
       <Image
-        source={{ uri: avatarUri }}
+        source={{ uri: avatarToUse }}
         style={styles.image}
       />
     );
   }
 
-  if (avatarUrl) {
-    return (
-      <Image
-        source={{ uri: avatarUrl }}
-        style={styles.image}
-      />
-    );
-  }
+  // Si aucun avatar n'est disponible, afficher la première lettre du nom d'utilisateur
+  const letter = username?.charAt(0).toUpperCase() || profile?.username?.charAt(0).toUpperCase() || '?';
 
   return (
     <View style={styles.container}>
-      <Text style={styles.letter}>{username?.charAt(0).toUpperCase() || '?'}</Text>
+      <Text style={styles.letter}>{letter}</Text>
     </View>
   );
 };

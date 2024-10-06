@@ -6,40 +6,50 @@ import {
   StyleSheet,
   Text,
   SectionList,
+  ActivityIndicator,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import {
   useGetContactsQuery,
   useGetRecentChatsQuery,
+  useGetUserProfileQuery,
 } from "../../../services/api";
 import UserListItem from "../components/UserListItem";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { MessagesStackParamList } from "../../../types/sharedTypes";
-import { Contact } from "../../../types/sharedTypes";
-import { ActivityIndicator } from "react-native";
+import { Contacts, MessagesStackParamList, ProfileUser } from "../../../types/sharedTypes";
+import { useSelector } from "react-redux";
+import { selectUser } from "../../authentication/authSelectors";
 
 const NewChatScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const navigation =
-    useNavigation<NativeStackNavigationProp<MessagesStackParamList>>();
-  const { data: contacts, isLoading: contactsLoading } = useGetContactsQuery();
-  const { data: recentChats, isLoading: recentChatsLoading } =
-    useGetRecentChatsQuery();
-  const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
+  const navigation = useNavigation<NativeStackNavigationProp<MessagesStackParamList>>();
+  const user = useSelector(selectUser);
+  const { data: contacts, isLoading: contactsLoading } = useGetContactsQuery(user?.uid || '');
+  const { data: recentChats, isLoading: recentChatsLoading } = useGetRecentChatsQuery();
+  const [filteredProfileUsers, setFilteredProfileUsers] = useState<ProfileUser[]>([]);
 
   useEffect(() => {
     if (contacts) {
-      setFilteredContacts(
-        contacts.filter((contact) =>
-          contact.username.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      );
+      const fetchProfiles = async () => {
+        const profiles = await Promise.all(
+          Object.keys(contacts).map(async (contactUid) => {
+            const result = await useGetUserProfileQuery(contactUid);
+            return result.data;
+          })
+        );
+        setFilteredProfileUsers(
+          profiles.filter((profile): profile is ProfileUser => 
+            !!profile && !!profile.username && profile.username.toLowerCase().includes(searchQuery.toLowerCase())
+          )
+        );
+      };
+      fetchProfiles();
     }
   }, [contacts, searchQuery]);
 
   const handleUserPress = (userId: string) => {
-    navigation.navigate("Chat", { contactId: userId });
+    navigation.navigate("Chat", { contactUid: userId });
   };
 
   const renderSectionHeader = ({
@@ -48,14 +58,14 @@ const NewChatScreen = () => {
     section: { title: string };
   }) => <Text style={styles.sectionHeader}>{title}</Text>;
 
-  const renderItem = ({ item }: { item: Contact }) => (
+  const renderItem = ({ item }: { item: ProfileUser }) => (
     <UserListItem
       user={{
-        id: item.id,
-        username: item.username,
-        avatar: item.avatar || "https://via.placeholder.com/150",
+        id: item.uid,
+        username: item.username || "",
+        avatar: item.avatarUrl || "https://via.placeholder.com/150",
       }}
-      onPress={() => handleUserPress(item.id)}
+      onPress={() => handleUserPress(item.uid)}
     />
   );
 
@@ -75,8 +85,8 @@ const NewChatScreen = () => {
 
   const sections = [
     { title: "Conversations récentes", data: recentChats || [] },
-    { title: "Tous les contacts", data: filteredContacts },
-  ].filter((section) => section.data.length > 0);
+    { title: "Tous les utilisateurs", data: filteredProfileUsers },
+  ];
 
   return (
     <View style={styles.container}>
@@ -96,10 +106,10 @@ const NewChatScreen = () => {
       </View>
       {sections.length > 0 ? (
         <SectionList
-          sections={sections}
+          sections={sections as Array<{ title: string; data: ProfileUser[] }>}
           renderItem={renderItem}
           renderSectionHeader={renderSectionHeader}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.uid}
           ListEmptyComponent={renderEmptyComponent}
         />
       ) : (
@@ -122,12 +132,7 @@ const NewChatScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: "#fff",
   },
   searchContainer: {
     flexDirection: "row",
@@ -172,6 +177,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#666",
     textAlign: "center",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

@@ -77,7 +77,11 @@ export const ButtonText = styled.Text`
 
 export const ErrorText = styled.Text`
   color: ${({ theme }) => theme.colors.error};
-  font-size: 14px;
+  margin-bottom: 8px;
+`;
+
+export const SuccessText = styled.Text`
+  color: ${({ theme }) => theme.colors.success};
   margin-bottom: 8px;
 `;
 

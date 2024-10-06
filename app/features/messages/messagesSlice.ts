@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { IMessage } from 'react-native-gifted-chat';
-
+import type { IMessage } from 'react-native-gifted-chat';
 interface MessagesState {
   conversations: { [userId: string]: IMessage[] };
   onlineUsers: string[];

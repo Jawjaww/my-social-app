@@ -51,10 +51,6 @@ function ChooseUsernameScreen() {
     null
   );
 
-  // useEffect(() => {
-  //   console.log("ChooseUsernameScreen mounted:", { profile, user });
-  // }, [profile, user]);
-
   const {
     control,
     handleSubmit,
@@ -117,7 +113,8 @@ function ChooseUsernameScreen() {
       dispatch(setProfile({
         ...profile,
         uid,
-        username: data.username.trim()
+        username: data.username.trim(),
+        isSignUpComplete: true,
       }));
       console.log("Username updated in store:", result);
       dispatch(addToast({ message: t("username.success"), type: "success" }));
