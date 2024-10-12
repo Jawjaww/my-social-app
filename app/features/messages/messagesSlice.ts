@@ -1,41 +1,42 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { IMessage } from 'react-native-gifted-chat';
+import { IMessage } from '../../types/sharedTypes';
+
 interface MessagesState {
-  conversations: { [userId: string]: IMessage[] };
-  onlineUsers: string[];
-  typingUsers: { [userId: string]: boolean };
+  messages: { [channelId: string]: IMessage[] };
 }
 
 const initialState: MessagesState = {
-  conversations: {},
-  onlineUsers: [],
-  typingUsers: {},
+  messages: {},
 };
 
 const messagesSlice = createSlice({
   name: 'messages',
   initialState,
   reducers: {
-    addMessage: (state, action: PayloadAction<{ userId: string; message: IMessage }>) => {
-      const { userId, message } = action.payload;
-      if (!state.conversations[userId]) {
-        state.conversations[userId] = [];
+    addMessage: (state, action: PayloadAction<IMessage>) => {
+      const { channelId } = action.payload;
+      if (!state.messages[channelId]) {
+        state.messages[channelId] = [];
       }
-      state.conversations[userId].unshift(message);
+      const messageWithTimestamp = {
+        ...action.payload,
+        createdAt: action.payload.createdAt instanceof Date 
+          ? action.payload.createdAt.getTime() 
+          : action.payload.createdAt,
+      };
+      state.messages[channelId].unshift(messageWithTimestamp);
     },
-    setConversation: (state, action: PayloadAction<{ userId: string; messages: IMessage[] }>) => {
-      const { userId, messages } = action.payload;
-      state.conversations[userId] = messages;
-    },
-    setOnlineUsers: (state, action: PayloadAction<string[]>) => {
-      state.onlineUsers = action.payload;
-    },
-    setTypingStatus: (state, action: PayloadAction<{ userId: string; isTyping: boolean }>) => {
-      const { userId, isTyping } = action.payload;
-      state.typingUsers[userId] = isTyping;
+    setMessages: (state, action: PayloadAction<{ channelId: string; messages: IMessage[] }>) => {
+      const { channelId, messages } = action.payload;
+      state.messages[channelId] = messages.map(message => ({
+        ...message,
+        createdAt: message.createdAt instanceof Date 
+          ? message.createdAt.getTime() 
+          : message.createdAt,
+      }));
     },
   },
 });
 
-export const { addMessage, setConversation, setOnlineUsers, setTypingStatus } = messagesSlice.actions;
+export const { addMessage, setMessages } = messagesSlice.actions;
 export default messagesSlice.reducer;

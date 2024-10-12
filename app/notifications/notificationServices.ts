@@ -1,5 +1,6 @@
 import { getAuth } from 'firebase/auth';
-import { getFirestore, doc, updateDoc } from 'firebase/firestore';
+import { ref, update } from 'firebase/database';
+import { realtimeDb } from '../services/firebaseConfig';
 import { NotificationSettings } from './notificationSlice';
 
 export const updateNotificationSettings = async (settings: NotificationSettings) => {
@@ -10,11 +11,10 @@ export const updateNotificationSettings = async (settings: NotificationSettings)
     throw new Error("Utilisateur non authentifié.");
   }
 
-  const db = getFirestore();
-  const userRef = doc(db, 'users', user.uid);
+  const userRef = ref(realtimeDb, `userProfiles/${user.uid}`);
 
   try {
-    await updateDoc(userRef, { notificationSettings: settings });
+    await update(userRef, { notificationSettings: settings });
   } catch (error) {
     console.error("Erreur lors de la mise à jour des paramètres de notification :", error);
     throw error;

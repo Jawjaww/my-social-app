@@ -1,108 +1,84 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { View, StyleSheet } from "react-native";
-import { GiftedChat, IMessage } from "react-native-gifted-chat";
-import { useRoute, RouteProp } from "@react-navigation/native";
-import { useSelector } from "react-redux";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { GiftedChat, IMessage as GiftedIMessage } from "react-native-gifted-chat";
+import { useSelector, useDispatch } from "react-redux";
 import { selectUser } from "../../authentication/authSelectors";
-import {
-  useGetContactProfileQuery,
-  useUpdateContactNotificationTokenMutation,
-} from "../../../services/api";
-import { ContactsStackParamList } from "../../../types/sharedTypes";
-import {
-  sendPushNotification,
-  listenForNotifications,
-} from "../../../services/fcmService";
-import ContactInfoHeader from "../../../components/ContactInfoHeader";
+import { useGetMessagesQuery, useSendMessageMutation } from "../../../services/api";
+import { ChatScreenProps, IMessage as AppIMessage } from "../../../types/sharedTypes";
+import { addMessage as addMessageToRedux, setMessages } from "../messagesSlice";
+import { RootState } from "../../../store/store";
+import { addMessage, getMessages } from "../../../services/database";
+import { selectMessagesByContactUid } from '../messagesSelectors';
+import { ActivityIndicator } from 'react-native';
 
-type ChatScreenRouteProp = RouteProp<ContactsStackParamList, "Chat">;
+const convertToGiftedMessage = (message: AppIMessage): GiftedIMessage => ({
+  ...message,
+  createdAt: new Date(message.createdAt),
+});
 
-const ChatScreen: React.FC = () => {
-  const route = useRoute<ChatScreenRouteProp>();
+const ChatScreen: React.FC<ChatScreenProps> = ({ route }) => {
   const { contactUid } = route.params;
+  console.log('ChatScreen opened with contactUid:', contactUid);
+  const dispatch = useDispatch();
   const user = useSelector(selectUser);
-  const { data: contact } = useGetContactProfileQuery(contactUid);
-  const [messages, setMessages] = useState<IMessage[]>([]);
-  const [updateContactToken] = useUpdateContactNotificationTokenMutation();
+  const messages = useSelector((state: RootState) => selectMessagesByContactUid(state, contactUid));
+  const [isLoading, setIsLoading] = useState(true);
+  const [sendMessage] = useSendMessageMutation();
+
+  const memoizedMessages = useMemo(() => messages.map(convertToGiftedMessage), [messages]);
 
   useEffect(() => {
-    if (!user) return;
-
-    const subscription = listenForNotifications((notification) => {
-      if (notification.request.content.data?.senderId === contactUid) {
-        const newMessage = notification.request.content.data?.message;
-        if (typeof newMessage === "string") {
-          const parsedMessage: IMessage = JSON.parse(newMessage);
-          setMessages((prevMessages) =>
-            GiftedChat.append(prevMessages, [parsedMessage])
-          );
-        }
+    const loadMessages = async () => {
+      try {
+        setIsLoading(true);
+        console.log('Loading messages for contactUid:', contactUid);
+        const storedMessages = await getMessages(contactUid);
+        console.log('Stored messages:', JSON.stringify(storedMessages));
+        dispatch(setMessages({ channelId: contactUid, messages: storedMessages }));
+      } catch (error) {
+        console.error('Error loading messages:', error);
+      } finally {
+        setIsLoading(false);
       }
-    });
-
-    return () => {
-      subscription.remove();
     };
-  }, [user, contactUid]);
+    loadMessages();
+  }, [contactUid, dispatch]);
 
   const onSend = useCallback(
-    async (newMessages: IMessage[] = []) => {
-      if (user && contact) {
-        const [message] = newMessages;
-        if (contact.notificationToken) {
-          try {
-            await sendPushNotification(contact.notificationToken, {
-              type: "message",
-              senderId: user.uid,
-              message: JSON.stringify(message),
-            });
-          } catch (error) {
-            console.error("Failed to send push notification:", error);
-            if (
-              error instanceof Error &&
-              error.message.includes("InvalidToken")
-            ) {
-              // Marquer le token comme invalide dans la base de données
-              await updateContactToken({
-                contactUid: contact.contactUid,
-                token: "",
-              });
-            }
-          }
-        } else {
-          console.warn("Contact does not have a notification token");
-        }
-        setMessages((prevMessages) =>
-          GiftedChat.append(prevMessages, newMessages)
-        );
+    async (newMessages: GiftedIMessage[] = []) => {
+      for (const message of newMessages) {
+        const messageWithChannelId: AppIMessage = {
+          ...message,
+          _id: message._id.toString(),
+          createdAt: message.createdAt instanceof Date ? message.createdAt.getTime() : message.createdAt,
+          user: {
+            ...message.user,
+            _id: message.user._id.toString(),
+            name: message.user.name || "Unknown"
+          },
+          channelId: contactUid
+        };
+        console.log('Sending message:', messageWithChannelId);
+        dispatch(addMessageToRedux(messageWithChannelId));
+        await addMessage(messageWithChannelId);
+        await sendMessage({ userId: user?.uid || "", message: messageWithChannelId });
       }
     },
-    [user, contact, updateContactToken]
+    [sendMessage, contactUid, user, dispatch]
   );
+
+  if (isLoading) {
+    return <ActivityIndicator />;
+  }
 
   return (
-    <View style={styles.container}>
-      <ContactInfoHeader
-        contactUid={contactUid}
-        onInfoPress={() => {
-          // Navigate to contact details
-        }}
-      />
-      {user && (
-        <GiftedChat
-          messages={messages}
-          onSend={onSend}
-          user={{ _id: user.uid }}
-        />
-      )}
-    </View>
+    <GiftedChat
+      messages={memoizedMessages}
+      onSend={(newMessages) => onSend(newMessages)}
+      user={{
+        _id: user?.uid || "",
+      }}
+    />
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
 
 export default ChatScreen;

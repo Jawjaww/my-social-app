@@ -31,7 +31,7 @@ import type { IMessage } from 'react-native-gifted-chat';
 import {
   Activity,
   Contact,
-  User,
+  // User,
   AppUser,
   ProfileUser,
   Contacts,
@@ -294,9 +294,9 @@ export const api = createApi({
       },
     }),
     
-    getDiscoverUsers: builder.query<User[], void>({
-      query: () => "discoverUsers",
-    }),
+    // getDiscoverUsers: builder.query<User[], void>({
+    //   query: () => "discoverUsers",
+    // }),
     getMessages: builder.query<IMessage[], string>({
       query: (userId) => `messages/${userId}`,
     }),
@@ -850,7 +850,7 @@ export const api = createApi({
                 contactAvatarUri: data.avatarUri || null,
                 lastInteraction: data.lastInteraction || Date.now(),
                 bio: data.bio || '',
-                notificationToken: data.notificationToken || null, // Inclusion du notificationToken
+                notificationToken: data.notificationToken || null, 
               },
             };
           } else {
@@ -882,7 +882,7 @@ export const {
   useGetContactProfileQuery,
   useGetContactSuggestionsQuery,
   useGetContactsQuery,
-  useGetDiscoverUsersQuery,
+  // useGetDiscoverUsersQuery,
   useGetMessagesQuery,
   // useGetProfileUserQuery,
   useGetRecentChatsQuery,

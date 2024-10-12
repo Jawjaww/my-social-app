@@ -31,6 +31,7 @@
     "env.d.ts",
     "eslint-compat.d.ts",
     // "firebase.d.ts",
-    "hooks"
+    "hooks",
+    "expo-sqlite.d.ts"
   ]
 }

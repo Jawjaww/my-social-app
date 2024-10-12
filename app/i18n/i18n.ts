@@ -28,7 +28,6 @@ i18n
     if (err) console.error('i18n initialization error:', err);
     console.log('i18n initialized successfully');
     console.log('Current language:', i18n.language);
-    console.log('Translation test:', t('common.buttons.submit'));
   });
 
 export default i18n;

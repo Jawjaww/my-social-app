@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import store, { persistor } from "./app/store/store.ts";
 import { PersistGate } from "redux-persist/integration/react";
 import * as SplashScreen from "expo-splash-screen";
@@ -19,7 +19,8 @@ import { NavigationContainer, LinkingOptions } from "@react-navigation/native";
 import { RootStackParamList } from "./app/types/sharedTypes.ts";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import styled from "@emotion/native";
-import { useState, useEffect } from "react";
+import { SQLiteProvider } from 'expo-sqlite/next';
+import { initDatabase } from './app/services/database';
 
 // Prevent the splash screen from automatically hiding
 SplashScreen.preventAutoHideAsync();
@@ -64,40 +65,36 @@ const SafeContainer = styled(SafeAreaView)`
   background-color: ${({ theme }) => theme.colors.background};
 `;
 
-const App: React.FC = () => {
-  const [isI18nInitialized, setIsI18nInitialized] = useState(false);
-
+const App = () => {
   useEffect(() => {
-    const initI18n = async () => {
-      await i18n.init();
-      setIsI18nInitialized(true);
+    const init = async () => {
+      await initDatabase();
+      console.log("Database initialized in App.tsx");
     };
-    initI18n();
+    init();
   }, []);
-
-  if (!isI18nInitialized) {
-    return null; 
-  }
 
   return (
     <ErrorBoundary>
-      <Provider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
-          <ThemeProvider theme={theme}>
-            <SafeAreaProvider>
-              <SafeContainer>
-                <I18nextProvider i18n={i18n}>
-                  <ToastProvider>
-                    <NavigationContainer linking={linking}>
-                      <AppNavigation />
-                    </NavigationContainer>
-                  </ToastProvider>
-                </I18nextProvider>
-              </SafeContainer>
-            </SafeAreaProvider>
-          </ThemeProvider>
-        </PersistGate>
-      </Provider>
+      <SQLiteProvider databaseName="myapp.db">
+        <Provider store={store}>
+          <PersistGate loading={null} persistor={persistor}>
+            <I18nextProvider i18n={i18n}>
+              <ThemeProvider theme={theme}>
+                <SafeAreaProvider>
+                  <SafeContainer>
+                    <ToastProvider>
+                      <NavigationContainer linking={linking}>
+                        <AppNavigation />
+                      </NavigationContainer>
+                    </ToastProvider>
+                  </SafeContainer>
+                </SafeAreaProvider>
+              </ThemeProvider>
+            </I18nextProvider>
+          </PersistGate>
+        </Provider>
+      </SQLiteProvider>
     </ErrorBoundary>
   );
 };

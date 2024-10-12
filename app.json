@@ -9,7 +9,7 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#dedee4"
+      "backgroundColor": "#007AFF"
     },
     "userInterfaceStyle": "light",
     "updates": {
@@ -43,7 +43,10 @@
         "RECORD_AUDIO",
         "RECEIVE_BOOT_COMPLETED",
         "SCHEDULE_EXACT_ALARM",
-        "POST_NOTIFICATIONS"
+        "POST_NOTIFICATIONS",
+        "READ_MEDIA_AUDIO",
+        "READ_MEDIA_IMAGES",
+        "READ_MEDIA_VIDEO"
       ],
       "package": "com.brainsmosaique.MySocialApp",
       "intentFilters": [
@@ -62,8 +65,7 @@
             "DEFAULT"
           ]
         }
-      ],
-      "googleServicesFile": "./google-services.json"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -76,7 +78,6 @@
     "owner": "jawjaww",
     "plugins": [
       [
-        
         "@sentry/react-native/expo",
         {
           "organization": "brains-mosaic",
@@ -88,11 +89,13 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/notification-icon.png",
-          "color": "#ffffff",
-          "sounds": [
-            "./assets/notification-sound.wav"
-          ]
+          "icon": "./assets/notification-icon.png"
+        }
+      ],
+      [
+        "expo-document-picker",
+        {
+          "iCloudContainerEnvironment": "Production"
         }
       ]
     ],

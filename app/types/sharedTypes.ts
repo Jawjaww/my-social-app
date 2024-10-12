@@ -1,8 +1,8 @@
 import { RouteProp, CompositeNavigationProp } from "@react-navigation/native";
-
 import { NavigatorScreenParams } from '@react-navigation/native';
 import { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
-
+import { IMessage as GiftedIMessage } from "react-native-gifted-chat";
+import { IMessage as GiftedChatMessage } from 'react-native-gifted-chat';
 
 // Shared Data Types
 export interface Activity {
@@ -22,14 +22,14 @@ export interface Activity {
     [key: string]: any;
   };
 }
-export interface User {
-  uid: string;
-  id: string;
-  email: string | null;
-  username: string | null;
-  avatarUri: string | null;
-  emailVerified: boolean;
-}
+// export interface User {
+//   uid: string;
+//   id: string;
+//   email: string | null;
+//   username: string | null;
+//   avatarUri: string | null;
+//   emailVerified: boolean;
+// }
 
 // Auth types
 export interface AppUser {
@@ -48,7 +48,6 @@ export interface ProfileUser {
   isSignUpComplete: boolean;
   // Add other profile specific fields here
 };
-
 export interface Contacts {
   [contactUid: string]: Contact;
 }
@@ -60,7 +59,27 @@ export interface Contact {
   contactAvatarUri?: string | null;
   lastInteraction: number;
   bio?: string;
-  notificationToken?: string | null; // Ajout du notificationToken
+  notificationToken?: string | null; 
+}
+
+// Messages types
+// GiftedChat types
+
+export interface IMessage extends Omit<GiftedChatMessage, 'createdAt'> {
+  createdAt: number | Date; // Supprimez 'string' comme type possible
+  channelId: string;
+  sent?: boolean;
+  received?: boolean;
+}
+
+export interface SQLiteMessage {
+  _id: string;
+  text: string;
+  createdAt: string;
+  user: string; // JSON stringified
+  channelId: string;
+  sent: number; // 0 or 1
+  received: number; // 0 or 1
 }
 
 // Navigation types
@@ -160,3 +179,7 @@ export interface Category {
   id: string;
   name: string;
 }
+
+export type MessageSubscription = {
+  remove: () => void;
+};

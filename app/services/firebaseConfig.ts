@@ -17,7 +17,7 @@ import { getStorage } from "firebase/storage";
 import { getMessaging } from "firebase/messaging";
 import { Platform } from "react-native";
 
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: API_KEY,
   authDomain: AUTH_DOMAIN,
   projectId: FIREBASE_PROJECT_ID,
@@ -37,7 +37,7 @@ const auth = initializeAuth(app, {
 const realtimeDb = getDatabase(app);
 const storage = getStorage(app);
 
-// Initialiser messaging seulement si la plateforme le supporte
+// Initialize messaging only if the platform supports it
 // let messagingInstance;
 // if (Platform.OS !== 'web') {
 //   messagingInstance = getMessaging(app);

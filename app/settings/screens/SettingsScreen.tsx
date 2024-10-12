@@ -1,18 +1,24 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { useTranslation } from 'react-i18next';
 import styled from '@emotion/native';
-
-const Container = styled.View`
-  flex: 1;
-  justify-content: center;
-  align-items: center;
-`;
+import pickNotificationSound from '../../services/notificationSoundService';
+import { 
+  CenteredContainer, 
+  Header, 
+  Button, 
+  ButtonText 
+} from '../../components/StyledComponents';
 
 const SettingsScreen = () => {
+  const { t } = useTranslation();
+
   return (
-    <Container>
-      <Text>Paramètres</Text>
-    </Container>
+    <CenteredContainer>
+      <Header>{t('settings.title')}</Header>
+      <Button onPress={pickNotificationSound}>
+        <ButtonText>{t('settings.chooseNotificationSound')}</ButtonText>
+      </Button>
+    </CenteredContainer>
   );
 };
 

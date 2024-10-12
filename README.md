@@ -1,12 +1,12 @@
-# My Social App Boilerplate
+# My Social App Boilerplate ( in progress )
 
 ## Description
-This project is a boilerplate for a social application using React Native, Firebase and Recoil. It includes authentication, navigation, and state management features.
+This project is my boilerplate for a social application using React Native, Firebase and Redux. It includes authentication, navigation, and state management features.
 
 ## Features
 - Authentication with Firebase
 - Navigation with React Navigation
-- Status management with Recoil
+- Status management with Redux-RTK
 - Basic user interface
 
 ## Facility

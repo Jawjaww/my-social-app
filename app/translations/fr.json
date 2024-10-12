@@ -287,6 +287,10 @@
     "successUpdate": "Mot de passe mis à jour avec succès",
     "title": "Réinitialiser le mot de passe"
   },
+  "settings": {
+    "title": "Paramètres",
+    "chooseNotificationSound": "Choisir un son de notification"
+  },
   "signIn": {
     "back": "Retour",
     "button": "Se connecter",

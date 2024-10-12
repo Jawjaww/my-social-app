@@ -9,7 +9,7 @@ import { ThunkAction, Action } from "@reduxjs/toolkit";
 const persistConfig = {
   key: "root",
   storage: AsyncStorage,
-  whitelist: ["auth", "profile", "contacts", "messages"], // Add other slices you want to persist
+  whitelist: ["auth", "profile", "contacts"], // Removed "messages" from the whitelist
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -24,18 +24,11 @@ const store = configureStore({
     }).concat(api.middleware as any),
 });
 
-// Configure Redux DevTools
-// if (process.env.NODE_ENV !== 'production') {
-//   const { composeWithDevTools } = require('redux-devtools-extension');
-//   store.dispatch = composeWithDevTools(store.dispatch);
-// }
-
 setupListeners(store.dispatch);
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 export type AppThunk = ThunkAction<void, RootState, unknown, Action<string>>;
-
 
 export const persistor = persistStore(store);
 
