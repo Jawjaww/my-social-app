@@ -35,9 +35,9 @@ export const addMessage = async (message: IMessage) => {
   }
   try {
     console.log('Adding message to database:', message);
-    const userLocale = getLocales()[0].languageCode;
-    const dateLocale = userLocale?.startsWith('fr') ? fr : enUS; // Choisissez la locale appropriée
-    const createdAt = format(new Date(message.createdAt), "yyyy-MM-dd'T'HH:mm:ss.SSSxxx", { locale: dateLocale });
+    const userLocale = getLocales()[0];
+    console.log('User locale in database:', userLocale); // Pour le débogage
+    const createdAt = format(new Date(message.createdAt), "yyyy-MM-dd'T'HH:mm:ss.SSSxxx", { locale: fr });
     await db.execAsync(`
       INSERT INTO messages (id, text, createdAt, user, channelId) 
       VALUES ('${message._id}', '${message.text}', '${createdAt}', '${JSON.stringify(message.user)}', '${message.channelId}')

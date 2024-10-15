@@ -10,6 +10,7 @@ import { addMessage, getMessages } from "../../../services/database";
 import { selectMessagesByContactUid } from '../messagesSelectors';
 import { ActivityIndicator } from 'react-native';
 import { format } from 'date-fns';
+import { fr, enUS } from 'date-fns/locale';
 import { getLocales } from 'expo-localization';
 
 const convertToGiftedMessage = (message: AppIMessage): GiftedIMessage => ({
@@ -26,7 +27,16 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ route }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [sendMessage] = useSendMessageMutation();
 
-  const userLocale = getLocales()[0].languageCode || 'en'; // Utiliser 'en' comme fallback
+  const userLocale = getLocales()[0];
+  const dateLocale = userLocale.languageCode === 'fr' ? fr : enUS;
+
+  const formatDate = (date: Date | number) => {
+    return format(new Date(date), 'dd MMMM yyyy', { locale: dateLocale });
+  };
+
+  const formatTime = (date: Date | number) => {
+    return format(new Date(date), 'HH:mm', { locale: dateLocale });
+  };
 
   const memoizedMessages = useMemo(() => messages.map(convertToGiftedMessage), [messages]);
 
@@ -83,6 +93,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ route }) => {
             color: 'white',
           },
         }}
+        time={formatTime(props.currentMessage.createdAt)}
       />
     );
   };
@@ -101,7 +112,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ route }) => {
       renderTime={renderTime}
       dateFormat="DD MMMM YYYY"
       timeFormat="HH:mm"
-      locale={userLocale}
+      locale={userLocale.languageCode || 'en'}
     />
   );
 };
