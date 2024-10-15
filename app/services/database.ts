@@ -1,6 +1,9 @@
 import { SQLiteDatabase, openDatabaseSync } from 'expo-sqlite/next';
 import * as Sentry from '@sentry/react-native';
 import { IMessage } from '../types/sharedTypes';
+import { format, parseISO } from 'date-fns';
+import { getLocales } from 'expo-localization';
+import { fr, enUS } from 'date-fns/locale'; // Importez les locales dont vous avez besoin
 
 let db: SQLiteDatabase | null = null;
 
@@ -32,12 +35,12 @@ export const addMessage = async (message: IMessage) => {
   }
   try {
     console.log('Adding message to database:', message);
-    const createdAtString = message.createdAt instanceof Date 
-      ? message.createdAt.toISOString() 
-      : new Date(message.createdAt).toISOString();
+    const userLocale = getLocales()[0].languageCode;
+    const dateLocale = userLocale?.startsWith('fr') ? fr : enUS; // Choisissez la locale appropriée
+    const createdAt = format(new Date(message.createdAt), "yyyy-MM-dd'T'HH:mm:ss.SSSxxx", { locale: dateLocale });
     await db.execAsync(`
       INSERT INTO messages (id, text, createdAt, user, channelId) 
-      VALUES ('${message._id}', '${message.text}', '${createdAtString}', '${JSON.stringify(message.user)}', '${message.channelId}')
+      VALUES ('${message._id}', '${message.text}', '${createdAt}', '${JSON.stringify(message.user)}', '${message.channelId}')
     `);
     console.log('Message added successfully');
   } catch (error) {
@@ -66,7 +69,7 @@ export const getMessages = async (channelId: string): Promise<IMessage[]> => {
     const messages: IMessage[] = result.map(row => ({
       _id: row.id,
       text: row.text,
-      createdAt: new Date(parseInt(row.createdAt)).getTime(), // Convert to timestamp
+      createdAt: parseISO(row.createdAt).getTime(),
       user: JSON.parse(row.user),
       channelId: row.channelId,
     }));

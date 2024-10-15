@@ -1,23 +1,22 @@
-import { Middleware } from 'redux';
+import { createSerializableStateInvariantMiddleware } from '@reduxjs/toolkit';
 
-const serializeDate = (value: any): any => {
-  if (value instanceof Date) {
-    return value.toISOString();
+const isPlainObject = (obj: any) => {
+  if (typeof obj !== 'object' || obj === null) return false;
+  let proto = obj;
+  while (Object.getPrototypeOf(proto) !== null) {
+    proto = Object.getPrototypeOf(proto);
   }
-  if (Array.isArray(value)) {
-    return value.map(serializeDate);
-  }
-  if (typeof value === 'object' && value !== null) {
-    return Object.fromEntries(
-      Object.entries(value).map(([key, val]) => [key, serializeDate(val)])
-    );
-  }
-  return value;
+  return Object.getPrototypeOf(obj) === proto;
 };
 
-const serializationMiddleware: Middleware = () => next => action => {
-  const serializedAction = serializeDate(action);
-  return next(serializedAction);
-};
+const serializableCheck = createSerializableStateInvariantMiddleware({
+  isSerializable: (value: any) => {
+    if (typeof value === 'string' && !isNaN(Date.parse(value))) {
+      // C'est probablement une date ISO
+      return true;
+    }
+    return isPlainObject(value) || Array.isArray(value) || ['string', 'number', 'boolean', 'undefined'].includes(typeof value);
+  },
+});
 
-export default serializationMiddleware;
+export default serializableCheck;

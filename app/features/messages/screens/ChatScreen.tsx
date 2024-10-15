@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { GiftedChat, IMessage as GiftedIMessage } from "react-native-gifted-chat";
+import { GiftedChat, IMessage as GiftedIMessage, Time } from "react-native-gifted-chat";
 import { useSelector, useDispatch } from "react-redux";
 import { selectUser } from "../../authentication/authSelectors";
 import { useGetMessagesQuery, useSendMessageMutation } from "../../../services/api";
@@ -9,6 +9,8 @@ import { RootState } from "../../../store/store";
 import { addMessage, getMessages } from "../../../services/database";
 import { selectMessagesByContactUid } from '../messagesSelectors';
 import { ActivityIndicator } from 'react-native';
+import { format } from 'date-fns';
+import { getLocales } from 'expo-localization';
 
 const convertToGiftedMessage = (message: AppIMessage): GiftedIMessage => ({
   ...message,
@@ -23,6 +25,8 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ route }) => {
   const messages = useSelector((state: RootState) => selectMessagesByContactUid(state, contactUid));
   const [isLoading, setIsLoading] = useState(true);
   const [sendMessage] = useSendMessageMutation();
+
+  const userLocale = getLocales()[0].languageCode || 'en'; // Utiliser 'en' comme fallback
 
   const memoizedMessages = useMemo(() => messages.map(convertToGiftedMessage), [messages]);
 
@@ -66,6 +70,23 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ route }) => {
     [sendMessage, contactUid, user, dispatch]
   );
 
+  const renderTime = (props: any) => {
+    return (
+      <Time
+        {...props}
+        timeFormat="HH:mm"
+        timeTextStyle={{
+          left: {
+            color: 'black',
+          },
+          right: {
+            color: 'white',
+          },
+        }}
+      />
+    );
+  };
+
   if (isLoading) {
     return <ActivityIndicator />;
   }
@@ -77,6 +98,10 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ route }) => {
       user={{
         _id: user?.uid || "",
       }}
+      renderTime={renderTime}
+      dateFormat="DD MMMM YYYY"
+      timeFormat="HH:mm"
+      locale={userLocale}
     />
   );
 };

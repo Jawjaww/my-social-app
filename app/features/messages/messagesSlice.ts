@@ -20,9 +20,9 @@ const messagesSlice = createSlice({
       }
       const messageWithTimestamp = {
         ...action.payload,
-        createdAt: action.payload.createdAt instanceof Date 
-          ? action.payload.createdAt.getTime() 
-          : action.payload.createdAt,
+        createdAt: typeof action.payload.createdAt === 'number'
+          ? action.payload.createdAt
+          : new Date(action.payload.createdAt).getTime(),
       };
       state.messages[channelId].unshift(messageWithTimestamp);
     },
@@ -30,9 +30,9 @@ const messagesSlice = createSlice({
       const { channelId, messages } = action.payload;
       state.messages[channelId] = messages.map(message => ({
         ...message,
-        createdAt: message.createdAt instanceof Date 
-          ? message.createdAt.getTime() 
-          : message.createdAt,
+        createdAt: typeof message.createdAt === 'number'
+          ? message.createdAt
+          : new Date(message.createdAt).getTime(),
       }));
     },
   },

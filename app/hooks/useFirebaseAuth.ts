@@ -109,7 +109,7 @@ export const useFirebaseAuth = () => {
       console.log("Fetching profile for UID:", currentUid);
       fetchAndUpdateProfile(currentUid);
     } else if (profile) {
-      console.log("Profile loaded:", profile);
+      // console.log("Profile loaded:", profile);
     }
   }, [currentUid, profile, fetchAndUpdateProfile]);
 

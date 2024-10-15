@@ -66,12 +66,13 @@ export interface Contact {
 // GiftedChat types
 
 export interface IMessage extends Omit<GiftedChatMessage, 'createdAt'> {
-  createdAt: number | Date; // Supprimez 'string' comme type possible
+  createdAt: number;
   channelId: string;
   sent?: boolean;
   received?: boolean;
 }
 
+// SQLite types
 export interface SQLiteMessage {
   _id: string;
   text: string;

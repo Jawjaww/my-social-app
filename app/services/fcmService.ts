@@ -70,7 +70,7 @@ export function initializeMessaging() {
       const message: IMessage = {
         _id: remoteMessage.messageId || "",
         text: typeof remoteMessage.data.text === 'string' ? remoteMessage.data.text : '',
-        createdAt: remoteMessage.sentTime ? new Date(remoteMessage.sentTime) : new Date(),
+        createdAt: remoteMessage.sentTime ? remoteMessage.sentTime : Date.now(),
         user: typeof remoteMessage.data.user === "string" ? JSON.parse(remoteMessage.data.user) : remoteMessage.data.user,
         channelId: typeof remoteMessage.data.channelId === 'string' ? remoteMessage.data.channelId : '',
         sent: true,
