@@ -1,15 +1,82 @@
-# My Social App Boilerplate ( in progress )
+# My Social App - Scalable Social Platform
 
 ## Description
-This project is my boilerplate for a social application using React Native, Firebase and Redux. It includes authentication, navigation, and state management features.
+A modern, scalable social application built with React Native, leveraging cloud infrastructure and microservices architecture. The platform combines powerful technologies to deliver a robust, secure, and performant social networking experience.
 
-## Features
+## Architecture & Infrastructure
+
+### Cloud Infrastructure
+- **Oracle Cloud Infrastructure (OCI)**
+  - Kubernetes Engine (OKE) for container orchestration
+  - Virtual Cloud Network (VCN) for networking
+  - Object Storage for file management
+  - Identity and Access Management (IAM) for security
+
+### Backend Services
+- **Parse Server**
+  - Custom cloud functions for business logic
+  - Real-time messaging capabilities
+  - Push notifications system
+  - File storage and management
+
+- **MongoDB**
+  - Self-hosted on Kubernetes
+  - Persistent storage with OCI Block Volume
+  - Secure authentication and authorization
+  - Data replication for high availability
+
+### Frontend
+- **React Native & Expo**
+  - Cross-platform mobile application
+  - Push notifications with Firebase Cloud Messaging (FCM)
+  - Real-time messaging capabilities
+  - Offline-first architecture with local SQLite database
+
+### Media Management
+- **Cloudinary**
+  - Avatar and image management
+  - Automatic image optimization
+  - Secure file upload and delivery
+
+## Key Features
 - Authentication with Firebase
-- Navigation with React Navigation
-- Status management with Redux-RTK
-- Basic user interface
+- Real-time messaging
+- Push notifications via FCM
+- Profile management with avatar support
+- Contact management
+- Secure data storage
+- Offline capabilities
+- Scalable infrastructure
 
-## Facility
+## Technical Stack
+- **Frontend**: React Native, Expo, Redux Toolkit
+- **Backend**: Parse Server, Node.js
+- **Database**: MongoDB
+- **Cloud**: Oracle Cloud Infrastructure
+- **Container Orchestration**: Kubernetes
+- **Media**: Cloudinary
+- **Push Notifications**: Firebase Cloud Messaging
+- **Authentication**: Firebase Auth
+- **Local Storage**: SQLite
+
+## Security Features
+- Kubernetes Secrets management
+- Secure environment variables
+- API key protection
+- Database authentication
+- Network security policies
+- Encrypted communication
+
+## Installation & Deployment
+
+### Prerequisites
+- Node.js and npm
+- Docker and kubectl
+- OCI CLI configured
+- Firebase project setup
+- Cloudinary account
+
+### Local Development
 1. Clone the repository:
     git clone https://github.com/jawjaww/my-social-app.git
     cd my_social_app

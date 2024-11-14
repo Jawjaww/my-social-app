@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloud-code-config
+  namespace: parse-server
+data:
+  main.js: |
+    console.log('Starting cloud code initialization...');
+    
+    try {
+      console.log('Defining testPush function...');
+      
+      Parse.Cloud.define('testPush', async (request) => {
+        console.log('testPush function called with request:', request);
+        try {
+          console.log('Creating Parse.Query...');
+          const query = new Parse.Query(Parse.Installation);
+          
+          console.log('Preparing push data...');
+          const pushData = {
+            where: query,
+            data: {
+              alert: "Test de notification",
+              title: "Test",
+              badge: 1
+            }
+          };
+          
+          console.log('Sending push with data:', pushData);
+          const result = await Parse.Push.send(pushData, { useMasterKey: true });
+          
+          console.log('Push sent successfully:', result);
+          return { success: true, result };
+          
+        } catch (error) {
+          console.error('Error in testPush:', error);
+          throw error;
+        }
+      });
+      
+      console.log('Cloud code initialization completed successfully');
+    } catch (error) {
+      console.error('Error during cloud code initialization:', error);
+      throw error;
+    }

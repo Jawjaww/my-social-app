@@ -14,6 +14,25 @@ google-services.json.base64
 test-google-services.json
 GoogleService-Info.plist
 
+# Kubernetes
+k8s/parse-server/secrets.yaml
+k8s/parse-server/db-secrets.yaml
+k8s/parse-server/firebase-secret.yaml
+k8s/parse-server/firebase-api-secret.yaml
+k8s/parse-server/push-secrets.yaml
+k8s/mongodb/secrets.yaml
+
+# Oracle Cloud Infrastructure
+.oci/
+.oci/config
+.oci/oci_api_key.pem
+
+# Oracle Wallet files
+wallet/
+*.sso
+*.p12
+*.jks
+
 # Platform-specific files
 *.orig.*
 *.jks

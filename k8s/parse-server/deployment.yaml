@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: parse-server
+  namespace: parse-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: parse-server
+  template:
+    metadata:
+      labels:
+        app: parse-server
+    spec:
+      containers:
+      - name: parse-server
+        image: parseplatform/parse-server:5.4.0
+        env:
+        - name: PARSE_SERVER_DATABASE_URI
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-credentials
+              key: DATABASE_URI
+        - name: PARSE_SERVER_FILES_ADAPTER
+          value: "@parse/fs-files-adapter"
+        - name: PARSE_SERVER_FILES_ADAPTER_OPTIONS
+          value: '{"filesSubDirectory": "./files"}'
+        - name: PARSE_SERVER_URL
+          valueFrom:
+            secretKeyRef:
+              name: parse-server-config
+              key: INTERNAL_SERVER_URL
+        - name: PUBLIC_SERVER_URL
+          valueFrom:
+            secretKeyRef:
+              name: parse-server-config
+              key: PUBLIC_SERVER_URL
+        - name: PARSE_SERVER_APPLICATION_ID
+          valueFrom:
+            secretKeyRef:
+              name: parse-server-config
+              key: APP_ID
+        - name: PARSE_SERVER_MASTER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: parse-server-config
+              key: MASTER_KEY
+        - name: PARSE_SERVER_PUSH
+          value: |
+            {
+              "android": {
+                "apiKey": "$(FIREBASE_API_KEY)"
+              }
+            }
+        - name: PARSE_SERVER_MOUNT_PATH
+          value: "/parse"
+        - name: PARSE_SERVER_CLOUD
+          value: "/cloud/main.js"
+        - name: VERBOSE
+          value: "true"
+        - name: PARSE_SERVER_LOG_LEVEL
+          value: "debug"
+        envFrom:
+        - secretRef:
+            name: firebase-api-key
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1.5Gi"
+            cpu: "500m"
+        volumeMounts:
+        - name: parse-files
+          mountPath: /parse-server/files
+        - name: cloud-code-volume
+          mountPath: /cloud
+      volumes:
+      - name: parse-files
+        persistentVolumeClaim:
+          claimName: parse-server-files
+      - name: cloud-code-volume
+        configMap:
+          name: cloud-code-config

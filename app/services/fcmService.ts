@@ -1,40 +1,33 @@
 import * as Notifications from "expo-notifications";
-import Constants from "expo-constants";
 import { Platform } from "react-native";
 import messaging from "@react-native-firebase/messaging";
 import { IMessage } from "../types/sharedTypes";
 import { addMessage } from "./database";
+import Parse from 'parse/react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { APP_IDENTIFIER } from '@env';
+import { PARSE_SERVER_URL, PARSE_APP_ID, PARSE_MASTER_KEY } from '@env';
+
+Parse.setAsyncStorage(AsyncStorage);
+Parse.initialize(PARSE_APP_ID);
+Parse.serverURL = PARSE_SERVER_URL;
 
 export async function registerForPushNotificationsAsync() {
-  let token;
-
-  if (Constants.isDevice) {
-    const { status: existingStatus } =
-      await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-    if (existingStatus !== "granted") {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
-    if (finalStatus !== "granted") {
-      console.warn("Failed to get push token for push notification!");
-      return;
-    }
-    token = (await Notifications.getExpoPushTokenAsync()).data;
-  } else {
-    console.log("Push notifications are not available on emulator/simulator");
-  }
-
-  if (Platform.OS === "android") {
-    Notifications.setNotificationChannelAsync("default", {
-      name: "default",
-      importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: "#FF231F7C",
+  const token = await messaging().getToken();
+  
+  if (token) {
+    console.log("FCM Token:", token);
+    const installation = new Parse.Installation();
+    await installation.save({
+      deviceType: Platform.OS,
+      deviceToken: token,
+      pushType: 'fcm',
+      appIdentifier: APP_IDENTIFIER,
+      parseVersion: '5.4.0'
     });
+    return token;
   }
-
-  return token;
+  return null;
 }
 
 export function listenForNotifications(
@@ -43,25 +36,16 @@ export function listenForNotifications(
   return Notifications.addNotificationReceivedListener(handleNotification);
 }
 
-export async function sendPushNotification(
-  expoPushToken: string,
-  message: any
-) {
-  const response = await fetch("https://exp.host/--/api/v2/push/send", {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Accept-encoding": "gzip, deflate",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      to: expoPushToken,
-      sound: "default",
-      data: message,
-    }),
-  });
-
-  return response;
+export async function sendPushNotification(recipientId: string, message: any) {
+  try {
+    await Parse.Cloud.run('sendPush', {
+      userId: recipientId,
+      message: message
+    });
+  } catch (error) {
+    console.error('Erreur envoi notification:', error);
+    throw error;
+  }
 }
 
 export function initializeMessaging() {
@@ -88,8 +72,8 @@ export function initializeMessaging() {
 export async function sendMessage(recipientId: string, message: any) {
   const token = await messaging().getToken();
   if (token) {
-    // La méthode 'send' n'existe pas sur l'objet messaging
-    // Vous devrez utiliser une autre méthode pour envoyer le message, par exemple :
+    // 'send' method is not available on the messaging object
+    // You will need to use another method to send the message, for example:
     return messaging().sendMessage({
       data: {
         type: "text_message",
@@ -117,25 +101,14 @@ export async function getFCMToken() {
   const token = await messaging().getToken();
   if (token) {
     console.log("FCM Token:", token);
-    // Enregistrez le token dans votre base de données ou envoyez-le à votre serveur
+    // Save the token in your database or send it to your server
   } else {
     console.warn("Failed to get FCM token");
   }
   return token;
 }
 
-// Supprimer les écouteurs globaux
-// Notifications.addNotificationReceivedListener(notification => {
-//   console.log('Notification received:', notification);
-//   // Gérez la notification ici
-// });
-
-// Notifications.addNotificationResponseReceivedListener(response => {
-//   console.log('Notification response:', response);
-//   // Gérez la réponse de l'utilisateur ici
-// });
-
-// Ajouter des fonctions pour s'abonner et se désabonner des notifications
+// Add functions to subscribe and unsubscribe from notifications
 export function subscribeToNotifications(handleNotification: (notification: Notifications.Notification) => void) {
   const subscription = Notifications.addNotificationReceivedListener(handleNotification);
   return () => subscription.remove();

@@ -12,4 +12,8 @@ declare module "@env" {
   export const DATABASE_URL: string;
   export const CLOUDINARY_CLOUD_NAME: string;
   export const CLOUDINARY_UPLOAD_PRESET: string;
+  export const PARSE_SERVER_URL: string;
+  export const PARSE_APP_ID: string;
+  export const PARSE_MASTER_KEY: string;
+  export const APP_IDENTIFIER: string;
 }

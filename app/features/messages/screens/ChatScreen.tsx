@@ -12,6 +12,9 @@ import { ActivityIndicator } from 'react-native';
 import { format } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 import { getLocales } from 'expo-localization';
+import { selectProfile } from '../../profile/profileSelectors';
+import { selectContacts } from '../../contacts/contactsSelectors';
+import AvatarPhoto from '../../../components/AvatarPhoto';
 
 const convertToGiftedMessage = (message: AppIMessage): GiftedIMessage => ({
   ...message,
@@ -20,8 +23,10 @@ const convertToGiftedMessage = (message: AppIMessage): GiftedIMessage => ({
 
 const ChatScreen: React.FC<ChatScreenProps> = ({ route }) => {
   const { contactUid } = route.params;
-  console.log('ChatScreen opened with contactUid:', contactUid);
   const dispatch = useDispatch();
+  const profile = useSelector(selectProfile);
+  const contacts = useSelector(selectContacts);
+  const contact = contacts[contactUid];
   const user = useSelector(selectUser);
   const messages = useSelector((state: RootState) => selectMessagesByContactUid(state, contactUid));
   const [isLoading, setIsLoading] = useState(true);
@@ -107,8 +112,23 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ route }) => {
       messages={memoizedMessages}
       onSend={(newMessages) => onSend(newMessages)}
       user={{
-        _id: user?.uid || "",
+        _id: profile?.uid || "",
+        name: profile?.username || "",
+        avatar: profile?.avatarUrl ?? profile?.avatarUri ?? ''
       }}
+      renderAvatar={(props) => (
+        <AvatarPhoto
+          size={36}
+          avatarSource={props.currentMessage.user._id === profile?.uid
+            ? profile?.avatarUrl ?? profile?.avatarUri
+            : contact?.contactAvatarUrl
+          }
+          username={props.currentMessage.user._id === profile?.uid
+            ? profile?.username
+            : contact?.contactUsername
+          }
+        />
+      )}
       renderTime={renderTime}
       dateFormat="DD MMMM YYYY"
       timeFormat="HH:mm"
@@ -116,5 +136,5 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ route }) => {
     />
   );
 };
-
+  
 export default ChatScreen;
