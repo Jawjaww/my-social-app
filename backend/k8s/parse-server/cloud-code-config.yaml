@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloud-code-config
+  namespace: parse-server
+data:
+  main.js: |
+    const admin = require('firebase-admin');
+    const serviceAccount = require('./firebase-secret.json'); // Chemin vers votre clé de compte de service
+
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      databaseURL: "https://<YOUR_PROJECT_ID>.firebaseio.com"
+    });
+
+    Parse.Cloud.define('sendPushNotification', async (request) => {
+      const { userId, data } = request.params;
+      try {
+        // Récupérer le token FCM de l'utilisateur depuis Parse Installation
+        const installationQuery = new Parse.Query(Parse.Installation);
+        installationQuery.equalTo('userId', userId);
+        const installation = await installationQuery.first({ useMasterKey: true });
+
+        if (!installation) {
+          throw new Error('Installation not found for user');
+        }
+
+        const fcmToken = installation.get('fcmToken');
+        if (!fcmToken) {
+          throw new Error('FCM token not found for user');
+        }
+
+        const message = {
+          token: fcmToken,
+          notification: {
+            title: data.title || 'Notification',
+            body: data.body || 'Vous avez une nouvelle notification',
+          },
+          data: data.customData || {},
+        };
+
+        const response = await admin.messaging().send(message);
+        console.log('Successfully sent message:', response);
+        return { success: true };
+      } catch (error) {
+        console.error('Error sending message:', error);
+        throw error;
+      }
+    });

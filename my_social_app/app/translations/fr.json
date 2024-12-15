@@ -1,0 +1,332 @@
+{
+  "common": {
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "buttons": {
+      "submit": "Soumettre",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "delete": "Supprimer",
+      "edit": "Modifier",
+      "back": "Retour"
+    },
+    "labels": {
+      "email": "Adresse e-mail",
+      "password": "Mot de passe",
+      "username": "Nom d'utilisateur"
+    },
+    "placeholders": {
+      "email": "Entrez votre adresse e-mail",
+      "password": "Entrez votre mot de passe",
+      "username": "Entrez votre nom d'utilisateur"
+    },
+    "errors": {
+      "required": "Ce champ est requis",
+      "invalidEmail": "Adresse e-mail invalide",
+      "passwordMismatch": "Les mots de passe ne correspondent pas",
+      "generic": "Une erreur s'est produite."
+    },
+    "success": {
+      "generic": "Opération réussie"
+    }
+  },
+  "auth": {
+    "signIn": {
+      "title": "Connexion",
+      "button": "Se connecter",
+      "forgotPassword": "Mot de passe oublié ?",
+      "noAccount": "Pas encore de compte ?",
+      "createAccount": "Créer un compte",
+      "errors": {
+        "emailAlreadyInUse": "Cette adresse e-mail est déjà utilisée.",
+        "signUpFailed": "Une erreur s'est produite lors de l'inscription. Veuillez vérifier vos informations de connexion.",
+        "invalidCredentials": "Identifiants invalides. Veuillez vérifier votre email et mot de passe."
+      }
+    },
+    "signUp": {
+      "title": "Inscription",
+      "button": "S'inscrire",
+      "alreadyHaveAccount": "Vous avez déjà un compte ?"
+    },
+    "forgotPassword": {
+      "success": "Un e-mail de réinitialisation a été envoyé à votre adresse.",
+      "error": {
+        "generic": "Une erreur s'est produite lors de l'envoi de l'e-mail de réinitialisation.",
+        "userNotFound": "Aucun utilisateur trouvé avec cette adresse e-mail.",
+        "invalidEmail": "L'adresse e-mail fournie n'est pas valide."
+      }
+    },
+    "resetPassword": {
+      "title": "Réinitialiser le mot de passe",
+      "button": "Définir le nouveau mot de passe",
+      "success": "Votre mot de passe a été réinitialisé avec succès",
+      "timeLeft": "Temps restant : {seconds} secondes"
+    },
+    "verifyEmail": {
+      "title": "Vérifier votre e-mail",
+      "instructions": "Un e-mail de vérification a été envoyé à {email}. Veuillez vérifier votre boîte de réception et cliquer sur le lien pour vérifier votre adresse e-mail.",
+      "resendButton": "Renvoyer l'e-mail de vérification",
+      "success": "Votre e-mail a été vérifié avec succès"
+    }
+  },
+  "username": {
+    "choose": "Choisissez un nom d'utilisateur",
+    "placeholder": "Entrez votre nom d'utilisateur",
+    "available": "Le nom d'utilisateur {username} est disponible",
+    "taken": "Le nom d'utilisateur {username} est déjà pris",
+    "loading": "Vérification de la disponibilité...",
+    "required": "Le nom d'utilisateur est requis",
+    "tooShort": "Le nom d'utilisateur est trop court",
+    "tooLong": "Le nom d'utilisateur est trop long",
+    "invalidCharacters": "Le nom d'utilisateur contient des caractères invalides",
+    "noSpaces": "Le nom d'utilisateur ne doit pas contenir d'espaces",
+    "success": "Nom d'utilisateur mis à jour avec succès",
+    "error": "Erreur lors de la mise à jour du nom d'utilisateur"
+  },
+  "errors": {
+    "auth/invalid-email": "L'adresse e-mail est invalide.",
+    "auth/user-disabled": "Ce compte utilisateur a été désactivé.",
+    "auth/user-not-found": "Aucun utilisateur trouvé avec cette adresse e-mail.",
+    "auth/wrong-password": "Le mot de passe est incorrect.",
+    "auth/invalid-credential": "Les informations d'identification fournies sont invalides.",
+    "auth/email-already-in-use": "Cette adresse e-mail est déjà utilisée.",
+    "auth/weak-password": "Le mot de passe est trop faible. Veuillez utiliser un mot de passe plus fort.",
+    "auth/network-request-failed": "Problème de connexion. Veuillez vérifier votre connexion internet."
+  },
+  "changePassword": {
+    "confirmNewPassword": "Confirmer le nouveau mot de passe",
+    "currentPassword": "Mot de passe actuel",
+    "newPassword": "Nouveau mot de passe",
+    "success": "Mot de passe mis à jour avec succès",
+    "title": "Changer le mot de passe",
+    "updateButton": "Mettre à jour le mot de passe"
+  },
+  "deleteAccount": {
+    "button": "Confirmer",
+    "confirmMessage": "Êtes-vous sûr de vouloir supprimer définitivement votre compte ? Cette action est irréversible.",
+    "confirmTitle": "Supprimer le compte",
+    "error": "Une erreur s'est produite lors de la suppression de votre compte. Veuillez réessayer.",
+    "success": "Votre compte a été supprimé avec succès.",
+    "title": "Supprimer le compte",
+    "passwordPlaceholder": "Entrez votre mot de passe pour confirmer"
+  },
+  "editusername": {
+    "error": {
+      "generic": "Une erreur s'est produite lors de la mise à jour du nom d'affichage"
+    },
+    "placeholder": "Nouveau nom d'affichage",
+    "saveButton": "Enregistrer",
+    "title": "Modifier le nom d'affichage"
+  },
+  "changeEmail": {
+    "confirmEmail": "Confirmer la nouvelle adresse e-mail",
+    "currentPassword": "Mot de passe actuel",
+    "error": {
+      "invalid": "L'adresse e-mail n'est pas valide.",
+      "mismatch": "Les adresses e-mail ne correspondent pas.",
+      "required": "Tous les champs sont obligatoires.",
+      "update": "Échec de la mise à jour de l'adresse e-mail. Veuillez réessayer.",
+      "sameEmail": "La nouvelle adresse e-mail ne peut pas être la même que l'adresse actuelle.",
+      "requiresRecentLogin": "Veuillez vous reconnecter pour modifier votre adresse e-mail.",
+      "generic": "Une erreur s'est produite lors de la mise à jour de l'adresse e-mail.",
+      "invalidPassword": "Le mot de passe actuel est incorrect.",
+      "emailNotSent": "L'e-mail de vérification n'a pas pu être envoyé. Veuillez réessayer.",
+      "verifyNewEmail": "Veuillez vérifier votre nouvelle adresse e-mail."
+    },
+    "emailVerificationSent": "Un e-mail de vérification a été envoyé à votre nouvelle adresse e-mail. Veuillez vérifier votre boîte de réception et cliquer sur le lien pour vérifier votre adresse e-mail.",
+    "newEmail": "Nouvelle adresse e-mail",
+    "success": "Adresse e-mail mise à jour avec succès. Veuillez vérifier votre nouvelle adresse e-mail.",
+    "title": "Modifier l'adresse e-mail",
+    "updateButton": "Mettre à jour l'adresse e-mail"
+  },
+  "confirmEmailChange": {
+    "title": "Confirmation du changement d'email",
+    "verifying": "Un e-mail de vérification a été envoyé à votre nouvelle adresse e-mail. Veuillez vérifier votre boîte de réception et cliquer sur le lien pour vérifier votre adresse e-mail.",
+    "success": "Adresse e-mail mise à jour avec succès. Veuillez vérifier votre nouvelle adresse e-mail.",
+    "error": "Erreur lors de la confirmation du changement d'email",
+    "tokenExpired": "Votre email a bien été modifié. Veuillez vous reconnecter pour finaliser le changement d'email."
+  },
+  "editPassword": {
+    "confirmPassword": "Confirmer le nouveau mot de passe",
+    "currentPassword": "Mot de passe actuel",
+    "error": {
+      "generic": "Une erreur s'est produite lors de la mise à jour du mot de passe",
+      "mismatch": "Les mots de passe ne correspondent pas",
+      "short": "Le mot de passe doit contenir au moins 6 caractères"
+    },
+    "newPassword": "Nouveau mot de passe",
+    "success": "Mot de passe mis à jour avec succès",
+    "title": "Modifier le mot de passe",
+    "updateButton": "Mettre à jour le mot de passe"
+  },
+  "editProfile": {
+    "bio": "Biographie",
+    "name": "Nom",
+    "saveButton": "Enregistrer les modifications",
+    "title": "Modifier le profil"
+  },
+  "contacts": {
+    "usernamePlaceholder": "Nom d'utilisateur",
+    "addButton": "Ajouter le contact",
+    "searching": "Recherche de l'utilisateur...",
+    "userNotFound": "Utilisateur non trouvé",
+    "userFound": "Utilisateur trouvé ! Cliquez sur le bouton pour l'ajouter.",
+    "addSuccess": "Contact ajouté avec succès !",
+    "addError": "Erreur lors de l'ajout du contact. Veuillez réessayer.",
+    "deleteConfirmTitle": "Supprimer le contact",
+    "deleteConfirmMessage": "Êtes-vous sûr de vouloir supprimer {name} de vos contacts ?",
+    "deleteErrorTitle": "Erreur de suppression",
+    "deleteErrorMessage": "Une erreur s'est produite lors de la suppression du contact.",
+    "noBio": "Pas de bio",
+    "searchPlaceholder": "Rechercher un contact...",
+    "noContacts": "Aucun contact trouvé",
+    "loadError": "Erreur lors du chargement des contacts"
+  },
+  "avatarManager": {
+    "gallery": "Choisir depuis la galerie",
+    "camera": "Prendre une photo",
+    "delete": "Supprimer la photo",
+    "save": "Enregistrer",
+    "confirmMessage": "Êtes-vous sûr de vouloir utiliser cette photo comme photo de profil ?",
+    "confirmTitle": "Confirmer la mise à jour",
+    "permissions": {
+      "mediaLibrary": "L'autorisation d'accès à la bibliothèque multimédia est nécessaire.",
+      "mediaLibraryNeeded": "L'autorisation d'accès à la bibliothèque multimédia est nécessaire pour gérer votre avatar."
+    },
+    "error": {
+      "generic": "Une erreur s'est produite lors de la mise à jour de la photo de profil",
+      "upload": "Erreur lors du téléchargement de l'image"
+    },
+    "success": "Photo de profil mise à jour avec succès"
+  },
+  "error": {
+    "generic": "Une erreur s'est produite."
+  },
+
+  "forgotPassword": {
+    "button": "Réinitialiser le mot de passe",
+    "emailPlaceholder": "Adresse e-mail",
+    "error": {
+      "emailRequired": "L'adresse e-mail est requise"
+    },
+    "success": "Un e-mail de réinitialisation a été envoyé à votre adresse",
+    "title": "Mot de passe oublié"
+  },
+  "googleSignIn": {
+    "button": "Se connecter avec Google",
+    "loggedInAs": "Connecté en tant que :"
+  },
+  "home": {
+    "contactSuggestions": "Suggestions d'amis",
+    "newActivities": "{{count}} nouvelle(s) actualité(s)",
+    "noRecentActivity": "Aucune actualité récente",
+    "recentActivity": "Activités récentes",
+    "title": "Accueil",
+    "welcome": "Bienvenue sur l'application !",
+    "welcomeUser": "Bienvenue, {{name}} !"
+  },
+  "loading": "Chargement...",
+  "notification": {
+    "emailNotifications": "Notifications par e-mail",
+    "error": {
+      "saveFailed": "Échec de l'enregistrement des paramètres de notification"
+    },
+    "pushNotifications": "Notifications push",
+    "saveButton": "Enregistrer les paramètres",
+    "success": {
+      "saved": "Paramètres de notification enregistrés avec succès"
+    },
+    "title": "Paramètres de notification"
+  },
+  "permissions": {
+    "camera": {
+      "title": "Permission de la caméra",
+      "message": "Cette application a besoin d'accéder à votre caméra pour prendre des photos.",
+      "denied": "La permission d'accès à la caméra a été refusée. Veuillez l'activer dans les paramètres de votre appareil."
+    },
+    "mediaLibrary": {
+      "title": "Permission de la bibliothèque photo",
+      "message": "Cette application a besoin d'accéder à votre bibliothèque photo pour sélectionner des images.",
+      "denied": "La permission d'accès à la bibliothèque photo a été refusée. Veuillez l'activer dans les paramètres de votre appareil."
+    }
+  },
+  "profile": {
+    "editusername": "Modifier le nom d'affichage",
+    "editEmail": "Modifier l'adresse e-mail",
+    "editPassword": "Modifier le mot de passe",
+    "avatarManager": "Modifier la photo de profil",
+    "error": {
+      "signOut": "Erreur lors de la déconnexion"
+    },
+    "notificationSettings": "Paramètres de notification",
+    "deleteAccount": "Supprimer mon compte",
+    "signOut": "Déconnexion",
+    "changeEmail": "Modifier l'adresse e-mail",
+    "title": "Profil"
+  },
+  "resetPassword": {
+    "instructions": "Un e-mail de réinitialisation a été envoyé à {email}. Veuillez vérifier votre boîte de réception.",
+    "openEmailOnDevice": "Veuillez ouvrir le mail de réinitialisation sur l'appareil où l'application est installée.",
+    "confirmPassword": "Confirmer le nouveau mot de passe",
+    "error": {
+      "mismatch": "Les mots de passe ne correspondent pas",
+      "shortPassword": "Le mot de passe doit contenir au moins 6 caractères",
+      "required": "Le mot de passe est requis",
+      "invalidEmail": "L'adresse e-mail est invalide"
+    },
+    "button": "Réinitialiser le mot de passe",
+    "timeLeft": "Temps restant : {seconds} secondes",
+    "expired": "Le lien a expiré",
+    "resendEmail": "Renvoyer l'e-mail",
+    "emailMissing": "Adresse e-mail manquante",
+    "emailResent": "E-mail de réinitialisation renvoyé",
+    "emailResentError": "Erreur lors de l'envoi de l'e-mail",
+    "newPassword": "Nouveau mot de passe",
+    "newPasswordTitle": "Nouveau mot de passe",
+    "submitButton": "Réinitialiser le mot de passe",
+    "successUpdate": "Mot de passe mis à jour avec succès",
+    "title": "Réinitialiser le mot de passe"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "chooseNotificationSound": "Choisir un son de notification"
+  },
+  "signIn": {
+    "back": "Retour",
+    "button": "Se connecter",
+    "createAccount": "Créer un compte",
+    "emailPlaceholder": "Adresse e-mail",
+    "forgotPassword": "Mot de passe oublié ?",
+    "googleSignIn": "Se connecter avec Google",
+    "noAccount": "Pas encore de compte ?",
+    "passwordPlaceholder": "Mot de passe",
+    "signUp": "S'inscrire",
+    "title": "Connexion"
+  },
+  "signUp": {
+    "alreadyHaveAccount": "Vous avez déjà un compte ?",
+    "button": "S'inscrire",
+    "confirmPasswordPlaceholder": "Confirmer le mot de passe",
+    "emailPlaceholder": "Adresse e-mail",
+    "error": {
+      "passwordMismatch": "Les mots de passe ne correspondent pas."
+    },
+    "passwordPlaceholder": "Mot de passe",
+    "signIn": "Se connecter",
+    "title": "S'inscrire",
+    "googleSignUp": "S'inscrire avec Google"
+  },
+  "verifyEmail": {
+    "error": {
+      "linkExpired": "Le lien de vérification a expiré.",
+      "noCode": "Ouvrez le lien de vérification obtenu par e-mail ou renvoyez en un nouveau.",
+      "noUser": "Utilisateur non trouvé.",
+      "resendError": "Erreur lors de l'envoi de l'e-mail de vérification. Veuillez réessayer."
+    },
+    "instructions": "Un e-mail de vérification a été envoyé à {email}. Veuillez vérifier votre boîte de réception et cliquer sur le lien pour vérifier votre adresse e-mail.",
+    "resendButton": "Renvoyer l'e-mail de vérification",
+    "resendSuccess": "Un nouvel e-mail de vérification a été envoyé.",
+    "success": "Votre e-mail a été vérifié avec succès.",
+    "title": "Vérifier l'adresse e-mail"
+  }
+}
